@@ -1,0 +1,3 @@
+proxmox_endpoint     = "https://NODE-IP:8006"
+proxmox_api_token    = "root@pam"
+proxmox_token_secret = "changeme"
