@@ -5,7 +5,7 @@ curl -fsSL https://tailscale.com/install.sh | sh
 ```
 2. Authenticate Tailscale
 ```bash
-tailscale up --login-server https://login.tailscale.com
+tailscale up --login-server <headscale-address> --ssh
 ```
 3. Enable tailscaled on boot
 ```bash
@@ -19,7 +19,8 @@ user@headscale $ systemctl restart headscale
 ```bash
 tailscale status
 ```
-6. Optional: Set up Tailscale SSH
+6. Enable ipv6 forwarding on each node
 ```bash
-tailscale set --ssh
+echo 'net.ipv6.conf.all.forwarding=1' >> /etc/sysctl.conf
+sysctl -p
 ```

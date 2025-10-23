@@ -93,3 +93,14 @@ ip addr show k8sVNet | grep "inet "
 # Check routing table
 ip route | grep 10.0.10
 ```
+
+### (Optional) Step 7: Advertise the Network on Tailnet
+If using Tailscale, advertise the new subnet from one Proxmox node:
+```bash
+tailscale up --login-server <headscale address> --advertise-routes=10.0.10.0/24 --accept-routes --ssh
+```
+On your local machine, accept the advertised route:
+```bash
+tailscale up --accept-routes
+```
+or via the tailscale app settings.

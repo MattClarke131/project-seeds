@@ -13,6 +13,14 @@
   - Create SDN zone and virtual network
   - Configure 10.0.10.0/24 subnet for kubernetes
 
+4. **[Talos Image Setup](./talos.md)**
+  - Download and prepare Talos Linux disk image
+  - Create Proxmox VM template
+
+5. **[Terraform Configuration](./terraform.md)**
+  - Create Proxmox API user and token
+  - Configure Terraform variables
+  - Deploy Kubernetes cluster VMs
 
 ## Architecture Decisions
 See [ADRs](/docs/adr/) for detailed reasoning behind infrastructure choices

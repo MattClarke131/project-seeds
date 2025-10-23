@@ -1,3 +1,20 @@
+# Proxmox connection details
 proxmox_endpoint     = "https://NODE-IP:8006"
 proxmox_api_token    = "root@pam"
 proxmox_token_secret = "changeme"
+
+# Proxmox Nodes
+proxmox_nodes = [
+  {
+    node_name        = "pve1"
+    template_id = 9000
+  },
+  {
+    node_name        = "pve2"
+    template_id = 9001
+  },
+  {
+    node_name        = "pve3"
+    template_id = 9002
+  }
+]
