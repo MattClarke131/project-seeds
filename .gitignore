@@ -1,3 +1,6 @@
+**/*.backup
+
+# Terraform
 **/*.tfstate
 **/*.tfstate.*
 **/.terraform/
@@ -5,4 +8,7 @@
 **/terraform.tfvars
 **/*.auto.tfvars
 
-**/*.backup
+# Talos
+**/controlplane.yaml
+**/worker.yaml
+**/talosconfig
