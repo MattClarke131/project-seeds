@@ -23,3 +23,16 @@ variable "proxmox_nodes" {
     })
   )
 }
+
+# Kubernetes Cluster Variables
+variable "cluster_name" {
+  description = "Name of the Kubernetes cluster"
+  type        = string
+  default     = "talos-k8s-cluster"
+}
+
+variable "cluster_endpoint" {
+  description = "Kubernetes API server endpoint"
+  type        = string
+  default     = "https://10.0.10.10:6443"
+}
