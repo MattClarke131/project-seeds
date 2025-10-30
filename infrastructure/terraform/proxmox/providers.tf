@@ -6,6 +6,11 @@ terraform {
       source  = "bpg/proxmox"
       version = "~> 0.85.1"
     }
+
+    talos = {
+      source  = "siderolabs/talos"
+      version = "~> 0.9.0"
+    }
   }
 }
 
@@ -19,3 +24,5 @@ provider "proxmox" {
     username = "root"
   }
 }
+
+provider "talos" {}
