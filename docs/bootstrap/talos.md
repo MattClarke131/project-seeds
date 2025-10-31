@@ -40,8 +40,8 @@ So we will need to increment the template ID for each node. (e.g., 9000, 9001, 9
 ```bash
 qm create 9000 \
   --name talos-control-plane-template \
-  --memory 2048 \
-  --cores 1 \
+  --memory 4096 \
+  --cores 4 \
   --net0 virtio,bridge=k8sVNet \
   --scsi0 local-zfs:0,import-from=/var/lib/vz/template/iso/nocloud-amd64.raw \
   --boot order=scsi0 \
