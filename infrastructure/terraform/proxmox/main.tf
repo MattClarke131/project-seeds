@@ -62,8 +62,6 @@ resource "proxmox_virtual_environment_vm" "talos_control_plane" {
     bridge = "k8sVNet"
   }
 
-  cicustom = "user=${proxmox_virtual_environment_file.controlplane_config[each.key].id}"
-
   on_boot = true
 
   operating_system {
@@ -104,8 +102,6 @@ resource "proxmox_virtual_environment_vm" "talos_worker" {
   network_device {
     bridge = "k8sVNet"
   }
-
-  cicustom = "user=${proxmox_virtual_environment_file.worker_config[each.key].id}"
 
   on_boot = true
 
