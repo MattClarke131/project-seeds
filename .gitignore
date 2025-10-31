@@ -12,3 +12,6 @@
 **/controlplane.yaml
 **/worker.yaml
 **/talosconfig
+
+# Generated
+infrastructure/terraform/proxmox/generated

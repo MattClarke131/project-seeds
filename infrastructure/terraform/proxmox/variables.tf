@@ -12,6 +12,11 @@ variable "proxmox_token_secret" {
   type        = string
   sensitive   = true
 }
+variable "proxmox_ssh_password" {
+  description = "Proxmox SSH password for root user"
+  type        = string
+  sensitive   = true
+}
 
 # Proxmox Nodes
 variable "proxmox_nodes" {

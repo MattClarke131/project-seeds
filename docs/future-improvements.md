@@ -17,3 +17,11 @@
 - [ ] High availability proxmox_endpoint
   - Currently, the terraform scripts point to a single Proxmox node.
   - Use a load balancer or DNS round-robin to distribute requests across multiple nodes.
+- [ ] Tailscale UDP performance optimizations
+  ```bash
+    root@host:~# tailscale up --advertise-routes=10.0.10.0/24 --accept-routes --ssh --login-server=<login-server>
+    Warning: UDP GRO forwarding is suboptimally configured on vmbr0, UDP forwarding throughput capability will increase with a configuration change.
+    See https://tailscale.com/s/ethtool-config-udp-gro
+  ```
+- [ ] Replace SSH password auth with key-based or Vault integration
+  - Have different passwords for each node

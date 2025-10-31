@@ -68,11 +68,11 @@ ping pve1.example.local
 3. Disable password authentication in `/etc/ssh/sshd_config`
 
 ## Step 5: Create Proxmox Cluster
-### Step 6.1: (first node only) Initialize Cluster
+### Step 5.1: (first node only) Initialize Cluster
 ```bash
 pvecm create my-cluster
 ```
-### Step 6.2: (other nodes) Join Cluster
+### Step 5.2: (other nodes) Join Cluster
 ```bash
 pvecm add 192.168.x.y
 ```
@@ -80,8 +80,20 @@ or
 ```bash
 pvecm add pve1.example.local
 ```
-### Step 6.3: Verify Cluster
+### Step 5.3: Verify Cluster
 ```bash
 pvecm status
 pvecm nodes
+```
+
+### Step 6: Enable Snippets Storage
+On each proxmox node, run the following commands:
+1. Create snippets directory
+```bash
+mkdir -p /var/lib/vz/snippets
+```
+
+2. Add snippets storage via CLI
+```bash
+pvesm set local --content backup,iso,vztmpl,snippets
 ```

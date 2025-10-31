@@ -2,19 +2,61 @@
 resource "talos_machine_secrets" "this" {}
 
 # Control plane machine configuration
+# (One per node with network config)
 data "talos_machine_configuration" "control_plane" {
+  for_each = local.control_plane_nodes
+
   cluster_name     = var.cluster_name
   cluster_endpoint = var.cluster_endpoint
   machine_type     = "controlplane"
   machine_secrets  = talos_machine_secrets.this.machine_secrets
+
+  config_patches = [
+    yamlencode({
+      machine = {
+        network = {
+          hostname = each.key
+          interfaces = [{
+            interface = "eth0"
+            addresses = ["${each.value.ip_address}/24"]
+            routes = [{
+              network = "0.0.0.0/0"
+              gateway = "10.0.10.1"
+            }]
+          }]
+        }
+      }
+    })
+  ]
 }
 
 # Worker machine configuration
+# (One per node with network config)
 data "talos_machine_configuration" "worker" {
+  for_each = local.worker_nodes
+
   cluster_name     = var.cluster_name
   cluster_endpoint = var.cluster_endpoint
   machine_type     = "worker"
   machine_secrets  = talos_machine_secrets.this.machine_secrets
+
+  config_patches = [
+    yamlencode({
+      machine = {
+        network = {
+          hostname = each.key
+          interfaces = [{
+            interface = "eth0"
+            addresses = ["${each.value.ip_address}/24"]
+            routes = [{
+              network = "0.0.0.0/0"
+              gateway = "10.0.10.1"
+            }]
+          }]
+        }
+      }
+    })
+  ]
 }
 
 # Client configuration for talosctl
@@ -24,62 +66,48 @@ data "talos_client_configuration" "this" {
   endpoints     = [for k, v in local.control_plane_nodes : v.ip_address]
 }
 
-# Apply configuration to control plane nodes
-resource "talos_machine_configuration_apply" "control_plane" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.control_plane.machine_configuration
-
+# Write control plane configs to local files
+resource "local_file" "controlplane_config" {
   for_each = local.control_plane_nodes
-  node     = each.value.ip_address
-
-  config_patches = [
-    templatefile("${path.module}/templates/network-config.yaml.tmpl", {
-      hostname   = each.key
-      ip_address = each.value.ip_address
-    })
-  ]
-
-  depends_on = [
-    proxmox_virtual_environment_vm.talos_control_plane
-  ]
+  content  = data.talos_machine_configuration.control_plane[each.key].machine_configuration
+  filename = "${path.module}/generated/controlplane-${each.key}.yaml"
 }
 
-# Apply configuration to worker nodes
-resource "talos_machine_configuration_apply" "worker" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  machine_configuration_input = data.talos_machine_configuration.worker.machine_configuration
-
+# Write worker configs to local files
+resource "local_file" "worker_config" {
   for_each = local.worker_nodes
-  node     = each.value.ip_address
-
-  config_patches = [
-    templatefile("${path.module}/templates/network-config.yaml.tmpl", {
-      hostname   = each.key
-      ip_address = each.value.ip_address
-    })
-  ]
-
-  depends_on = [
-    proxmox_virtual_environment_vm.talos_worker
-  ]
+  content  = data.talos_machine_configuration.worker[each.key].machine_configuration
+  filename = "${path.module}/generated/worker-${each.key}.yaml"
 }
 
-# Bootstrap the cluster (only run on first control plane)
-resource "talos_machine_bootstrap" "this" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  node                 = [for k, v in local.control_plane_nodes : v.ip_address][0]
+# Upload control plane configs as Proxmox snippets
+resource "proxmox_virtual_environment_file" "controlplane_config" {
+  for_each = local.control_plane_nodes
 
-  depends_on = [
-    talos_machine_configuration_apply.control_plane
-  ]
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = each.value.node_name
+
+  source_raw {
+    data      = local_file.controlplane_config[each.key].content
+    file_name = "controlplane-${each.key}.yaml"
+  }
+
+  depends_on = [local_file.controlplane_config]
 }
 
-# Generate kubeconfig
-resource "talos_cluster_kubeconfig" "this" {
-  client_configuration = talos_machine_secrets.this.client_configuration
-  node                 = [for k, v in local.control_plane_nodes : v.ip_address][0]
+# Upload worker configs as Proxmox snippets
+resource "proxmox_virtual_environment_file" "worker_config" {
+  for_each = local.worker_nodes
 
-  depends_on = [
-    talos_machine_bootstrap.this
-  ]
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = each.value.node_name
+
+  source_raw {
+    data      = local_file.worker_config[each.key].content
+    file_name = "worker-${each.key}.yaml"
+  }
+
+  depends_on = [local_file.worker_config]
 }

@@ -12,20 +12,22 @@ We use the QEMU guest agent extension to enable better communication between the
 Run these steps on **each** proxmox host
 
 1. Get a talos image from https://factory.talos.dev/
-- bare-metal
+- nocloud-amd64
 - Latest stable version
-- amd64 architecture
 - Include QEMU guest agent
 - skip customization
+- raw.xz format
+
+We choose nocloud instead of bare metal because it includes cloud-init support which Talos uses for initial configuration. bare metal images are more useful for single deployments on physical hardware.
 
 2. Download the image:
 ```bash
-wget <talos-image-url> -O /var/lib/vz/template/iso/
+wget <talos-image-url> -O /var/lib/vz/template/iso/nocloud-amd64.raw.xz
 ```
 
 3. Unpack the raw disk image:
 ```bash
-unzstd metal-amd64.raw.zst
+unxz /var/lib/vz/template/iso/nocloud-amd64.raw.xz
 ```
 
 ### Step 2: Create VM template
@@ -41,7 +43,7 @@ qm create 9000 \
   --memory 2048 \
   --cores 1 \
   --net0 virtio,bridge=k8sVNet \
-  --scsi0 local-zfs:0,import-from=/var/lib/vz/template/iso/metal-amd64.raw \
+  --scsi0 local-zfs:0,import-from=/var/lib/vz/template/iso/nocloud-amd64.raw \
   --boot order=scsi0 \
   --scsihw virtio-scsi-pci \
   --bios ovmf \
@@ -50,9 +52,9 @@ qm create 9000 \
   --template
 ```
 
-2. Resize template disk to 20GB. Run this on each host, incrementing each VM ID:
+2. Resize template disk to 50GB. Run this on each host, incrementing each VM ID:
 ```bash
-qm resize 9000 scsi0 20G && qm template 9000
+qm resize 9000 scsi0 50G
 ```
 
 3. Verify the templates:
@@ -60,7 +62,7 @@ qm resize 9000 scsi0 20G && qm template 9000
 pvesh get /cluster/resources --type vm
 ```
 
-4. Update terraform.tfvars with the correct template IDs for each node:
+4. Update terraform.tfvars with the correct template IDs, and node_names for each node:
 ```hcl
 proxmox_nodes = [
   {
@@ -77,18 +79,3 @@ proxmox_nodes = [
   }
 ]
 ```
-
-### Step 3: Generate Talos Configuration
-Run these steps on your local machine where you have Talosctl installed.
-These should be ran from the `infrastructure/talos` directory in this repo.
-
-1. Generate cluster configuration files:
-```bash
-cd infrastructure/talos
-talosctl gen config <cluster-name> https://10.0.10.10:6443
-```
-This creates the following files.
-**These files contain secrets!**
-- `controlplane.yaml` - Control plane node configuration
-- `worker.yaml` - Worker node configuration
-- `talosconfig` - Talosctl configuration file

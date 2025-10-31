@@ -20,8 +20,8 @@ provider "proxmox" {
   insecure = true # self-signed certs in homelab
 
   ssh {
-    agent    = true
     username = "root"
+    password = var.proxmox_ssh_password
   }
 }
 
