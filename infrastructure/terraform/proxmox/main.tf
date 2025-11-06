@@ -55,7 +55,7 @@ resource "talos_machine_secrets" "cluster" {
 
 resource "local_file" "user_data" {
   content  = data.talos_machine_configuration.control.machine_configuration
-  filename = "${path.module}/iso-content/control-plane-user-data"
+  filename = "${path.module}/iso-content/control-plane/user-data"
   file_permission = "0600"
 }
 
@@ -64,8 +64,35 @@ resource "local_file" "meta_data" {
     instance_id    = "k8s-cp-${local.control_plane.node_name}"
     local_hostname = "k8s-cp-${local.control_plane.node_name}"
   })
-  filename = "${path.module}/iso-content/control-plane-meta-data"
+  filename = "${path.module}/iso-content/control-plane/meta-data"
   file_permission = "0600"
+}
+
+resource "null_resource" "control_plane_iso" {
+  triggers = {
+    config_hash = sha256(data.talos_machine_configuration.control.machine_configuration)
+  }
+
+  provisioner "local-exec" {
+    command = "mkisofs -o ${path.module}/iso-content/control-plane.iso -V cidata -r -J ${path.module}/iso-content/control-plane"
+  }
+
+  depends_on = [
+    local_file.user_data,
+    local_file.meta_data,
+  ]
+}
+
+resource "null_resource" "upload_control_plane_iso" {
+  triggers = {
+    iso_hash = null_resource.control_plane_iso.id
+  }
+
+  provisioner "local-exec" {
+    command = "scp ${path.module}/iso-content/control-plane.iso root@${local.control_plane.node_name}:/var/lib/vz/template/iso/"
+  }
+
+  depends_on = [null_resource.control_plane_iso]
 }
 
 resource "proxmox_virtual_environment_vm" "control_plane" {
@@ -91,6 +118,12 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     bridge = var.proxmox_bridge
     model  = "virtio"
   }
+
+  cdrom {
+    file_id   = "local:iso/control-plane.iso"
+  }
+
+  depends_on = [null_resource.upload_control_plane_iso]
 
   on_boot = true
 }
