@@ -49,6 +49,15 @@ data "talos_machine_configuration" "control" {
   ]
 }
 
+# terraform generation of talosconfig
+# In a production setup, we would separate infrastructure from client tooling
+data "talos_client_configuration" "this" {
+  cluster_name         = var.cluster_name
+  client_configuration = talos_machine_secrets.cluster.client_configuration
+  endpoints            = [local.control_plane.ip_address]
+  nodes                = [local.control_plane.ip_address]
+}
+
 resource "talos_machine_secrets" "cluster" {
   talos_version = local.talos_version
 }
@@ -65,6 +74,12 @@ resource "local_file" "meta_data" {
     local_hostname = "k8s-cp-${local.control_plane.node_name}"
   })
   filename = "${path.module}/iso-content/control-plane/meta-data"
+  file_permission = "0600"
+}
+
+resource "local_file" "talosconfig" {
+  content         = data.talos_client_configuration.this.talos_config
+  filename        = "${path.module}/talosconfig"
   file_permission = "0600"
 }
 
