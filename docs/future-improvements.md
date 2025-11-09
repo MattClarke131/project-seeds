@@ -25,3 +25,6 @@
   ```
 - [ ] Replace SSH password auth with key-based or Vault integration
   - Have different passwords for each node
+- [ ] Migrate VXLAND networking to EVPN/VXLAN
+- [ ] Have NAT rules on each node instead of a single gateway node
+  - [ ] Improves redundancy and load balancing

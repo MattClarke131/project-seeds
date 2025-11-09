@@ -116,3 +116,20 @@ terraform apply
 ```bash
 pvesh get /cluster/resources --type vm
 ```
+
+### Step 4: Post-Deployment
+1. Wait 2-3 minutes for VMs to fully boot
+```bash
+ping -c 3 10.0.10.10
+```
+
+2. Bootstrap Kubernetes cluster using Talosctl
+```bash
+talosctl --talosconfig ./talosconfig bootstrap --nodes 10.0.10.10
+```
+
+3. Wait 1-2 minutes, then verify cluster health
+```bash
+talosctl --talosconfig ./talosconfig --nodes 10.0.10.10 health
+talosctl --talosconfig ./talosconfig --nodes 10.0.10.10 etcd members
+```

@@ -22,36 +22,33 @@ variable "cluster_name" {
   default     = "k8s-cluster"
 }
 
-# Network Configuration
-# variable "network_base_ip" {
-#   description = "Base network (e.g., 10.0.10)"
-#   type        = string
-#   default     = "10.0.10"
-# }
-
-# variable "network_gateway" {
-#   description = "Network gateway IP"
-#   type        = string
-#   default     = "10.0.10.1"
-# }
-
 variable "proxmox_bridge" {
   description = "Proxmox bridge for k8s network"
   type        = string
   default     = "k8sVNet"
 }
 
-# Node Configuration
-# variable "proxmox_hosts" {
-#   description = "Proxmox hosts with node allocation"
-#   type = map(object({
-#     control_planes = number
-#     workers        = number
-#     template_vm_id  = number
-#   }))
-#   default = {
-#     node1 = { control_planes = 1, workers = 2, template_vm_id = 9000 }
-#     node2 = { control_planes = 1, workers = 2, template_vm_id = 9001 }
-#     node3 = { control_planes = 1, workers = 2, template_vm_id = 9002 }
-#   }
-# }
+# Proxmox Host Node Configuration
+variable "proxmox_hosts" {
+  description = "Proxmox host configuration"
+  type = map(object({
+    cores          = number
+    memory_mb      = number
+    template_vm_id = number
+    ip_range_base  = string
+  }))
+  default = {
+    node1 = { cores = 4, memory_mb = 4096, template_vm_id = 9000, ip_range_base = "10.0.10.10" }
+    node2 = { cores = 4, memory_mb = 4096, template_vm_id = 9001, ip_range_base = "10.0.10.20" }
+    node3 = { cores = 4, memory_mb = 4096, template_vm_id = 9002, ip_range_base = "10.0.10.30" }
+  }
+}
+
+# Bootstrap Control Plane Node
+# In the future, all control planes could be gateways, but for simplicity,
+# we designate one as the bootstrap and only gateway node.
+variable "bootstrap_node_name" {
+  description = "Proxmox node name for the bootstrap control plane. Is the only gateway node."
+  type        = string
+  default     = "node1"
+}

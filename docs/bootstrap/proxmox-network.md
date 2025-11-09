@@ -68,6 +68,7 @@ pvesh create /cluster/sdn/vnets/k8sVNet/subnets \
 - `--type`: Must be "subnet"
 - `--gateway`: Gateway IP address
 - `--snat`: Enable Source NAT for outbound traffic (1 = enabled)
+  - **Note** This flag may not work with VXLAN zones. We later manually configure NAT on the gateway node
 
 ### Step 4: Apply SDN Configuration
 ```bash
@@ -81,7 +82,33 @@ On each Proxmox node, run:
 ip addr add 10.0.10.1/24 dev k8sVNet
 ```
 
-### Step 6: Verify Configuration
+### Step 6: Configure NAT for Internet Access
+VXLAN zones require manual NAT configuration for outbound internet access. We require gateway configuration on all nodes for high availability.
+
+1. On each proxmox node, edit `/etc/network/interfaces` and add the block below.
+**Note:** Increment the `metric` value on each node to set routing priority (lower = higher priority). Metric ensure a primary gateway, with automatic failover to other nodes.
+```bash
+# K8s VXLAN Gateway Configuration
+auto k8sVNet
+iface k8sVNet inet static
+        address 10.0.10.1/24
+        metric 100
+        post-up iptables -A FORWARD -i k8sVNet -o vmbr0 -j ACCEPT
+        post-up iptables -A FORWARD -i vmbr0 -o k8sVNet -m state --state RELATED,ESTABLISHED -j ACCEPT
+        post-up iptables -t nat -A POSTROUTING -s 10.0.10.0/24 ! -d 10.0.10.0/24 -o vmbr0 -j MASQUERADE
+```
+
+2. Enable IP forwarding
+```bash
+# Check if already enabled
+cat /prox/sys/net/ipv4/ip_forward
+
+# Enable IP forwarding
+echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+sysctl -p
+```
+
+### Step 7: Verify Configuration
 Check that the network is configured correctly on each node:
 ```bash
 # Verify the k8sVNet interface exists
@@ -94,8 +121,8 @@ ip addr show k8sVNet | grep "inet "
 ip route | grep 10.0.10
 ```
 
-### (Optional) Step 7: Advertise the Network on Tailnet
-If using Tailscale, advertise the new subnet from one Proxmox node:
+### (Optional) Step 8: Advertise the Network on Tailnet
+If using Tailscale, advertise the new subnet from **each** Proxmox node:
 ```bash
 tailscale up --login-server <headscale address> --advertise-routes=10.0.10.0/24 --accept-routes --ssh
 ```
