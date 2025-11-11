@@ -7,6 +7,10 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
+  agent {
+    enabled = true
+  }
+
   clone {
     vm_id = each.value.template_vm_id
   }

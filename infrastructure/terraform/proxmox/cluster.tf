@@ -18,6 +18,11 @@ data "talos_machine_configuration" "control_plane" {
   config_patches = [
     yamlencode({
       machine = {
+        install = {
+          extensions = [{
+            image = "ghcr.io/siderolabs/qemu-guest-agent:10.1.12"
+          }]
+        }
         features = {
           hostDNS = {
             enabled = false
@@ -32,11 +37,14 @@ data "talos_machine_configuration" "control_plane" {
               network = "0.0.0.0/0"
               gateway = local.gateway_ip
             }]
+            vip = {
+              ip = local.cluster_vip
+            }
           }]
           nameservers = local.nameservers
         }
       }
-    })
+    }),
   ]
 }
 

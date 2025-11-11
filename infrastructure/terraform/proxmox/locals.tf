@@ -2,10 +2,12 @@ locals {
   # Versions
   kubernetes_version = "v1.34.1"
   talos_version = "v1.11.3"
+  kube_vip_version = "v1.0.1"
 
   # Network Configuration
   network_subnet = "10.0.10.0/24"
   gateway_ip     = "10.0.10.1"
+  cluster_vip    = "10.0.10.2"
   nameservers    = ["9.9.9.9", "1.1.1.1"]
 
   # VM ID allocation
@@ -26,5 +28,5 @@ locals {
 
   # Cluster Endpoint - Bootstrap on designated gateway node
   bootstrap_node   = local.control_plane_nodes[var.bootstrap_node_name]
-  cluster_endpoint = "https://${local.bootstrap_node.ip_address}:6443"
+  cluster_endpoint = "https://${local.cluster_vip}:6443"
 }
