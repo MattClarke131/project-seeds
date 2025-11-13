@@ -14,7 +14,7 @@
 - [ ] Network storage
   - Main data on nfs share.
   - Ceph cluster for VM disks.
-- [ ] High availability proxmox_endpoint
+- [x] High availability proxmox_endpoint
   - Currently, the terraform scripts point to a single Proxmox node.
   - Use a load balancer or DNS round-robin to distribute requests across multiple nodes.
 - [ ] Tailscale UDP performance optimizations
@@ -26,5 +26,6 @@
 - [ ] Replace SSH password auth with key-based or Vault integration
   - Have different passwords for each node
 - [ ] Migrate VXLAND networking to EVPN/VXLAN
-- [ ] Have NAT rules on each node instead of a single gateway node
-  - [ ] Improves redundancy and load balancing
+- [x] Have NAT rules on each node instead of a single gateway node
+  - [x] Improves redundancy and load balancing
+- [ ] Template retention/cleanup automation (keep last N template versions for X days)
