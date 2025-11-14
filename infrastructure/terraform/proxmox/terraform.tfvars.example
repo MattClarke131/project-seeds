@@ -3,18 +3,33 @@ proxmox_endpoint     = "https://NODE-IP:8006"
 proxmox_api_token    = "root@pam"
 proxmox_token_secret = "changeme"
 
-# Proxmox Nodes
-proxmox_nodes = [
-  {
-    node_name        = "pve1"
-    template_id = 9000
-  },
-  {
-    node_name        = "pve2"
-    template_id = 9001
-  },
-  {
-    node_name        = "pve3"
-    template_id = 9002
+# Cluster Configuration
+cluster_name = "k8s-cluster"
+
+# Network Configuration
+proxmox_bridge  = "k8sVNet"
+
+# Bootstrap Control Plane Node
+bootstrap_node_name = "node1"
+
+# Node Configuration
+proxmox_hosts = {
+  node1 = {
+    cores = 4,
+    memory_mb = 16384,
+    template_vm_id = 10000,
+    ip_range_base = "10.0.10.10",
   }
-]
+  node2 = {
+    cores = 4,
+    memory_mb = 16384,
+    template_vm_id = 20000,
+    ip_range_base = "10.0.10.20",
+  }
+  node3 = {
+    cores = 8,
+    memory_mb = 16384,
+    template_vm_id = 30000,
+    ip_range_base = "10.0.10.30",
+  }
+}

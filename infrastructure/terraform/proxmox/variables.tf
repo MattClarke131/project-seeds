@@ -38,9 +38,9 @@ variable "proxmox_hosts" {
     ip_range_base  = string
   }))
   default = {
-    node1 = { cores = 4, memory_mb = 4096, template_vm_id = 9000, ip_range_base = "10.0.10.10" }
-    node2 = { cores = 4, memory_mb = 4096, template_vm_id = 9001, ip_range_base = "10.0.10.20" }
-    node3 = { cores = 4, memory_mb = 4096, template_vm_id = 9002, ip_range_base = "10.0.10.30" }
+    node1 = { cores = 4, memory_mb = 4096, template_vm_id = 10000, ip_range_base = "10.0.10.10" }
+    node2 = { cores = 4, memory_mb = 4096, template_vm_id = 20000, ip_range_base = "10.0.10.20" }
+    node3 = { cores = 4, memory_mb = 4096, template_vm_id = 30000, ip_range_base = "10.0.10.30" }
   }
 }
 
