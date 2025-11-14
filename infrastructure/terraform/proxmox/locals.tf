@@ -1,7 +1,7 @@
 locals {
   # Versions
   kubernetes_version = "v1.34.1"
-  talos_version = "v1.11.3"
+  talos_version = "v1.11.5"
   kube_vip_version = "v1.0.1"
 
   # Network Configuration
