@@ -76,7 +76,7 @@ pvesh set /cluster/sdn
 ```
 
 ### Step 5: Configure Gateway IP
-VXLAN zones require manual gateway IP configuration on each node:
+VXLAN zones require manual gateway IP configuration on each node. This is temporary and will be lost on reboot.
 On each Proxmox node, run:
 ```bash
 ip addr add 10.0.10.1/24 dev k8sVNet
@@ -101,7 +101,7 @@ iface k8sVNet inet static
 2. Enable IP forwarding
 ```bash
 # Check if already enabled
-cat /prox/sys/net/ipv4/ip_forward
+cat /proc/sys/net/ipv4/ip_forward
 
 # Enable IP forwarding
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
