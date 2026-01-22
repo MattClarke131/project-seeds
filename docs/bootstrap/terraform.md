@@ -133,3 +133,8 @@ talosctl --talosconfig ./talosconfig bootstrap --nodes 10.0.10.10
 talosctl --talosconfig ./talosconfig --nodes 10.0.10.10 health
 talosctl --talosconfig ./talosconfig --nodes 10.0.10.10 etcd members
 ```
+
+4. Generate kubeconfig for kubectl access
+```bash
+talosctl kubeconfig --nodes 10.0.10.10 --talosconfig ./talosconfig
+```
