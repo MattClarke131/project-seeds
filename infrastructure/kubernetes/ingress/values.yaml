@@ -1,0 +1,21 @@
+controller:
+  # Run on control plane nodes using talos host network
+  hostNetwork: true
+
+  # Only run on control plane nodes
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: ""
+
+  # Tolerate control plane taints so pods can schedule there
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+  # Ensures one runs on each control plane node
+  kind: DaemonSet
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
