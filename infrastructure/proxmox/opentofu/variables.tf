@@ -47,6 +47,6 @@ variable "cluster_name" {
 variable "proxmox_bridge" {
   description = "Proxmox bridge for k8s network"
   type        = string
-  default     = "k8sVNet"
+  default     = "vmbr0"
 }
 

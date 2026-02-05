@@ -34,15 +34,15 @@ unxz /var/lib/vz/template/iso/nocloud-amd64.raw.xz
 Run these steps on **each** proxmox host
 
 **NOTE:** Each node needs a unique template ID. The Proxmox cluster syncs VM IDs across nodes.
-So we will need to increment the template ID for each node. (e.g., 9000, 9001, 9002, ...)
-1. Create a VM template using the Talos raw disk image. Increment the `9000` ID for each node:
+So we will need to increment the template ID for each node. (e.g., 10000, 20000, 30000, ...)
+1. Create a VM template using the Talos raw disk image. Increment the `10000` ID for each node:
 
 ```bash
-qm create 9000 \
-  --name talos-control-plane-template \
+qm create 10000 \
+  --name talos-template \
   --memory 4096 \
   --cores 4 \
-  --net0 virtio,bridge=k8sVNet \
+  --net0 virtio,bridge=vmbr0 \
   --scsi0 local-zfs:0,import-from=/var/lib/vz/template/iso/nocloud-amd64.raw \
   --boot order=scsi0 \
   --scsihw virtio-scsi-pci \
@@ -54,7 +54,7 @@ qm create 9000 \
 
 2. Resize template disk to 50GB. Run this on each host, incrementing each VM ID:
 ```bash
-qm resize 9000 scsi0 50G
+qm resize 10000 scsi0 50G
 ```
 
 3. Verify the templates:
@@ -67,15 +67,15 @@ pvesh get /cluster/resources --type vm
 proxmox_nodes = [
   {
     node_name        = "pve1"
-    template_id = 9000
+    template_id = 10000
   },
   {
     node_name        = "pve2"
-    template_id = 9001
+    template_id = 20000
   },
   {
     node_name        = "pve3"
-    template_id = 9002
+    template_id = 30000
   }
 ]
 ```

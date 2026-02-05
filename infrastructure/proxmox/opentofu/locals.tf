@@ -36,7 +36,7 @@ locals {
           "${host.name}-w${worker_idx}" = {
             proxmox_node  = host.name
             vm_id         = local.worker_vm_id_base + (idx * 10) + worker_idx
-            ip_address    = cidrhost(local.network_subnet, (idx * 10) + 10 + worker_idx)
+            ip_address     = replace(host.ip_range_base, "/0$/", tostring(worker_idx))
             hostname      = "k8s-${host.name}-w${worker_idx}"
             cores         = host.cores
             memory_mb     = host.memory_mb / 4
