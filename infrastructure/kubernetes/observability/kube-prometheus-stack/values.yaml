@@ -1,0 +1,50 @@
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+      - job_name: 'proxmox-hosts'
+        static_configs:
+          - targets: 
+              - 10.0.10.5:9100
+              - 10.0.10.10:9100
+              - 10.0.10.11:9100
+            labels:
+              role: 'proxmox-host'
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: nfs-provisioner
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+    retention: 30d
+
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+
+  persistence:
+    enabled: true
+    storageClassName: nfs-provisioner
+    size: 10Gi
+
+  sidecar:
+    dashboards:
+      folderAnnotation: grafana_folder
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
+

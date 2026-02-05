@@ -22,5 +22,13 @@
   - Configure Terraform variables
   - Deploy Kubernetes cluster VMs
 
+6. **[Storage Setup](./kubernetes-storage.md)**
+  - Configure TrueNAS NFS storage for Kubernetes
+  - Enable persistent storage for applications
+
+7. **[Host Monitoring Setup](./host-monitoring.md)**
+  - Install node-exporter on physical hosts
+  - Enable metrics collection for observability*
+
 ## Architecture Decisions
 See [ADRs](/docs/adr/) for detailed reasoning behind infrastructure choices
