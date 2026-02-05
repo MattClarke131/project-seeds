@@ -20,30 +20,28 @@ locals {
     for idx, host in var.proxmox_hosts : host.name => {
       proxmox_node   = host.name
       vm_id          = local.control_plane_vm_id_base + idx
-      ip_address     = host.ip_range_base
+      ip_address     = host.control_plane.ip_address
       hostname       = "k8s-${host.name}-cp"
-      cores          = host.cores
-      memory_mb      = host.memory_mb / 4
+      cores          = host.control_plane.cores
+      memory_mb      = host.control_plane.memory_mb
       template_vm_id = host.template_vm_id
     }
   }
 
   # Workers - Many per Proxmox host
   worker_nodes = merge([
-    for idx, host in var.proxmox_hosts :
-      merge([
-        for worker_idx in [1,2] : {
-          "${host.name}-w${worker_idx}" = {
-            proxmox_node  = host.name
-            vm_id         = local.worker_vm_id_base + (idx * 10) + worker_idx
-            ip_address     = replace(host.ip_range_base, "/0$/", tostring(worker_idx))
-            hostname      = "k8s-${host.name}-w${worker_idx}"
-            cores         = host.cores
-            memory_mb     = host.memory_mb / 4
-            template_vm_id = host.template_vm_id
-          }
-        }
-      ]...)
+    for host_idx, host in var.proxmox_hosts :
+      { for worker_idx, worker in host.workers:
+        "${host.name}-w${worker_idx + 1}" => {
+          proxmox_node   = host.name
+          vm_id          = local.worker_vm_id_base + (host_idx * 10) + worker_idx + 1
+          ip_address     = worker.ip_address
+          hostname       = "k8s-${host.name}-w${worker_idx + 1}"
+          cores          = worker.cores
+          memory_mb      = worker.memory_mb
+          template_vm_id = host.template_vm_id
+      }
+    }
   ]...)
 
   # Cluster Endpoint - Bootstrap on designated gateway node

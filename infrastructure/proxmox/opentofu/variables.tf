@@ -16,25 +16,71 @@ variable "proxmox_token_secret" {
 
 # Proxmox Host Node Configuration
 variable "proxmox_hosts" {
-  description = "Proxmox host configuration"
+  description = "Proxmox host and VM resource allocation"
   type = list(object({
-    name           = string
-    cores          = number
-    memory_mb      = number
-    template_vm_id = number
-    ip_range_base  = string
+    name             = string
+    host_ip          = string
+    cores            = number
+    memory_mb        = number
+    host_reserved_mb = number
+    template_vm_id   = number
+
+    control_plane    = object({
+      ip_address       = string
+      cores            = number
+      memory_mb        = number
+    })
+
+    workers          = list(object({
+      ip_address       = string
+      cores            = number
+      memory_mb        = number
+    }))
   }))
+
+  validation {
+    condition = alltrue([
+      for host in var.proxmox_hosts :
+      (host.control_plane.memory_mb + sum([for w in host.workers : w.memory_mb]) + host.host_reserved_mb) <= host.memory_mb])
+
+      error_message = "Total VM memory allocation + host_reserved_mb exceeds total host memory on one or more hosts."
+  }
+
   default = [
-    { name = "node1", cores = 4, memory_mb = 4096, template_vm_id = 10000, ip_range_base = "10.0.10.10" },
-    { name = "node2", cores = 4, memory_mb = 4096, template_vm_id = 20000, ip_range_base = "10.0.10.20" },
-    { name = "node3", cores = 4, memory_mb = 4096, template_vm_id = 30000, ip_range_base = "10.0.10.30" },
+    {
+      name = "proxmox1", host_ip = "10.0.10.30", cores = 4, memory_mb = 16384, host_reserved_mb = 4096, template_vm_id = 10000,
+
+      control_plane = { ip_address = "10.0.10.31", cores = 4, memory_mb = 4096, }
+      workers = [
+        { ip_address = "10.0.10.32", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.33", cores = 4, memory_mb = 4096, },
+      ]
+    },
+    {
+      name = "proxmox2", host_ip = "10.0.10.40", cores = 4, memory_mb = 16384, host_reserved_mb = 4096, template_vm_id = 20000,
+
+      control_plane = { ip_address = "10.0.10.41", cores = 4, memory_mb = 4096, }
+      workers = [
+        { ip_address = "10.0.10.42", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.43", cores = 4, memory_mb = 4096, },
+      ]
+    },
+    {
+      name = "proxmox3", host_ip = "10.0.10.50", cores = 4, memory_mb = 16384, host_reserved_mb = 4096, template_vm_id = 30000,
+
+      control_plane = { ip_address = "10.0.10.51", cores = 4, memory_mb = 4096, }
+      workers = [
+        { ip_address = "10.0.10.52", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.53", cores = 4, memory_mb = 4096, },
+      ]
+    }
   ]
 }
 
 variable "bootstrap_node_name" {
   description = "Proxmox node name for the bootstrap control plane"
   type        = string
-  default     = "node1"
+  default     = "proxmox1"
 }
 
 # Cluster Configuration
