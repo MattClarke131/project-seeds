@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  prometheus-targets.json: |
+    [{"labels":{"host":"nicholas","hostname":"nicholas-host","role":"host"},"targets":["10.0.10.5:9100"]},{"labels":{"host":"nicholas","hostname":"k8s-nicholas-cp","role":"control_plane"},"targets":["10.0.10.30:9100"]},{"labels":{"host":"nicholas","hostname":"k8s-nicholas-w1","role":"worker"},"targets":["10.0.10.31:9100"]},{"labels":{"host":"nicholas","hostname":"k8s-nicholas-w2","role":"worker"},"targets":["10.0.10.32:9100"]},{"labels":{"host":"livio","hostname":"livio-host","role":"host"},"targets":["10.0.10.10:9100"]},{"labels":{"host":"livio","hostname":"k8s-livio-cp","role":"control_plane"},"targets":["10.0.10.40:9100"]},{"labels":{"host":"livio","hostname":"k8s-livio-w1","role":"worker"},"targets":["10.0.10.41:9100"]},{"labels":{"host":"livio","hostname":"k8s-livio-w2","role":"worker"},"targets":["10.0.10.42:9100"]},{"labels":{"host":"razlo","hostname":"razlo-host","role":"host"},"targets":["10.0.10.11:9100"]},{"labels":{"host":"razlo","hostname":"k8s-razlo-cp","role":"control_plane"},"targets":["10.0.10.50:9100"]},{"labels":{"host":"razlo","hostname":"k8s-razlo-w1","role":"worker"},"targets":["10.0.10.51:9100"]},{"labels":{"host":"razlo","hostname":"k8s-razlo-w2","role":"worker"},"targets":["10.0.10.52:9100"]}]
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: prometheus-targets
+  namespace: observability

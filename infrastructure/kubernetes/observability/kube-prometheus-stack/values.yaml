@@ -1,14 +1,23 @@
 prometheus:
   prometheusSpec:
+    # Mount targets from ConfigMap
+    configMaps:
+      - prometheus-targets
     additionalScrapeConfigs:
-      - job_name: 'proxmox-hosts'
-        static_configs:
-          - targets: 
-              - 10.0.10.5:9100
-              - 10.0.10.10:9100
-              - 10.0.10.11:9100
-            labels:
-              role: 'proxmox-host'
+      # Generated from Terraform outputs.tf
+      - job_name: 'node-exporter'
+        file_sd_configs:
+          - files:
+              - /etc/prometheus/configmaps/prometheus-targets/prometheus-targets.json
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: instance
+          - source_labels: [hostname]
+            target_label: hostname
+          - source_labels: [host]
+            target_label: host
+          - source_labels: [role]
+            target_label: role
     storageSpec:
       volumeClaimTemplate:
         spec:

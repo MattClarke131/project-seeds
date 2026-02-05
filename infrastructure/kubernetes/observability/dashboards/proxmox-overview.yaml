@@ -28,9 +28,108 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 39,
+      "id": 0,
       "links": [],
       "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by (host) (node_memory_MemTotal_bytes{job=\"node-exporter\", role=\"host\"} \n- node_memory_MemAvailable_bytes{job=\"node-exporter\", role=\"host\"})",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Host RAM",
+          "type": "timeseries"
+        },
         {
           "datasource": {
             "type": "prometheus",
@@ -95,130 +194,6 @@ data:
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 0,
-            "y": 0
-          },
-          "id": 1,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "12.3.1",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (instance) (rate(node_cpu_seconds_total{role=\"proxmox-host\",instance=\"10.0.10.5:9100\",mode!=\"idle\"}[5m]))\n",
-              "legendFormat": "Nicholas",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (instance) (rate(node_cpu_seconds_total{role=\"proxmox-host\",instance=\"10.0.10.10:9100\",mode!=\"idle\"}[5m]))\n",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "Livio",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (instance) (rate(node_cpu_seconds_total{role=\"proxmox-host\",instance=\"10.0.10.11:9100\",mode!=\"idle\"}[5m]))\n",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "Razlo",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Host CPU Cores",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 3,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "showValues": false,
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": 0
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
             "x": 12,
             "y": 0
           },
@@ -240,162 +215,13 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "scalar(\n  (node_memory_MemTotal_bytes{role=\"proxmox-host\",instance=\"10.0.10.5:9100\"} - node_memory_MemAvailable_bytes{role=\"proxmox-host\",instance=\"10.0.10.5:9100\"}) / 1024^3\n)\n-\nscalar(\n  sum(\n    (node_memory_MemTotal_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(30|31|32):9100\"} - node_memory_MemAvailable_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(30|31|32):9100\"})\n  ) / 1024^3\n)",
-              "legendFormat": "Nicholas",
+              "expr": "sum by (host) (rate(node_cpu_seconds_total{job=\"node-exporter\", role=\"host\", mode!=\"idle\"}[5m]))",
+              "legendFormat": "__auto",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "scalar(\n  (node_memory_MemTotal_bytes{role=\"proxmox-host\",instance=\"10.0.10.10:9100\"} - node_memory_MemAvailable_bytes{role=\"proxmox-host\",instance=\"10.0.10.10:9100\"}) / 1024^3\n)\n-\nscalar(\n  sum(\n    (node_memory_MemTotal_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(40|41|42):9100\"} - node_memory_MemAvailable_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(40|41|42):9100\"})\n  ) / 1024^3\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "Livio",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "scalar(\n  (node_memory_MemTotal_bytes{role=\"proxmox-host\",instance=\"10.0.10.11:9100\"} - node_memory_MemAvailable_bytes{role=\"proxmox-host\",instance=\"10.0.10.11:9100\"}) / 1024^3\n)\n-\nscalar(\n  sum(\n    (node_memory_MemTotal_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(50|51|52):9100\"} - node_memory_MemAvailable_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(50|51|52):9100\"})\n  ) / 1024^3\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "Razlo",
-              "range": true,
-              "refId": "C"
             }
           ],
-          "title": "Host RAM Overhead",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 3,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "always",
-                "showValues": false,
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": 0
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 8
-          },
-          "id": 3,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "12.3.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "# Host overhead\nsum(rate(node_cpu_seconds_total{role=\"proxmox-host\",instance=\"10.0.10.5:9100\",mode!=\"idle\"}[5m]))\n- sum(rate(node_cpu_seconds_total{instance=~\"10.0.10.(30|31|32):9100\",mode!=\"idle\"}[5m]))",
-              "legendFormat": "Nicholas Overhead",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (nodename) (\n  rate(node_cpu_seconds_total{instance=\"10.0.10.30:9100\",mode!=\"idle\"}[5m])\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=\"10.0.10.30:9100\"}\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (nodename) (\n  rate(node_cpu_seconds_total{instance=~\"10\\\\.0\\\\.10\\\\.(31|32):9100\",mode!=\"idle\"}[5m])\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=~\"10\\\\.0\\\\.10\\\\.(31|32):9100\"}\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Nicholas CPU",
+          "title": "Host CPU",
           "type": "timeseries"
         },
         {
@@ -427,7 +253,7 @@ data:
                 "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 3,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
@@ -455,22 +281,23 @@ data:
                     "value": 80
                   }
                 ]
-              }
+              },
+              "unit": "bytes"
             },
             "overrides": []
           },
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 12,
+            "x": 0,
             "y": 8
           },
-          "id": 6,
+          "id": 3,
           "options": {
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "right",
+              "placement": "bottom",
               "showLegend": true
             },
             "tooltip": {
@@ -483,37 +310,10 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_MemTotal_bytes{instance=\"10.0.10.5:9100\"} - node_memory_MemAvailable_bytes{instance=\"10.0.10.5:9100\"}) / 1024^3",
-              "hide": true,
-              "legendFormat": "Nicholas",
+              "expr": "node_memory_MemTotal_bytes{job=\"node-exporter\", host=\"nicholas\", role!=\"host\"} \n- node_memory_MemAvailable_bytes{job=\"node-exporter\", host=\"nicholas\", role!=\"host\"}",
+              "legendFormat": "{{hostname}}",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "(\n  (node_memory_MemTotal_bytes{instance=\"10.0.10.30:9100\"} - node_memory_MemAvailable_bytes{instance=\"10.0.10.30:9100\"})\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=\"10.0.10.30:9100\"}\n) / 1024^3",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "(\n  (node_memory_MemTotal_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(31|32|33|34|35|36|37|38|39):9100\"} - node_memory_MemAvailable_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(31|32|33|34|35|36|37|38|39):9100\"})\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=~\"10\\\\.0\\\\.10\\\\.(31|32|33|34|35|36|37|38|39):9100\"}\n) / 1024^3",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "C"
             }
           ],
           "title": "Nicholas RAM",
@@ -548,127 +348,7 @@ data:
                 "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 4,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "showValues": false,
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": 0
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 16
-          },
-          "id": 4,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "12.3.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{role=\"proxmox-host\",instance=\"10.0.10.10:9100\",mode!=\"idle\"}[5m]))\n- sum(rate(node_cpu_seconds_total{instance=~\"10.0.10.(40|41|42):9100\",mode!=\"idle\"}[5m]))",
-              "legendFormat": "Livio Overhead",
-              "range": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (nodename) (\n  rate(node_cpu_seconds_total{instance=\"10.0.10.40:9100\",mode!=\"idle\"}[5m])\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=\"10.0.10.40:9100\"}\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (nodename) (\n  rate(node_cpu_seconds_total{instance=~\"10\\\\.0\\\\.10\\\\.(41|42):9100\",mode!=\"idle\"}[5m])\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=~\"10\\\\.0\\\\.10\\\\.(41|42):9100\"}\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Livio CPU",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 3,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
@@ -704,14 +384,14 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 16
+            "y": 8
           },
-          "id": 7,
+          "id": 4,
           "options": {
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "right",
+              "placement": "bottom",
               "showLegend": true
             },
             "tooltip": {
@@ -724,37 +404,105 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_MemTotal_bytes{instance=\"10.0.10.10:9100\"} - node_memory_MemAvailable_bytes{instance=\"10.0.10.10:9100\"}) / 1024^3",
-              "hide": true,
-              "legendFormat": "Livio",
+              "expr": "sum by (hostname) (rate(node_cpu_seconds_total{job=\"node-exporter\", host=\"nicholas\", role!=\"host\", mode!=\"idle\"}[5m]))",
+              "legendFormat": "__auto",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
+            }
+          ],
+          "title": "Nicholas CPU",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
               },
-              "editorMode": "code",
-              "expr": "(\n  (node_memory_MemTotal_bytes{instance=\"10.0.10.40:9100\"} - node_memory_MemAvailable_bytes{instance=\"10.0.10.40:9100\"})\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=\"10.0.10.40:9100\"}\n) / 1024^3",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
               },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 16
+          },
+          "id": 5,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
               "editorMode": "code",
-              "expr": "(\n  (node_memory_MemTotal_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(41|42|43|44|45|46|47|48|49):9100\"} - node_memory_MemAvailable_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(41|42|43|44|45|46|47|48|49):9100\"})\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=~\"10\\\\.0\\\\.10\\\\.(41|42|43|44|45|46|47|48|49):9100\"}\n) / 1024^3",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
+              "expr": "node_memory_MemTotal_bytes{job=\"node-exporter\", host=\"livio\", role!=\"host\"} \n- node_memory_MemAvailable_bytes{job=\"node-exporter\", host=\"livio\", role!=\"host\"}",
+              "legendFormat": "{{hostname}}",
               "range": true,
-              "refId": "C"
+              "refId": "A"
             }
           ],
           "title": "Livio RAM",
@@ -824,15 +572,15 @@ data:
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 0,
-            "y": 24
+            "x": 12,
+            "y": 16
           },
-          "id": 5,
+          "id": 6,
           "options": {
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "right",
+              "placement": "bottom",
               "showLegend": true
             },
             "tooltip": {
@@ -845,39 +593,13 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(rate(node_cpu_seconds_total{role=\"proxmox-host\",instance=\"10.0.10.11:9100\",mode!=\"idle\"}[5m]))\n- sum(rate(node_cpu_seconds_total{instance=~\"10.0.10.(50|51|52):9100\",mode!=\"idle\"}[5m]))",
-              "legendFormat": "Razlo Overhead",
+              "expr": "sum by (hostname) (rate(node_cpu_seconds_total{job=\"node-exporter\", host=\"livio\", role!=\"host\", mode!=\"idle\"}[5m]))",
+              "legendFormat": "__auto",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (nodename) (\n  rate(node_cpu_seconds_total{instance=\"10.0.10.50:9100\",mode!=\"idle\"}[5m])\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=\"10.0.10.50:9100\"}\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "sum by (nodename) (\n  rate(node_cpu_seconds_total{instance=~\"10\\\\.0\\\\.10\\\\.(51|52):9100\",mode!=\"idle\"}[5m])\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=~\"10\\\\.0\\\\.10\\\\.(51|52):9100\"}\n)",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "C"
             }
           ],
-          "title": "Razlo CPU",
+          "title": "Livio CPU",
           "type": "timeseries"
         },
         {
@@ -909,7 +631,102 @@ data:
                 "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
-                "pointSize": 3,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "showValues": false,
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": 0
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 24
+          },
+          "id": 7,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.3.1",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "node_memory_MemTotal_bytes{job=\"node-exporter\", host=\"razlo\", role!=\"host\"} \n- node_memory_MemAvailable_bytes{job=\"node-exporter\", host=\"razlo\", role!=\"host\"}",
+              "legendFormat": "{{hostname}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Razlo RAM",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
@@ -952,7 +769,7 @@ data:
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "right",
+              "placement": "bottom",
               "showLegend": true
             },
             "tooltip": {
@@ -965,40 +782,13 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "(node_memory_MemTotal_bytes{instance=\"10.0.10.15:9100\"} - node_memory_MemAvailable_bytes{instance=\"10.0.10.15:9100\"}) / 1024^3\n",
-              "hide": true,
-              "legendFormat": "Livio",
+              "expr": "sum by (hostname) (rate(node_cpu_seconds_total{job=\"node-exporter\", host=\"razlo\", role!=\"host\", mode!=\"idle\"}[5m]))",
+              "legendFormat": "__auto",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "(\n  (node_memory_MemTotal_bytes{instance=\"10.0.10.50:9100\"} - node_memory_MemAvailable_bytes{instance=\"10.0.10.50:9100\"})\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=\"10.0.10.50:9100\"}\n) / 1024^3",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "editorMode": "code",
-              "expr": "(\n  (node_memory_MemTotal_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(51|52|53|54|55|56|57|58|59):9100\"} - node_memory_MemAvailable_bytes{instance=~\"10\\\\.0\\\\.10\\\\.(51|52|53|54|55|56|57|58|59):9100\"})\n  * on(instance) group_left(nodename)\n  node_uname_info{instance=~\"10\\\\.0\\\\.10\\\\.(51|52|53|54|55|56|57|58|59):9100\"}\n) / 1024^3",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{nodename}}",
-              "range": true,
-              "refId": "C"
             }
           ],
-          "title": "Razlo RAM",
+          "title": "Razlo CPU",
           "type": "timeseries"
         }
       ],
@@ -1009,12 +799,12 @@ data:
         "list": []
       },
       "time": {
-        "from": "now-30m",
+        "from": "now-6h",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "browser",
-      "title": "Proxmox",
-      "uid": "adsm56c",
-      "version": 4
+      "title": "Promox",
+      "uid": "adnvjd7",
+      "version": 2
     }

@@ -33,3 +33,40 @@ output "control_plane_nodes" {
     }
   }
 }
+
+# Variables for Prometheus scrape targets
+output "prometheus_scrape_targets" {
+  description = "Prometheus scrape targets in file_sd format"
+  value = flatten([
+    for host in var.proxmox_hosts : [
+      {
+        targets = ["${host.host_ip}:9100"]
+        labels = {
+          host     = host.name
+          hostname = "${host.name}-host"
+          role     = "host"
+        }
+      },
+      {
+        targets = ["${local.control_plane_nodes[host.name].ip_address}:9100"]
+        labels = {
+          host     = host.name
+          hostname = local.control_plane_nodes[host.name].hostname
+          role     = "control_plane"
+        }
+      },
+      [
+        for worker_name, worker in local.worker_nodes :
+        {
+          targets = ["${worker.ip_address}:9100"]
+          labels = {
+            host     = host.name
+            hostname = worker.hostname
+            role     = "worker"
+          }
+        }
+        if worker.proxmox_node == host.name
+      ]
+    ]
+  ])
+}
