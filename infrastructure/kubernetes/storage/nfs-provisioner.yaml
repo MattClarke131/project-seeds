@@ -67,7 +67,7 @@ spec:
           - name: PROVISIONER_NAME
             value: nfs-provisioner
           - name: NFS_SERVER
-            value: 10.0.10.100
+            value: 10.0.10.20
           - name: NFS_PATH
             value: /mnt/sleipnir/k8s
           volumeMounts:
@@ -76,7 +76,7 @@ spec:
       volumes:
       - name: nfs-client-root
         nfs:
-          server: 10.0.10.100
+          server: 10.0.10.20
           path: /mnt/sleipnir/k8s
 ---
 apiVersion: storage.k8s.io/v1
