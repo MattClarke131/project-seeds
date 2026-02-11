@@ -1,0 +1,58 @@
+# Jellyfin image
+image:
+  repository: jellyfin/jellyfin
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Persistence for config/metadata
+persistence:
+  config:
+    enabled: true
+    storageClass: nfs-provisioner
+    accessMode: ReadWriteOnce
+    size: 100Gi
+
+  media:
+    enabled: false
+
+# Mount NFS media shares
+volumes:
+  - name: movies
+    nfs:
+      server: 10.0.10.20
+      path: /mnt/sleipnir/media/movies
+  - name: tv
+    nfs:
+      server: 10.0.10.20
+      path: /mnt/sleipnir/media/tv
+  - name: test
+    nfs:
+      server: 10.0.10.20
+      path: /mnt/sleipnir/media/test
+
+volumeMounts:
+  - name: movies
+    mountPath: /media/movies
+  - name: tv
+    mountPath: /media/tv
+  - name: test
+    mountPath: /media/test
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8096
+
+# Ingress for access via nginx
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: jellyfin.labmatt.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: mattflix.labmatt.com
+      paths:
+        - path: /
+          pathType: Prefix
