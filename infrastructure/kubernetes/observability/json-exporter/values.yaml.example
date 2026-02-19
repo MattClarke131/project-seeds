@@ -5,6 +5,8 @@ serviceMonitor:
   defaults:
     interval: 30s
     scrapeTimeout: 10s
+    labels:
+      release: kube-prometheus-stack
   targets:
     - name: jellyfin
       url: http://jellyfin.jellyfin.svc.cluster.local:8096/Sessions
@@ -32,5 +34,9 @@ configuration:
               client_name: '{ .Client }'
               device_name: '{ .DeviceName }'
               session_id: '{ .Id }'
+              item_path: '{ .NowPlayingItem.Path }'
+              episode_index: 'e{ .NowPlayingItem.IndexNumber }'
+              season_index: 's{ .NowPlayingItem.ParentIndexNumber }'
+              play_method: '{ .PlayState.PlayMethod }'
             values:
               is_paused: '{ .PlayState.IsPaused }'
