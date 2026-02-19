@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr-standard
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prowlarr-standard
+  template:
+    metadata:
+      labels:
+        app: prowlarr-standard
+    spec:
+      containers:
+      - name: prowlarr-standard
+        image: lscr.io/linuxserver/prowlarr:latest
+        ports:
+        - containerPort: 9696
+          name: http
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/New_York"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: prowlarr-standard-config

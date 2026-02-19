@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recyclarr-config
+  namespace: downloads-standard
+data:
+  recyclarr.yml: |
+    radarr:
+      radarr-standard:
+        base_url: http://radarr-standard.downloads-standard.svc.cluster.local:7878
+        api_key: !env_var RADARR_API_KEY
+        delete_old_custom_formats: true
+        
+        include:
+          - template: radarr-quality-definition-movie
+          - template: radarr-quality-profile-hd-bluray-web
+          - template: radarr-custom-formats-hd-bluray-web
+        
+        quality_profiles:
+          - name: HD Bluray + WEB
+            reset_unmatched_scores:
+              enabled: true
+    sonarr:
+      sonarr-standard:
+        base_url: http://sonarr-standard.downloads-standard.svc.cluster.local:8989
+        api_key: !env_var SONARR_API_KEY
+        delete_old_custom_formats: true
+        
+        include:
+          - template: sonarr-quality-definition-series
+          - template: sonarr-v4-quality-profile-web-1080p
+          - template: sonarr-v4-custom-formats-web-1080p
+        
+        quality_profiles:
+          - name: WEB-1080p
+            reset_unmatched_scores:
+              enabled: true
+
+      sonarr-anime:
+        base_url: http://sonarr-anime.downloads-standard.svc.cluster.local:8989
+        api_key: !env_var SONARR_ANIME_API_KEY
+        delete_old_custom_formats: true
+        
+        include:
+          - template: sonarr-quality-definition-series
+          - template: sonarr-v4-quality-profile-anime
+          - template: sonarr-v4-custom-formats-anime
+        
+        quality_profiles:
+          - name: Remux-1080p - Anime
+            reset_unmatched_scores:
+              enabled: true

@@ -1,0 +1,23 @@
+image:
+  tag: "latest"
+
+config:
+  persistence:
+    size: 20Gi
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - host: seerr.labmatt.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: requests.labmatt.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: gimme.labmatt.com
+      paths:
+        - path: /
+          pathType: Prefix

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-standard
+spec:
+  capacity:
+    storage: 18Ti
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.20
+    path: /mnt/sleipnir/media-standard
+  mountOptions:
+    - nfsvers=4.1
+    - hard

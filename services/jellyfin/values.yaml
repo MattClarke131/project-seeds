@@ -13,30 +13,8 @@ persistence:
     size: 100Gi
 
   media:
-    enabled: false
-
-# Mount NFS media shares
-volumes:
-  - name: movies
-    nfs:
-      server: 10.0.10.20
-      path: /mnt/sleipnir/media/movies
-  - name: tv
-    nfs:
-      server: 10.0.10.20
-      path: /mnt/sleipnir/media/tv
-  - name: test
-    nfs:
-      server: 10.0.10.20
-      path: /mnt/sleipnir/media/test
-
-volumeMounts:
-  - name: movies
-    mountPath: /media/movies
-  - name: tv
-    mountPath: /media/tv
-  - name: test
-    mountPath: /media/test
+    enabled: true
+    existingClaim: jellyfin-media
 
 # Service configuration
 service:

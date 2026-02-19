@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: recyclarr
+  namespace: downloads-standard
+spec:
+  schedule: "0 6 * * *"  # 6 AM daily
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: recyclarr
+              image: ghcr.io/recyclarr/recyclarr:7.5.2
+              args: ["sync"]
+              env:
+                - name: RADARR_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: radarr-api-key
+                      key: api-key
+                - name: SONARR_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: sonarr-api-key
+                      key: api-key
+                - name: SONARR_ANIME_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: sonarr-anime-api-key
+                      key: api-key
+                - name: COMPlus_EnableDiagnostics
+                  value: "0"
+              volumeMounts:
+                - name: config
+                  mountPath: /config/recyclarr.yml
+                  subPath: recyclarr.yml
+                  readOnly: true
+                - name: logs
+                  mountPath: /config/logs
+                - name: repos
+                  mountPath: /config/repositories
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "100m"
+          volumes:
+            - name: config
+              configMap:
+                name: recyclarr-config
+            - name: logs
+              emptyDir: {}
+            - name: repos
+              emptyDir: {}
+            - name: tmp
+              emptyDir: {}
