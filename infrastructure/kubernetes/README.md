@@ -36,15 +36,29 @@ kubectl get storageclass
 ```
 
 ### 2. Ingress Controller
+1. Create namespace
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  -n ingress-nginx \
-  --create-namespace \
-  -f ingress/values.yaml
 ```
+
+2. Create internal ingress controller
+```bash
+kubectl apply -f kubernetes/ingress/nginx-internal/namespace.yaml
+
+helm install nginx-internal ingress-nginx/ingress-nginx \
+  -n ingress-nginx-internal \
+  -f kubernetes/ingress/nginx-internal/values.yaml
+```
+3. Create external ingress controller
+```bash
+kubectl apply -f kubernetes/ingress/nginx-external/namespace.yaml
+
+helm install nginx-external ingress-nginx/ingress-nginx \
+  -n ingress-nginx-external \
+  -f kubernetes/ingress/nginx-external/values.yaml
+```
+
 
 ### 3. Observability Stack
 

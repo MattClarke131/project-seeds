@@ -41,6 +41,8 @@ grafana:
   ingress:
     enabled: true
     ingressClassName: nginx
+    hosts:
+      - grafana.labmatt.com
 
   persistence:
     enabled: true
