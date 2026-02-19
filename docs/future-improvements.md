@@ -2,6 +2,14 @@
 
 ## Infrastructure
 ### TODO
+- [ ] Security audit and hardening
+- [ ] Try a transcoding stress test
+- [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
+- [ ] Set up Vault by HashiCorp for secrets management
+- [ ] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
+- [ ] Commit jellyfin config to version control (ConfigMap, init container, helm chart) (low priority)
+- [ ] Configure rate limitting and extensive security features on Pangolin
+- [ ] End to End TLS encryption
 - [ ] Debug and deploy MetalLB for service LoadBalancer IPs *** Important for HA and service accessibility
   - Provides stable VIPs for services (e.g., graphite-exporter at 10.0.10.61)
   - Eliminates single-point-of-failure with NodePort targeting specific node IPs
