@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellystat
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellystat
+  template:
+    metadata:
+      labels:
+        app: jellystat
+    spec:
+      containers:
+        - name: jellystat
+          image: cyfershepard/jellystat:latest
+          env:
+            - name: POSTGRES_DB
+              value: jfstat
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app
+                  key: password
+            - name: POSTGRES_IP
+              value: postgres-rw.database
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jellystat-jwt
+                  key: JWT_SECRET
+          ports:
+            - containerPort: 3000
