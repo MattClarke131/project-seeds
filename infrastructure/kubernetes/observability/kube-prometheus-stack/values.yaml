@@ -1,4 +1,9 @@
 prometheus:
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - prometheus.labmatt.com
   prometheusSpec:
     # Mount targets from ConfigMap
     configMaps:

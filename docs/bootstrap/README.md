@@ -30,5 +30,9 @@
   - Install node-exporter on physical hosts
   - Enable metrics collection for observability*
 
+8. **[Database Setup](./database.md)**
+  - Deploy PostgreSQL database on Kubernetes
+  - Configure Reflector for database access
+
 ## Architecture Decisions
 See [ADRs](/docs/adr/) for detailed reasoning behind infrastructure choices
