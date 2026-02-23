@@ -1,7 +1,7 @@
 # Jellyfin image
 image:
   repository: jellyfin/jellyfin
-  tag: latest
+  tag: 10.11.6
   pullPolicy: IfNotPresent
 
 # Persistence for config/metadata
@@ -34,3 +34,16 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+
+# Prefer livio because it does hardware transcoding, but allow scheduling on other nodes if those are unavailable
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - k8s-livio-w1
+                - k8s-livio-w2
