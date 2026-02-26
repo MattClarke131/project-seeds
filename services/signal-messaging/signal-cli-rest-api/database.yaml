@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: signal-messages
+  namespace: database
+spec:
+  name: signal_messages
+  owner: app
+  cluster:
+    name: postgres
