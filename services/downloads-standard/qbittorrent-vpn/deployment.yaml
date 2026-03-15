@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-vpn
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent-vpn
+  template:
+    metadata:
+      labels:
+        app: qbittorrent-vpn
+    spec:
+      containers:
+      - name: gluetun
+        image: ghcr.io/qdm12/gluetun:v3.41.1
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        env:
+        - name: VPN_SERVICE_PROVIDER
+          value: "airvpn"
+        - name: VPN_TYPE
+          value: "wireguard"
+        - name: SERVER_COUNTRIES
+          value: "Netherlands"
+        - name: WIREGUARD_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gluetun-airvpn-wireguard
+              key: WIREGUARD_PRIVATE_KEY
+        - name: WIREGUARD_PRESHARED_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gluetun-airvpn-wireguard
+              key: WIREGUARD_PRESHARED_KEY
+        - name: WIREGUARD_ADDRESSES
+          valueFrom:
+            secretKeyRef:
+              name: gluetun-airvpn-wireguard
+              key: WIREGUARD_ADDRESSES
+        - name: TZ
+          value: "America/New_York"
+        - name: HTTPPROXY
+          value: "off"
+        - name: SHADOWSOCKS
+          value: "off"
+        ports:
+        - containerPort: 8000
+          name: gluetun-ctrl
+        - containerPort: 8080
+          name: qbit-webui
+        - containerPort: 41231
+          name: torrent-port
+        volumeMounts:
+        - name: dev-net-tun
+          mountPath: /dev/net/tun
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+      - name: qbittorrent
+        image: lscr.io/linuxserver/qbittorrent:5.1.4-r2-ls444
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/New_York"
+        - name: WEBUI_PORT
+          value: "8080"
+        - name: TORRENT_PORT
+          value: "41231"
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 41231
+          name: torrent-port
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: media
+          mountPath: /media
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+
+      volumes:
+      - name: dev-net-tun
+        hostPath:
+          path: /dev/net/tun
+          type: CharDevice
+      - name: config
+        persistentVolumeClaim:
+          claimName: qbittorrent-vpn-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-standard
