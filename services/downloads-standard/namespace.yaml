@@ -4,3 +4,4 @@ metadata:
   name: downloads-standard
   labels:
     name: downloads-standard
+    pod-security.kubernetes.io/enforce: privileged
