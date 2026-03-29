@@ -2,9 +2,9 @@
 
 ## Infrastructure
 ### TODO
+- [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
 - [ ] Security audit and hardening
 - [ ] Try a transcoding stress test
-- [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
 - [ ] Set up Vault by HashiCorp for secrets management
 - [ ] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
 - [ ] Commit jellyfin config to version control (ConfigMap, init container, helm chart) (low priority)
@@ -15,9 +15,7 @@
   - Eliminates single-point-of-failure with NodePort targeting specific node IPs
   - Previous attempt had Layer 2 networking issues - needs investigation
 - [ ] Deploy CoreDNS for internal/external DNS resolution
-- [ ] Deploy Jellyfin
 - [ ] Deploy Velero - Backup/recovery platform
-- [ ] Deploy replicated PostgreSQL cluster
 - [ ] Implement regular restore testing
 - [ ] Abstract dashboard queries - Add custom labels to Prometheus scrape configs, refactor dashboards to use labels instead of hardcoded IPs
   - Have Terraform generate a config file with Helm
@@ -35,11 +33,12 @@
   ```
 - [ ] Replace SSH password auth with key-based or Vault integration
   - Have different passwords for each node
-- [ ] Migrate VXLAND networking to EVPN/VXLAN
 - [ ] Template retention/cleanup automation (keep last N template versions for X days)
 - [ ] Ceph cluster for VM disks. (Maybe not)
 
 ### Completed
+- [x] Deploy Jellyfin
+- [x] Deploy replicated PostgreSQL cluster
 - [x] Deploy Loki for centralized logging
 - [x] Explicitly set resource allocation for each VM
 - [x] Migrage from Hashicorp/Terraform to OpenTofu
