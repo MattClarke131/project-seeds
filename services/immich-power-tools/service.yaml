@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: immich-power-tools
+  namespace: immich
+spec:
+  selector:
+    app: immich-power-tools
+  ports:
+    - port: 3000
+      targetPort: 3000

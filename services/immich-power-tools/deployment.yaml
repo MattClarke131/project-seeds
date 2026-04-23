@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: immich-power-tools
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: immich-power-tools
+  template:
+    metadata:
+      labels:
+        app: immich-power-tools
+    spec:
+      containers:
+        - name: immich-power-tools
+          image: ghcr.io/immich-power-tools/immich-power-tools:v0.20.0
+          env:
+            - name: IMMICH_URL
+              value: "http://immich-server.immich.svc.cluster.local:2283"
+            - name: EXTERNAL_IMMICH_URL
+              value: "http://photos.labmatt.com"
+            - name: IMMICH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: immich-power-tools
+                  key: IMMICH_API_KEY
+            - name: DB_HOST
+              value: "immich-db-rw.immich.svc.cluster.local"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE_NAME
+              value: "immich"
+            - name: DB_USERNAME
+              value: "immich"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: immich-db-user
+                  key: password
+          ports:
+            - containerPort: 3000
