@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: qbittorrent-vpn
   namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - qbittorrent.labmatt.com
+      secretName: qbittorrent-tls
   rules:
   - host: qbittorrent.labmatt.com
     http:

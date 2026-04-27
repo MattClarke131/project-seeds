@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: prowlarr-standard
   namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - prowlarr.labmatt.com
+      secretName: prowlarr-tls
   rules:
   - host: prowlarr.labmatt.com
     http:
