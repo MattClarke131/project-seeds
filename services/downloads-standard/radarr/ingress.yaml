@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: radarr-standard
   namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - radarr.labmatt.com
+      secretName: radarr-tls
   rules:
   - host: radarr.labmatt.com
     http:

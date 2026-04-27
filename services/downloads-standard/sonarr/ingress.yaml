@@ -3,8 +3,15 @@ kind: Ingress
 metadata:
   name: sonarr-standard
   namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - sonarr.labmatt.com
+      secretName: sonarr-tls
   rules:
   - host: sonarr.labmatt.com
     http:
