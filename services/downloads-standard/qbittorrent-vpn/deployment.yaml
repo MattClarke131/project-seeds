@@ -48,6 +48,10 @@ spec:
           value: "off"
         - name: SHADOWSOCKS
           value: "off"
+        - name: IP6_TABLE_DISABLE
+          value: "1"
+        - name: FIREWALL_VPN_INPUT_PORTS
+          value: "41231"
         ports:
         - containerPort: 8000
           name: gluetun-ctrl
