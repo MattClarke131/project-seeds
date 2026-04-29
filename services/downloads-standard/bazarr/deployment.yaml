@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bazarr
+  template:
+    metadata:
+      labels:
+        app: bazarr
+    spec:
+      containers:
+      - name: bazarr
+        image: lscr.io/linuxserver/bazarr:latest
+        ports:
+        - containerPort: 6767
+          name: http
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/New_York"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: media
+          mountPath: /media
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: bazarr-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-standard
