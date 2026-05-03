@@ -20,6 +20,14 @@ data:
           - name: HD Bluray + WEB
             reset_unmatched_scores:
               enabled: true
+
+        custom_formats:
+          - trash_ids:
+              - b124be9b146540f8e62f98fe32e49a2a  # x265 (HD)
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: -10000
+
     sonarr:
       sonarr-standard:
         base_url: http://sonarr-standard.downloads-standard.svc.cluster.local:8989
@@ -35,6 +43,13 @@ data:
           - name: WEB-1080p
             reset_unmatched_scores:
               enabled: true
+
+        custom_formats:
+          - trash_ids:
+              - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
+            assign_scores_to:
+              - name: WEB-1080p
+                score: -10000
 
       sonarr-anime:
         base_url: http://sonarr-anime.downloads-standard.svc.cluster.local:8989
