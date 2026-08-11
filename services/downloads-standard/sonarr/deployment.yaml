@@ -13,9 +13,56 @@ spec:
       labels:
         app: sonarr-standard
     spec:
+      # Sonarr only reads Postgres settings from config.xml, not env vars.
+      # This runs before every Sonarr start and always overwrites the
+      # Postgres block in config.xml, so it stays a pure reflection of the
+      # Deployment + Secret rather than a manual one-time edit.
+      # Requires postgres-secret to already exist in this namespace (reflected
+      # from database/postgres-app - see docs/bootstrap/database.md). If applied
+      # before the secret is reflected, this container blocks in
+      # CreateContainerConfigError until it appears, then proceeds on its own.
+      initContainers:
+      - name: postgres-config
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          set -eu
+          CONFIG=/config/config.xml
+          sed -i '/<Postgres[A-Za-z]*>/d' "$CONFIG"
+          sed -i "s#</Config>#  <PostgresUser>${POSTGRES_USER}</PostgresUser>\n  <PostgresPassword>${POSTGRES_PASSWORD}</PostgresPassword>\n  <PostgresPort>${POSTGRES_PORT}</PostgresPort>\n  <PostgresHost>${POSTGRES_HOST}</PostgresHost>\n  <PostgresMainDb>${POSTGRES_MAIN_DB}</PostgresMainDb>\n  <PostgresLogDb>${POSTGRES_LOG_DB}</PostgresLogDb>\n</Config>#" "$CONFIG"
+        env:
+        # The secret's "host" key is namespace-relative ("postgres-rw"), which
+        # only resolves inside the database namespace. Hardcoded here as an
+        # FQDN since it's not sensitive and needs to resolve cross-namespace.
+        - name: POSTGRES_HOST
+          value: "postgres-rw.database.svc.cluster.local"
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: port
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: POSTGRES_MAIN_DB
+          value: "sonarr-standard-main"
+        - name: POSTGRES_LOG_DB
+          value: "sonarr-standard-log"
+        volumeMounts:
+        - name: config
+          mountPath: /config
       containers:
       - name: sonarr-standard
-        image: lscr.io/linuxserver/sonarr:latest
+        image: ghcr.io/hotio/sonarr:release-4.0.17.2952
         ports:
         - containerPort: 8989
           name: http

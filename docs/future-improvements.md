@@ -5,6 +5,10 @@
 - [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
 - [ ] Security audit and hardening
 - [ ] Try a transcoding stress test
+- [ ] Migrate Bazarr from SQLite to the shared Postgres cluster - it already has native
+  postgres support (`postgresql:` block in its config), and its config PVC is on
+  `nfs-provisioner`, which is an unreliable storage backend for SQLite's file-locking
+  model. Same pattern already used for Radarr/Sonarr.
 - [ ] Set up Vault by HashiCorp for secrets management
 - [ ] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
 - [ ] Commit jellyfin config to version control (ConfigMap, init container, helm chart) (low priority)

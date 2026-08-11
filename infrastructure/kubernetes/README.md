@@ -5,6 +5,9 @@ Kubernetes workload configurations for the homelab cluster organized by function
 ## Structure
 ```
 kubernetes/
+├── database/             # Shared CNPG Postgres cluster (see database/README.md)
+│   ├── namespace.yaml
+│   └── postgres-cluster.yaml
 ├── ingress/              # Nginx Ingress Controller
 │   ├── namespace.yaml
 │   ├── values.yaml
@@ -35,7 +38,10 @@ kubectl apply -f storage/nfs-provisioner.yaml
 kubectl get storageclass
 ```
 
-### 2. Ingress Controller
+### 2. Database
+See [database/README.md](database/README.md).
+
+### 3. Ingress Controller
 1. Create namespace
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -60,7 +66,7 @@ helm install nginx-external ingress-nginx/ingress-nginx \
 ```
 
 
-### 3. Observability Stack
+### 4. Observability Stack
 
 **Install Prometheus + Grafana:**
 ```bash

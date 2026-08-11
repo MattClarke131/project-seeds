@@ -1,0 +1,21 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: radarr-main
+  namespace: database
+spec:
+  name: radarr-main
+  owner: app
+  cluster:
+    name: postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: radarr-log
+  namespace: database
+spec:
+  name: radarr-log
+  owner: app
+  cluster:
+    name: postgres
