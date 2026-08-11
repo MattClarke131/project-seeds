@@ -50,6 +50,8 @@ spec:
           value: "off"
         - name: IP6_TABLE_DISABLE
           value: "1"
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "172.16.0.0/12,10.0.0.0/8,192.168.0.0/16"
         - name: FIREWALL_VPN_INPUT_PORTS
           value: "41231"
         ports:
