@@ -25,8 +25,9 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   network_device {
-    bridge = var.proxmox_bridge
-    model  = "virtio"
+    bridge      = var.proxmox_bridge
+    model       = "virtio"
+    mac_address = each.value.mac_address
   }
 
   cdrom {
@@ -64,8 +65,9 @@ resource "proxmox_virtual_environment_vm" "worker" {
   }
 
   network_device {
-    bridge = var.proxmox_bridge
-    model  = "virtio"
+    bridge      = var.proxmox_bridge
+    model       = "virtio"
+    mac_address = each.value.mac_address
   }
 
   cdrom {

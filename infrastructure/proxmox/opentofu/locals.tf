@@ -1,9 +1,24 @@
 locals {
   # Versions
   kubernetes_version = "v1.34.1"
-  talos_version = "v1.11.5"
-  qemu_guest_agent_version = "10.2.0"
+  talos_version = "v1.13.8"
   kube_vip_version = "v1.0.1"
+
+  # Pinned to whatever version the cluster was originally bootstrapped with - this is NOT
+  # the fleet's current/target OS version (that's talos_version above) and must never track
+  # it. talos_machine_secrets generates the cluster's actual PKI (CA, certs, tokens) once;
+  # changing its talos_version regenerates all of it, which would desync every future fresh
+  # install's CA from the already-running cluster's. Do not change after initial bootstrap.
+  cluster_secrets_talos_version = "v1.11.5"
+
+  # System extensions per role - resolved into installer images via the Talos Image Factory
+  # (see cluster.tf's data.http.*_schematic). No per-extension version pinning needed - the
+  # Factory resolves compatible extension versions for local.talos_version automatically.
+  control_plane_extensions = ["siderolabs/qemu-guest-agent"]
+  # Order matters - the Image Factory hashes the literal request, so this order matches
+  # what's already live on the fleet (see docs/bootstrap/talos.md's schematic ID) rather
+  # than producing a different-but-equivalent schematic for the same two extensions.
+  worker_extensions         = ["siderolabs/i915", "siderolabs/qemu-guest-agent"]
 
   # Network Configuration
   network_subnet = "10.0.10.0/24"
@@ -21,6 +36,7 @@ locals {
       proxmox_node   = host.name
       vm_id          = local.control_plane_vm_id_base + idx
       ip_address     = host.control_plane.ip_address
+      mac_address    = host.control_plane.mac_address
       hostname       = "k8s-${host.name}-cp"
       cores          = host.control_plane.cores
       memory_mb      = host.control_plane.memory_mb
@@ -36,6 +52,7 @@ locals {
           proxmox_node   = host.name
           vm_id          = local.worker_vm_id_base + (host_idx * 10) + worker_idx + 1
           ip_address     = worker.ip_address
+          mac_address    = worker.mac_address
           hostname       = "k8s-${host.name}-w${worker_idx + 1}"
           cores          = worker.cores
           memory_mb      = worker.memory_mb

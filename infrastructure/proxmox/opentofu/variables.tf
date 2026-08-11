@@ -27,12 +27,14 @@ variable "proxmox_hosts" {
 
     control_plane    = object({
       ip_address       = string
+      mac_address      = string
       cores            = number
       memory_mb        = number
     })
 
     workers          = list(object({
       ip_address       = string
+      mac_address      = string
       cores            = number
       memory_mb        = number
     }))
@@ -50,28 +52,28 @@ variable "proxmox_hosts" {
     {
       name = "proxmox1", host_ip = "10.0.10.30", cores = 4, memory_mb = 16384, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      control_plane = { ip_address = "10.0.10.31", cores = 4, memory_mb = 4096, }
+      control_plane = { ip_address = "10.0.10.31", mac_address = "02:00:00:00:30:01", cores = 4, memory_mb = 4096, }
       workers = [
-        { ip_address = "10.0.10.32", cores = 4, memory_mb = 4096, },
-        { ip_address = "10.0.10.33", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.32", mac_address = "02:00:00:00:30:02", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.33", mac_address = "02:00:00:00:30:03", cores = 4, memory_mb = 4096, },
       ]
     },
     {
       name = "proxmox2", host_ip = "10.0.10.40", cores = 4, memory_mb = 16384, host_reserved_mb = 4096, template_vm_id = 20000,
 
-      control_plane = { ip_address = "10.0.10.41", cores = 4, memory_mb = 4096, }
+      control_plane = { ip_address = "10.0.10.41", mac_address = "02:00:00:00:40:01", cores = 4, memory_mb = 4096, }
       workers = [
-        { ip_address = "10.0.10.42", cores = 4, memory_mb = 4096, },
-        { ip_address = "10.0.10.43", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.42", mac_address = "02:00:00:00:40:02", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.43", mac_address = "02:00:00:00:40:03", cores = 4, memory_mb = 4096, },
       ]
     },
     {
       name = "proxmox3", host_ip = "10.0.10.50", cores = 4, memory_mb = 16384, host_reserved_mb = 4096, template_vm_id = 30000,
 
-      control_plane = { ip_address = "10.0.10.51", cores = 4, memory_mb = 4096, }
+      control_plane = { ip_address = "10.0.10.51", mac_address = "02:00:00:00:50:01", cores = 4, memory_mb = 4096, }
       workers = [
-        { ip_address = "10.0.10.52", cores = 4, memory_mb = 4096, },
-        { ip_address = "10.0.10.53", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.52", mac_address = "02:00:00:00:50:02", cores = 4, memory_mb = 4096, },
+        { ip_address = "10.0.10.53", mac_address = "02:00:00:00:50:03", cores = 4, memory_mb = 4096, },
       ]
     }
   ]

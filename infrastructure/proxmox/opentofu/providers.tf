@@ -12,6 +12,11 @@ terraform {
       version = "~> 0.9.0"
       # version = ">= 0.10.0"
     }
+
+    http = {
+      source  = "hashicorp/http"
+      version = "~> 3.4"
+    }
   }
 }
 

@@ -2,7 +2,44 @@
 
 # Generate Talos cluster secrets (PKI materials)
 resource "talos_machine_secrets" "cluster" {
-  talos_version = local.talos_version
+  talos_version = local.cluster_secrets_talos_version
+}
+
+# Resolve each role's extension set into a Talos Image Factory schematic ID, fed into
+# machine.install.image below - Talos resolves and pulls this itself at install/upgrade time.
+data "http" "control_plane_schematic" {
+  url    = "https://factory.talos.dev/schematics"
+  method = "POST"
+  request_headers = {
+    "Content-Type" = "application/json"
+  }
+  request_body = jsonencode({
+    customization = {
+      systemExtensions = {
+        officialExtensions = local.control_plane_extensions
+      }
+    }
+  })
+}
+
+data "http" "worker_schematic" {
+  url    = "https://factory.talos.dev/schematics"
+  method = "POST"
+  request_headers = {
+    "Content-Type" = "application/json"
+  }
+  request_body = jsonencode({
+    customization = {
+      systemExtensions = {
+        officialExtensions = local.worker_extensions
+      }
+    }
+  })
+}
+
+locals {
+  control_plane_install_image = "factory.talos.dev/installer/${jsondecode(data.http.control_plane_schematic.response_body).id}:${local.talos_version}"
+  worker_install_image        = "factory.talos.dev/installer/${jsondecode(data.http.worker_schematic.response_body).id}:${local.talos_version}"
 }
 
 # Generate machine configuration for each control plane node
@@ -20,14 +57,14 @@ data "talos_machine_configuration" "controlplane" {
     yamlencode({
       machine = {
         install = {
-          extensions = [{
-            image = "ghcr.io/siderolabs/qemu-guest-agent:${local.qemu_guest_agent_version}"
-          }]
+          image = local.control_plane_install_image
         }
         network = {
           hostname = each.value.hostname
           interfaces = [{
-            interface = "eth0"
+            deviceSelector = {
+              hardwareAddr = lower(each.value.mac_address)
+            }
             addresses = ["${each.value.ip_address}/24"]
             routes = [{
               network = "0.0.0.0/0"
@@ -122,14 +159,17 @@ data "talos_machine_configuration" "worker" {
     yamlencode({
       machine = {
         install = {
-          extensions = [{
-            image = "ghcr.io/siderolabs/qemu-guest-agent:${local.qemu_guest_agent_version}"
-          }]
+          # i915 is universal across workers so any node is upgrade-ready for GPU passthrough
+          # without a separate talosctl upgrade later, even though only one node currently
+          # has the PCI device attached.
+          image = local.worker_install_image
         }
         network = {
           hostname = each.value.hostname
           interfaces = [{
-            interface = "eth0"
+            deviceSelector = {
+              hardwareAddr = lower(each.value.mac_address)
+            }
             addresses = ["${each.value.ip_address}/24"]
             routes = [{
               network = "0.0.0.0/0"
@@ -138,7 +178,7 @@ data "talos_machine_configuration" "worker" {
           }]
           nameservers = local.nameservers
         }
-      } 
+      }
     })
   ]
 }
