@@ -3,3 +3,5 @@ kubeconfig
 terraform.tfvars
 *.tfstate*
 iso-content/
+*.tfplan
+tfplan*.bin
