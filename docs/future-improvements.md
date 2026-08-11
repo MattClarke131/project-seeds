@@ -2,6 +2,8 @@
 
 ## Infrastructure
 ### TODO
+- [ ] Increase postgres instances to 2+, and ensure they're distributed across physical hosts
+- [ ] Configure https certificates for all services
 - [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
 - [ ] Security audit and hardening
 - [ ] Try a transcoding stress test
@@ -11,6 +13,17 @@
   model. Same pattern already used for Radarr/Sonarr.
 - [ ] Set up Vault by HashiCorp for secrets management
 - [ ] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
+- [ ] Consider a Terraform-managed router/DHCP server. Would keep IP assignment in git
+  alongside everything else, and sidestep interface-naming fragility (like what broke
+  `nicholas-cp`) since nodes would no longer need to self-identify a specific NIC.
+- [ ] Next time a Proxmox VM template is rebuilt, go fully generic (no baked-in extensions)
+  now that `cluster.tf` resolves them via `install.image`/Image Factory - avoids redundant
+  reinstall-on-first-boot. Needs `wait_for_ip` in `vms.tf`'s `agent` block addressed first
+  (currently relies on the template's baked-in `qemu-guest-agent` to satisfy it quickly;
+  we already know every node's static IP so waiting on the agent isn't actually needed).
+  Also update `docs/bootstrap/talos.md` at the same time - it still describes extensions as
+  needing to be baked into the template, which is outdated now that `cluster.tf` resolves
+  them via `install.image` instead of the deprecated `install.extensions`.
 - [ ] Commit jellyfin config to version control (ConfigMap, init container, helm chart) (low priority)
 - [ ] Configure rate limitting and extensive security features on Pangolin
 - [ ] End to End TLS encryption
