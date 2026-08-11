@@ -19,14 +19,20 @@ data:
         quality_profiles:
           - name: HD Bluray + WEB
             reset_unmatched_scores:
-              enabled: true
+              enabled: false
 
         custom_formats:
           - trash_ids:
-              - b124be9b146540f8e62f98fe32e49a2a  # x265 (HD)
+              - dc98083864ea246d05a42df0d05f81cc  # x265 (HD)
+              - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
             assign_scores_to:
               - name: HD Bluray + WEB
-                score: -10000
+                score: 500
+          - trash_ids:
+              - 2899d84dc9372de3408e6d8cc18e9666  # x264
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: -500
 
     sonarr:
       sonarr-standard:
@@ -42,14 +48,20 @@ data:
         quality_profiles:
           - name: WEB-1080p
             reset_unmatched_scores:
-              enabled: true
+              enabled: false
 
         custom_formats:
           - trash_ids:
               - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
+              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
               - name: WEB-1080p
-                score: -10000
+                score: 500
+          - trash_ids:
+              - cddfb4e32db826151d97352b8e37c648  # x264
+            assign_scores_to:
+              - name: WEB-1080p
+                score: -500
 
       sonarr-anime:
         base_url: http://sonarr-anime.downloads-standard.svc.cluster.local:8989
@@ -64,4 +76,17 @@ data:
         quality_profiles:
           - name: Remux-1080p - Anime
             reset_unmatched_scores:
-              enabled: true
+              enabled: false
+
+        custom_formats:
+          - trash_ids:
+              - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
+              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: Remux-1080p - Anime
+                score: 500
+          - trash_ids:
+              - cddfb4e32db826151d97352b8e37c648  # x264
+            assign_scores_to:
+              - name: Remux-1080p - Anime
+                score: -500
