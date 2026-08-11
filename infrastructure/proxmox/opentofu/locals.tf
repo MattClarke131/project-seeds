@@ -14,11 +14,22 @@ locals {
   # System extensions per role - resolved into installer images via the Talos Image Factory
   # (see cluster.tf's data.http.*_schematic). No per-extension version pinning needed - the
   # Factory resolves compatible extension versions for local.talos_version automatically.
+  # Control planes only need qemu-guest-agent; i915 stays universal across workers even
+  # though only k8s-livio-w1 has a GPU passed through - see gpu_passthrough_worker_key below.
   control_plane_extensions = ["siderolabs/qemu-guest-agent"]
   # Order matters - the Image Factory hashes the literal request, so this order matches
   # what's already live on the fleet (see docs/bootstrap/talos.md's schematic ID) rather
   # than producing a different-but-equivalent schematic for the same two extensions.
   worker_extensions         = ["siderolabs/i915", "siderolabs/qemu-guest-agent"]
+
+  # GPU passthrough - the livio host's Intel HD 630 iGPU is passed through
+  # exclusively to this one worker (a PCI device can only be owned by one VM
+  # at a time), so it's used for Jellyfin hardware transcoding.
+  gpu_passthrough_worker_key = "livio-w1"
+  # Proxmox resource mapping name (see `pvesh get /cluster/mapping/pci` on the livio host),
+  # pointing at PCI 0000:00:02.0. Mapped devices can be granted to the terraform API token;
+  # raw PCI ids can only be set by root@pam.
+  gpu_pci_mapping = "jellyfin-igpu"
 
   # Network Configuration
   network_subnet = "10.0.10.0/24"

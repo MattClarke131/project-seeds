@@ -78,3 +78,27 @@ resource "proxmox_virtual_environment_vm" "worker" {
 
   on_boot = true
 }
+
+# GPU passthrough for k8s-livio-w1 (see locals.gpu_passthrough_worker_key). Applied via
+# SSH/qm rather than the provider's native `hostpci` block: the bpg/proxmox provider always
+# sends rombar/x-vga alongside mapping, and Proxmox's API rejects that combination for
+# non-root tokens ("only root can set 'hostpci0' config for non-mapped devices") even though
+# the minimal `mapping=...,pcie=1` form works fine - confirmed this is a Proxmox-side bug,
+# not fixable via HCL values. See https://github.com/bpg/terraform-provider-proxmox/issues/495.
+resource "null_resource" "gpu_passthrough" {
+  for_each = { for k, v in local.worker_nodes : k => v if k == local.gpu_passthrough_worker_key }
+
+  provisioner "local-exec" {
+    command = "ssh root@${each.value.proxmox_node} 'qm set ${proxmox_virtual_environment_vm.worker[each.key].vm_id} -hostpci0 mapping=${local.gpu_pci_mapping},pcie=1'"
+  }
+
+  # Proxmox's VM id is a fixed, deterministic value (see locals.worker_nodes) that stays the
+  # same across a destroy+recreate, so a plain `triggers` map keyed on it or on `.id` would
+  # never change and this provisioner would silently skip re-running after a VM replacement.
+  # replace_triggered_by ties directly into the VM resource's replace lifecycle instead.
+  lifecycle {
+    replace_triggered_by = [proxmox_virtual_environment_vm.worker[each.key]]
+  }
+
+  depends_on = [proxmox_virtual_environment_vm.worker]
+}

@@ -5,7 +5,7 @@ Preparing the Talos Linux disk image for Kubernetes node deployment.
 ## Overview
 Talos is an immutable OS, meaning it is read-only and cannot be modified after deployment. Configuration is managed via a declarative YAML file that is applied at boot time.
 
-Every node runs the `qemu-guest-agent` and `i915` system extensions (see `infrastructure/proxmox/opentofu/cluster.tf` / `locals.tf`). The extension set has to be baked into the **template** image (see Step 1) - adding an extension to `install.extensions` in Terraform's machine config does **not** retroactively apply to an already-installed node or to a fresh clone of an existing template. It only takes effect via a genuine reinstall: either `talosctl upgrade` against an already-running node, or (what we do here) rebuilding the template and destroying/recreating the VM so it clones fresh.
+Every node runs the `qemu-guest-agent` and `i915` system extensions (see `infrastructure/proxmox/opentofu/cluster.tf` / `locals.tf`). `i915` (Intel GPU driver) is universal across all workers even though only one node (`k8s-livio-w1`) actually has a GPU passed through - see `services/jellyfin/README.md` and the GPU passthrough section below for why. The extension set has to be baked into the **template** image (see Step 1) - adding an extension to `install.extensions` in Terraform's machine config does **not** retroactively apply to an already-installed node or to a fresh clone of an existing template. It only takes effect via a genuine reinstall: either `talosctl upgrade` against an already-running node, or (what we do here) rebuilding the template and destroying/recreating the VM so it clones fresh.
 
 ## Steps
 ### Step 1: Get Talos Linux Image
@@ -100,3 +100,8 @@ proxmox_nodes = [
 ```
 
 5. Any VMs cloned from this template before the rebuild are unaffected (full clones are independent), but won't have the new image until they're individually destroyed and recreated (`tofu apply -replace='proxmox_virtual_environment_vm.worker["<key>"]'` or `.control_plane["<key>"]`) so they clone fresh from the corrected template. Control plane nodes need extra care - check `talosctl etcd status` first; recreating the current etcd leader forces a leader election, which is safe but should be deliberate, not batched in with worker rebuilds.
+
+## GPU passthrough (Proxmox `hostpci`)
+Separate from the Talos image entirely - see `services/jellyfin/README.md` and `infrastructure/proxmox/opentofu/vms.tf` (`gpu_passthrough` resource / `local.gpu_passthrough_worker_key`) for how the physical GPU gets attached to `k8s-livio-w1` specifically. Two gotchas worth knowing:
+- The Terraform provider's native `hostpci` block doesn't work with API tokens (Proxmox bug - see comments in `vms.tf`), so it's applied via a `qm set` provisioner instead.
+- `hostpci` is not hot-pluggable - setting it via `qm set` on an already-running VM updates the config but doesn't attach the device until a full `qm stop`/`qm start` (not just an in-guest reboot).

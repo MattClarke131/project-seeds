@@ -160,8 +160,8 @@ data "talos_machine_configuration" "worker" {
       machine = {
         install = {
           # i915 is universal across workers so any node is upgrade-ready for GPU passthrough
-          # without a separate talosctl upgrade later, even though only one node currently
-          # has the PCI device attached.
+          # without a separate talosctl upgrade later - see locals.gpu_passthrough_worker_key
+          # for which node actually has the PCI device attached (hostpci0).
           image = local.worker_install_image
         }
         network = {

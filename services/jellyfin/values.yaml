@@ -1,7 +1,7 @@
 # Jellyfin image
 image:
   repository: jellyfin/jellyfin
-  tag: 10.11.6
+  tag: 10.11.8
   pullPolicy: IfNotPresent
 
 # Persistence for config/metadata
@@ -35,15 +35,40 @@ ingress:
         - path: /
           pathType: Prefix
 
-# Prefer livio because it does hardware transcoding, but allow scheduling on other nodes if those are unavailable
+# Hard-pinned to k8s-livio-w1: it's the only node with the iGPU passed through
+# (a PCI device can only be owned by one VM), so this is the only node that can
+# do hardware transcoding. No fallback node - if w1 is down, Jellyfin is down.
 affinity:
   nodeAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
             - key: kubernetes.io/hostname
               operator: In
               values:
                 - k8s-livio-w1
-                - k8s-livio-w2
+
+# GPU access for hardware transcoding (see affinity above), granted via the Intel GPU
+# device plugin (infrastructure/kubernetes/intel-gpu-plugin/), which registers /dev/dri
+# with kubelet as the allocatable resource requested below.
+#
+# LIBVA_DRIVER_NAME pinned to iHD (Intel's modern/actively-maintained VAAPI driver):
+# without it, libva auto-detection in this minimal container (no pciutils/vainfo) isn't
+# reliable and can silently fall back to the legacy i965 driver, which has known gaps in
+# VPP filters like scale_vaapi on Gen9+ hardware.
+#
+# NOTE: `env` is nested under `jellyfin:` (not top-level) - that's the chart's actual
+# schema (jellyfin/jellyfin-helm), confirmed by inspecting templates/deployment.yaml
+# after a top-level `env:` silently rendered to nothing.
+jellyfin:
+  env:
+    - name: LIBVA_DRIVER_NAME
+      value: iHD
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    memory: 4Gi
+    gpu.intel.com/i915: 1
