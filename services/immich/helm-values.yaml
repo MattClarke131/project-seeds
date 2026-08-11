@@ -3,35 +3,34 @@ immich:
     library:
       existingClaim: immich-library
 
-  machineLearning:
-    enabled: false
-
-controllers:
-  main:
-    containers:
-      main:
-        image:
-          tag: v2.7.5
-        env:
-          DB_HOSTNAME: "immich-db-rw.immich.svc.cluster.local"
-          DB_PORT: "5432"
-          DB_DATABASE_NAME: "immich"
-          DB_USERNAME: "immich"
-          DB_PASSWORD:
-            valueFrom:
-              secretKeyRef:
-                name: immich-db-user
-                key: password
+machine-learning:
+  enabled: false
 
 valkey:
   enabled: true
 
 server:
   enabled: true
+  controllers:
+    main:
+      containers:
+        main:
+          image:
+            tag: v3.0.1
+          env:
+            DB_HOSTNAME: "immich-db-rw.immich.svc.cluster.local"
+            DB_PORT: "5432"
+            DB_DATABASE_NAME: "immich"
+            DB_USERNAME: "immich"
+            DB_PASSWORD:
+              valueFrom:
+                secretKeyRef:
+                  name: immich-db-user
+                  key: password
   ingress:
     main:
       enabled: true
-      ingressClassName: nginx
+      className: nginx
       annotations:
         nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
         cert-manager.io/cluster-issuer: letsencrypt-cloudflare

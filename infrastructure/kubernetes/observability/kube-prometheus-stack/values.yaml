@@ -2,8 +2,15 @@ prometheus:
   ingress:
     enabled: true
     ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: letsencrypt-cloudflare
     hosts:
       - prometheus.labmatt.com
+    tls:
+      - hosts:
+          - prometheus.labmatt.com
+        secretName: prometheus-tls
   prometheusSpec:
     # Mount targets from ConfigMap
     configMaps:
@@ -46,8 +53,15 @@ grafana:
   ingress:
     enabled: true
     ingressClassName: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      cert-manager.io/cluster-issuer: letsencrypt-cloudflare
     hosts:
       - grafana.labmatt.com
+    tls:
+      - hosts:
+          - grafana.labmatt.com
+        secretName: grafana-tls
 
   persistence:
     enabled: true

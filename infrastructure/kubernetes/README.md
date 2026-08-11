@@ -5,9 +5,15 @@ Kubernetes workload configurations for the homelab cluster organized by function
 ## Structure
 ```
 kubernetes/
+├── cert-manager/         # TLS certificate management (see cert-manager/README.md)
+│   ├── namespace.yaml
+│   ├── values.yaml
+│   └── cluster-issuer.yaml
 ├── database/             # Shared CNPG Postgres cluster (see database/README.md)
 │   ├── namespace.yaml
 │   └── postgres-cluster.yaml
+├── intel-gpu-plugin/     # Intel GPU device plugin (see intel-gpu-plugin/README.md)
+│   └── daemonset.yaml
 ├── ingress/              # Nginx Ingress Controller
 │   ├── namespace.yaml
 │   ├── values.yaml
@@ -38,10 +44,14 @@ kubectl apply -f storage/nfs-provisioner.yaml
 kubectl get storageclass
 ```
 
-### 2. Database
+### 2. cert-manager
+See [cert-manager/README.md](cert-manager/README.md) for full setup (requires a
+Cloudflare API token).
+
+### 3. Database
 See [database/README.md](database/README.md).
 
-### 3. Ingress Controller
+### 4. Ingress Controller
 1. Create namespace
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -66,7 +76,10 @@ helm install nginx-external ingress-nginx/ingress-nginx \
 ```
 
 
-### 4. Observability Stack
+### 5. Intel GPU Device Plugin
+See [intel-gpu-plugin/README.md](intel-gpu-plugin/README.md).
+
+### 6. Observability Stack
 
 **Install Prometheus + Grafana:**
 ```bash
