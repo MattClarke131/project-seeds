@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: immich-power-tools
-          image: ghcr.io/immich-power-tools/immich-power-tools:v0.20.0
+          image: ghcr.io/immich-power-tools/immich-power-tools:v0.22.0
           env:
             - name: IMMICH_URL
               value: "http://immich-server.immich.svc.cluster.local:2283"
