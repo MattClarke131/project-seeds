@@ -2,6 +2,21 @@
 
 ## Infrastructure
 ### TODO
+- [ ] Upgrade RAM on `livio` (4x8GB -> 4x16GB, ~$140-160) *** Urgent
+  - Host is at 1.4GB free (29GB/31GB used) - tightest of the three Proxmox hosts,
+    and the only one carrying `k8s-livio-w1` (the Jellyfin GPU transcode worker).
+    Intel iGPU transcoding draws frame buffer memory from system RAM, not
+    dedicated VRAM, so concurrent/4K/HDR streams add bursty pressure on top of
+    an already-thin margin. A host-level OOM here kills the VM outright (not
+    graceful), taking down whatever's scheduled on it mid-stream.
+  - `nicholas` and `livio` are 4x8GB (all 4 DIMM slots full, needs a full swap
+    to grow). `razlo` is 2x16GB with 2 free slots (cheap fill, ~$70-80,
+    lower priority since it's not memory-constrained today).
+- [ ] Set up Prometheus alerting rules across the board (node memory/CPU pressure,
+  OOMKilled events, pod restarts, PVC usage, cert expiry, etc.) - currently have
+  Prometheus/Grafana deployed for dashboards but no alerting configured, so
+  problems (e.g. `livio`'s tight memory margin) are only found by manually
+  checking rather than being surfaced proactively.
 - [ ] Configure https certificates for all services
 - [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
 - [ ] Security audit and hardening
