@@ -10,6 +10,15 @@
   postgres support (`postgresql:` block in its config), and its config PVC is on
   `nfs-provisioner`, which is an unreliable storage backend for SQLite's file-locking
   model. Same pattern already used for Radarr/Sonarr.
+- [ ] Move off `nfs-subdir-external-provisioner` (non-CSI) to a CSI-based NFS driver
+  (e.g. `csi-driver-nfs`) or real block storage (e.g. iSCSI off the TrueNAS host,
+  or Longhorn). `nfs-subdir-external-provisioner` doesn't enforce ReadWriteOnce
+  exclusivity, so a RollingUpdate can briefly double-mount a single-replica app's
+  config PVC across two nodes and corrupt whatever's on it - this already happened
+  to Bazarr's SQLite db. Every `downloads-standard` deployment is on `strategy:
+  Recreate` now as a workaround (safe, but costs a few seconds of downtime per
+  deploy). A CSI driver supporting `ReadWriteOncePod` would let Kubernetes itself
+  refuse the double-mount and let RollingUpdate come back safely.
 - [ ] Set up Vault by HashiCorp for secrets management
 - [ ] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
 - [ ] Consider a Terraform-managed router/DHCP server. Would keep IP assignment in git

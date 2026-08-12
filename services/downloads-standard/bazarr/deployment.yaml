@@ -5,6 +5,11 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
+  # RollingUpdate would briefly run two pods against bazarr-config at once.
+  # nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so concurrent
+  # writers from two nodes can corrupt state on this PVC.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: bazarr
@@ -13,6 +18,30 @@ spec:
       labels:
         app: bazarr
     spec:
+      # Pins Bazarr's own API key to bazarr-secret on every boot, so the
+      # liveness/readiness probes can reference it directly via env var
+      # instead of parsing it out of config.yaml on every check. Note this
+      # means clicking "regenerate API key" in Bazarr's UI won't stick - it
+      # gets overwritten back to the Secret's value on next restart.
+      initContainers:
+      - name: pin-apikey
+        image: busybox:1.36
+        command:
+        - sh
+        - -c
+        - |
+          set -eu
+          CONFIG=/config/config/config.yaml
+          sed -i "/^auth:/,/^[^ ]/ { /^  apikey:/ s#.*#  apikey: ${API_KEY}# }" "$CONFIG"
+        env:
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bazarr-secret
+              key: api-key
+        volumeMounts:
+        - name: config
+          mountPath: /config
       containers:
       - name: bazarr
         image: lscr.io/linuxserver/bazarr:latest
@@ -26,11 +55,41 @@ spec:
           value: "1000"
         - name: TZ
           value: "America/New_York"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bazarr-secret
+              key: api-key
         volumeMounts:
         - name: config
           mountPath: /config
         - name: media
           mountPath: /media
+        # Bazarr doesn't reconnect after its Postgres connection dies
+        # (github.com/morpheus65535/bazarr/issues/2161), so a failed liveness
+        # probe restarts it instead. /api/movies queries the DB every call
+        # (unlike /system/status, which is mostly static), so it actually
+        # catches a dead connection.
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - 'curl -sf -H "X-API-KEY: $API_KEY" "http://localhost:6767/api/movies?start=0&length=1" > /dev/null'
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - 'curl -sf -H "X-API-KEY: $API_KEY" "http://localhost:6767/api/movies?start=0&length=1" > /dev/null'
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 10
+          failureThreshold: 3
         resources:
           requests:
             memory: "256Mi"
