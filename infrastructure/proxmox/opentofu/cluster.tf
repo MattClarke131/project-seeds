@@ -76,6 +76,10 @@ data "talos_machine_configuration" "controlplane" {
           }]
           nameservers = local.nameservers
         }
+        # Which Proxmox host this VM runs on, for anti-affinity across physical boxes.
+        nodeLabels = {
+          "topology.${var.cluster_name}/physical-host" = each.value.proxmox_node
+        }
       }
     })
   ]
@@ -177,6 +181,10 @@ data "talos_machine_configuration" "worker" {
             }]
           }]
           nameservers = local.nameservers
+        }
+        # Which Proxmox host this VM runs on, for anti-affinity across physical boxes.
+        nodeLabels = {
+          "topology.${var.cluster_name}/physical-host" = each.value.proxmox_node
         }
       }
     })

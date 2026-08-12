@@ -2,7 +2,6 @@
 
 ## Infrastructure
 ### TODO
-- [ ] Increase postgres instances to 2+, and ensure they're distributed across physical hosts
 - [ ] Configure https certificates for all services
 - [ ] Move off of `:latest` tags for docker images, use specific versions instead. Set up a process for updating these versions regularly.
 - [ ] Security audit and hardening
@@ -39,6 +38,8 @@
   - Terraform should not feed the config directly into Grafana
 - [ ] CI/CD Pipeline
   - Update terraform, talos, kubernetes, and docker images automatically
+  - Adopt GitOps (FluxCD or ArgoCD) so committed manifest changes reconcile onto the
+    cluster automatically instead of requiring manual `kubectl apply`/`tofu apply`.
 - [ ] Improve talos image distribution
   - Currently, the talos image is downloaded and unpacked on each Proxmox node manually.
   - Automate this step via a script or configuration management tool.
@@ -56,6 +57,7 @@
 ### Completed
 - [x] Deploy Jellyfin
 - [x] Deploy replicated PostgreSQL cluster
+- [x] Increase postgres instances to 2+, and ensure they're distributed across physical hosts
 - [x] Deploy Loki for centralized logging
 - [x] Explicitly set resource allocation for each VM
 - [x] Migrage from Hashicorp/Terraform to OpenTofu

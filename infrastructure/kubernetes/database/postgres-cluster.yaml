@@ -8,7 +8,10 @@ spec:
     initdb:
       database: jfstat
       owner: app
-  instances: 1
+  instances: 2
+  affinity:
+    podAntiAffinityType: required
+    topologyKey: topology.eye-of-michael/physical-host
   storage:
     size: 50Gi
     storageClass: nfs-provisioner
