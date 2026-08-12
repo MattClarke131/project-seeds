@@ -60,6 +60,29 @@ spec:
             secretKeyRef:
               name: bazarr-secret
               key: api-key
+        # Bazarr reads Postgres config from env vars directly, unlike
+        # Radarr/Sonarr which only read config.xml.
+        - name: POSTGRES_ENABLED
+          value: "true"
+        - name: POSTGRES_HOST
+          value: "postgres-rw.database.svc.cluster.local"
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: port
+        - name: POSTGRES_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: POSTGRES_DATABASE
+          value: "bazarr"
         volumeMounts:
         - name: config
           mountPath: /config
