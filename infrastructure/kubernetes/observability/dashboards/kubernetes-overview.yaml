@@ -416,6 +416,44 @@ data:
                     "value": "bytes"
                   }
                 ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Restarts"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "short"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": 0
+                        },
+                        {
+                          "color": "red",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
               }
             ]
           },
@@ -469,6 +507,18 @@ data:
               "instant": true,
               "range": false,
               "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total[$__range]))",
+              "format": "table",
+              "instant": true,
+              "range": false,
+              "refId": "C"
             }
           ],
           "title": "Pod Resource Usage",
@@ -487,7 +537,8 @@ data:
                 "indexByName": {},
                 "renameByName": {
                   "Value #A": "CPU (cores)",
-                  "Value #B": "Memory"
+                  "Value #B": "Memory",
+                  "Value #C": "Restarts"
                 }
               }
             }
