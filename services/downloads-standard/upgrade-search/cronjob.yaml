@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: upgrade-search
+  namespace: downloads-standard
+spec:
+  schedule: "30 */4 * * *"  # every 4 hours, offset 30m so one run lands shortly after recyclarr's 6 AM sync
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: upgrade-search
+              image: python:3.12-alpine
+              command: ["python3", "/scripts/upgrade_search.py"]
+              env:
+                - name: RADARR_URL
+                  value: "http://radarr-standard.downloads-standard.svc.cluster.local:7878"
+                - name: RADARR_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: radarr-api-key
+                      key: api-key
+                - name: SONARR_URL
+                  value: "http://sonarr-standard.downloads-standard.svc.cluster.local:8989"
+                - name: SONARR_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: sonarr-api-key
+                      key: api-key
+                - name: SONARR_ANIME_URL
+                  value: "http://sonarr-anime.downloads-standard.svc.cluster.local:8989"
+                - name: SONARR_ANIME_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: sonarr-anime-api-key
+                      key: api-key
+                - name: BATCH_CAP
+                  value: "2"
+                - name: BACKOFF_DAYS
+                  value: "1,3,9,30,90,360"
+                - name: MIN_FIRST_SEARCH_DELAY_HOURS
+                  value: "2"
+                - name: AGE_THRESHOLD_DAYS
+                  value: "365"
+                - name: OLD_CONTENT_START_INTERVAL
+                  value: "30"
+              volumeMounts:
+                - name: script
+                  mountPath: /scripts
+                  readOnly: true
+                - name: state
+                  mountPath: /state
+              resources:
+                requests:
+                  memory: "32Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "50m"
+          volumes:
+            - name: script
+              configMap:
+                name: upgrade-search-script
+            - name: state
+              persistentVolumeClaim:
+                claimName: upgrade-search-state

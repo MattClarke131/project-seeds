@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: upgrade-search-state
+  namespace: downloads-standard
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-provisioner
+  resources:
+    requests:
+      storage: 1Gi
