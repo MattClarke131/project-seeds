@@ -18,6 +18,10 @@ data:
           - name: HD Bluray + WEB
             reset_unmatched_scores:
               enabled: false
+            # -1000 so a plain x264 release (-500) still clears the floor and
+            # gets grabbed as a fallback when no x265 exists yet, instead of
+            # being rejected outright and leaving the movie unfulfilled.
+            min_format_score: -1000
 
         custom_formats:
           - trash_ids:
@@ -45,6 +49,7 @@ data:
           - name: WEB-1080p
             reset_unmatched_scores:
               enabled: false
+            min_format_score: -1000
 
         custom_formats:
           - trash_ids:
@@ -71,6 +76,7 @@ data:
           - name: "[Anime] Remux-1080p"
             reset_unmatched_scores:
               enabled: false
+            min_format_score: -1000
 
         custom_formats:
           - trash_ids:
