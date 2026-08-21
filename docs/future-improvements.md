@@ -34,6 +34,7 @@
   Recreate` now as a workaround (safe, but costs a few seconds of downtime per
   deploy). A CSI driver supporting `ReadWriteOncePod` would let Kubernetes itself
   refuse the double-mount and let RollingUpdate come back safely.
+  Not urgent yet, but worth resolving soon rather than continuing to paper over it.
 - [ ] Set up Vault by HashiCorp for secrets management
 - [ ] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
 - [ ] Consider a Terraform-managed router/DHCP server. Would keep IP assignment in git
