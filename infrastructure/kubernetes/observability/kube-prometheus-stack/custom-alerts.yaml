@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: custom-node-alerts
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: custom-node-workload
+      rules:
+        - alert: NodeWorkloadMemoryHighUtilization
+          # Replaces the default NodeMemoryHighUtilization, which measures
+          # raw host MemAvailable - that tracks VM RAM *allocation* on this
+          # cluster (KVM reserves each VM's configured size whether or not
+          # it's actually used), not real memory pressure. This instead
+          # sums each host's VMs' actual guest-reported usage as a % of
+          # host capacity - same formula validated in proxmox-overview's
+          # "Workload RAM Used %" gauge.
+          expr: |
+            100 * sum by (host) (
+              node_memory_MemTotal_bytes{job="node-exporter", role!="host"}
+              - node_memory_MemAvailable_bytes{job="node-exporter", role!="host"}
+            ) / on (host) sum by (host) (
+              node_memory_MemTotal_bytes{job="node-exporter", role="host"}
+            ) > 90
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Host is running out of memory (real usage, not allocation)."
+            description: >-
+              Actual workload RAM usage on {{ $labels.host }} has been above
+              90% of host capacity for 15 minutes, is currently at
+              {{ printf "%.2f" $value }}%.

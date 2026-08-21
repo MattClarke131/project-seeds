@@ -89,6 +89,16 @@ grafana:
       editable: true
 
 
+defaultRules:
+  disabled:
+    # Measures raw host MemAvailable, which on this cluster tracks VM RAM
+    # *allocation* (KVM reserves each VM's configured size regardless of
+    # actual guest usage), not real memory pressure - livio reads ~94% here
+    # while actually using ~21%. Replaced by a corrected version in
+    # custom-alerts.yaml using the same "workload RAM %" formula the
+    # proxmox-overview dashboard uses.
+    NodeMemoryHighUtilization: true
+
 alertmanager:
   alertmanagerSpec:
     # Mounts ntfy-alertmanager-bridge-webhook-auth (created out-of-band via
