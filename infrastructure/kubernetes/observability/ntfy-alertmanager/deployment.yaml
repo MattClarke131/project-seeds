@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy-alertmanager
+  namespace: observability
+  labels:
+    app: ntfy-alertmanager
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: ntfy-alertmanager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy-alertmanager
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ntfy-alertmanager
+  template:
+    metadata:
+      labels:
+        app: ntfy-alertmanager
+    spec:
+      containers:
+        - name: ntfy-alertmanager
+          image: xenrox/ntfy-alertmanager:1.0.0
+          args: ["--config", "/etc/ntfy-alertmanager/config"]
+          ports:
+            - containerPort: 8080
+              name: http
+          volumeMounts:
+            - name: config
+              mountPath: /etc/ntfy-alertmanager/config
+              subPath: config
+            - name: ntfy-secret
+              mountPath: /etc/ntfy-alertmanager/secrets/ntfy.scfg
+              subPath: ntfy.scfg
+            - name: webhook-secret
+              mountPath: /etc/ntfy-alertmanager/secrets/webhook.scfg
+              subPath: webhook.scfg
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+      volumes:
+        - name: config
+          configMap:
+            name: ntfy-alertmanager-config
+        - name: ntfy-secret
+          secret:
+            secretName: ntfy-alertmanager-ntfy-config
+        - name: webhook-secret
+          secret:
+            secretName: ntfy-alertmanager-webhook-config

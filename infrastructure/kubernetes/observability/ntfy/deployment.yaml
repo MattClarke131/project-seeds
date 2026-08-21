@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ntfy-state
+  namespace: observability
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: nfs-provisioner
+  resources:
+    requests:
+      storage: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ntfy
+  namespace: observability
+  labels:
+    app: ntfy
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: ntfy
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ntfy
+  namespace: observability
+spec:
+  replicas: 1
+  strategy:
+    # Recreate, not RollingUpdate: nfs-provisioner doesn't enforce ReadWriteOnce
+    # exclusivity, so two pods writing the auth db at once could corrupt it.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ntfy
+  template:
+    metadata:
+      labels:
+        app: ntfy
+    spec:
+      containers:
+        - name: ntfy
+          image: binwiederhier/ntfy:v2.27.0
+          args: ["serve"]
+          env:
+            - name: NTFY_BASE_URL
+              value: "https://ntfy.labmatt.com"
+            - name: NTFY_LISTEN_HTTP
+              value: ":80"
+            - name: NTFY_BEHIND_PROXY
+              value: "true"
+            - name: NTFY_CACHE_FILE
+              value: "/var/cache/ntfy/cache.db"
+            - name: NTFY_CACHE_DURATION
+              value: "12h"
+            - name: NTFY_AUTH_FILE
+              value: "/var/lib/ntfy/auth.db"
+            - name: NTFY_AUTH_DEFAULT_ACCESS
+              value: "deny-all"
+            - name: NTFY_ENABLE_SIGNUP
+              value: "false"
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: cache
+              mountPath: /var/cache/ntfy
+            - name: state
+              mountPath: /var/lib/ntfy
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+      volumes:
+        # Ephemeral: only holds ~12h of recent messages for redelivery to
+        # briefly-offline clients. Losing it on pod restart is acceptable —
+        # Alertmanager re-fires unresolved alerts on its own repeat_interval.
+        - name: cache
+          emptyDir: {}
+        # Persistent: the auth database (users/ACLs), must survive restarts.
+        - name: state
+          persistentVolumeClaim:
+            claimName: ntfy-state

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ntfy
+  namespace: observability
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+    # ntfy phone clients hold a long-lived WebSocket connection for instant,
+    # battery-friendly delivery. nginx passes through Upgrade/Connection
+    # headers automatically, but both proxy timeouts need to be long or
+    # nginx will silently kill the connection from either direction.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - ntfy.labmatt.com
+      secretName: ntfy-tls
+  rules:
+    - host: ntfy.labmatt.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ntfy
+                port:
+                  number: 80

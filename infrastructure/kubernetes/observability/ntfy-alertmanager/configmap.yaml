@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ntfy-alertmanager-config
+  namespace: observability
+data:
+  # ntfy server connection + webhook basic-auth credentials are pulled in via
+  # `include` from Secret-backed files mounted at ./secrets/ - see deployment.yaml.
+  config: |
+    include /etc/ntfy-alertmanager/secrets/ntfy.scfg
+    include /etc/ntfy-alertmanager/secrets/webhook.scfg
+
+    http-address :8080
+    log-level info
+    log-format text
+    # Send each alert as its own notification rather than grouping them into
+    # one digest - matches Alertmanager's own per-alert granularity better
+    # for a personal setup with a handful of alerts, not a flood.
+    alert-mode single
+
+    labels {
+        order "severity"
+
+        severity "critical" {
+            priority 5
+            tags "rotating_light"
+            topic homelab-critical
+        }
+
+        severity "warning" {
+            priority 3
+            tags "warning"
+            topic homelab-warning
+        }
+    }
+
+    resolved {
+        # Edit the original notification in place instead of sending a new
+        # one when an alert clears.
+        update-notification true
+        tags "resolved"
+        priority 1
+    }
+
+    cache {
+        # Required for alert-mode "single" to avoid re-sending a notification
+        # every time Alertmanager re-fires an already-seen alert group.
+        type memory
+        duration 24h
+        cleanup-interval 1h
+    }

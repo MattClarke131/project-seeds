@@ -89,9 +89,53 @@ grafana:
       editable: true
 
 
+alertmanager:
+  alertmanagerSpec:
+    # Mounts ntfy-alertmanager-bridge-webhook-auth (created out-of-band via
+    # `kubectl create secret`, not in git) at
+    # /etc/alertmanager/secrets/ntfy-alertmanager-bridge-webhook-auth/{username,password}
+    secrets:
+      - ntfy-alertmanager-bridge-webhook-auth
+  config:
+    global:
+      resolve_timeout: 5m
+    inhibit_rules:
+      - equal: [namespace, alertname]
+        source_matchers: [severity = critical]
+        target_matchers: [severity =~ warning|info]
+      - equal: [namespace, alertname]
+        source_matchers: [severity = warning]
+        target_matchers: [severity = info]
+      - equal: [namespace]
+        source_matchers: [alertname = InfoInhibitor]
+        target_matchers: [severity = info]
+      - target_matchers: [alertname = InfoInhibitor]
+    receivers:
+      - name: "null"
+      - name: ntfy-bridge
+        webhook_configs:
+          - url: http://ntfy-alertmanager.observability.svc.cluster.local:8080
+            send_resolved: true
+            http_config:
+              basic_auth:
+                username: alertmanager
+                password_file: /etc/alertmanager/secrets/ntfy-alertmanager-bridge-webhook-auth/password
+    route:
+      group_by: [namespace]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: "null"
+      routes:
+        - matchers: [alertname = "Watchdog"]
+          receiver: "null"
+        - matchers: [severity =~ "critical|warning"]
+          receiver: ntfy-bridge
+    templates:
+      - /etc/alertmanager/config/*.tmpl
+
 nodeExporter:
   enabled: true
 
 kubeStateMetrics:
   enabled: true
-
