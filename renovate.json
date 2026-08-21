@@ -4,6 +4,12 @@
   "dependencyDashboard": true,
   "labels": ["renovate"],
   "prConcurrentLimit": 5,
+  "kubernetes": {
+    "managerFilePatterns": [
+      "/^services/.+\\.ya?ml$/",
+      "/^infrastructure/kubernetes/.+\\.ya?ml$/"
+    ]
+  },
   "packageRules": [
     {
       "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
@@ -31,6 +37,12 @@
     {
       "description": "Major version bumps stay ungrouped (one PR each) rather than bundled with minor/patch - worth reading closely at merge time rather than rubber-stamping",
       "matchUpdateTypes": ["major"]
+    },
+    {
+      "description": "jellyfin/jellyfin's Docker image has no source-repo metadata, so Renovate can't auto-discover changelog/release notes for it - point it at the source explicitly",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["jellyfin/jellyfin"],
+      "sourceUrl": "https://github.com/jellyfin/jellyfin"
     }
   ]
 }
