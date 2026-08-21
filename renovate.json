@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "labels": ["renovate"],
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
+      "matchFileNames": [
+        "services/downloads-standard/**"
+      ],
+      "matchUpdateTypes": ["patch", "minor", "digest"],
+      "groupName": "arr stack (minor/patch)"
+    },
+    {
+      "description": "Group each OpenTofu root's provider bumps into their own single PR",
+      "matchFileNames": ["infrastructure/proxmox/opentofu/**"],
+      "groupName": "proxmox opentofu providers"
+    },
+    {
+      "description": "Group each OpenTofu root's provider bumps into their own single PR",
+      "matchFileNames": ["infrastructure/tunnel/opentofu/**"],
+      "groupName": "tunnel opentofu providers"
+    },
+    {
+      "description": "Group each OpenTofu root's provider bumps into their own single PR",
+      "matchFileNames": ["infrastructure/home-assistant/opentofu/**"],
+      "groupName": "home-assistant opentofu providers"
+    },
+    {
+      "description": "Major version bumps stay ungrouped (one PR each) rather than bundled with minor/patch - worth reading closely at merge time rather than rubber-stamping",
+      "matchUpdateTypes": ["major"]
+    }
+  ]
+}
