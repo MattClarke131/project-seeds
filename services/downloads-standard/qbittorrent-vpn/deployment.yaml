@@ -108,6 +108,40 @@ spec:
             memory: "2Gi"
             cpu: "2000m"
 
+      # Re-authorizes qBittorrent's current VPN exit IP with MAM's tracker
+      # whenever AirVPN reconnects on a new IP (fixes MAM tracker error
+      # "Unrecognized host/PassKey" and the resulting stalled downloads).
+      # Must run as a sidecar in this pod, not a standalone CronJob: it
+      # needs gluetun's network namespace so the call is actually made
+      # from the VPN exit IP.
+      - name: mam-dynamic-seedbox
+        image: curlimages/curl:8.11.1
+        env:
+        - name: MAM_ID
+          valueFrom:
+            secretKeyRef:
+              name: mam-dynamic-seedbox
+              key: mam_id
+        command:
+        - sh
+        - -c
+        - |
+          while true; do
+            resp=$(curl -sS -w '\nHTTP:%{http_code}' -b "mam_id=${MAM_ID}" https://t.myanonamouse.net/json/dynamicSeedbox.php)
+            echo "$(date -u +%FT%TZ) ${resp}"
+            # MAM's rate limit is once/hour on a rolling window; a small
+            # margin here avoids routinely landing inside that window and
+            # getting a harmless-but-wasted 429 "Last change too recent".
+            sleep 4200
+          done
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "10m"
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+
       volumes:
       - name: dev-net-tun
         hostPath:
