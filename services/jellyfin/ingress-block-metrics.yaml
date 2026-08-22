@@ -1,0 +1,48 @@
+# Standalone Ingress (not part of the jellyfin-helm release) that blocks
+# /metrics specifically on the internet-facing mattflix.labmatt.com host,
+# routed through Pangolin. Jellyfin's own /metrics endpoint has no
+# authentication, so it must never be reachable from the open internet -
+# see docs/tasks/pangolin-config-as-code.md and
+# infrastructure/kubernetes/observability/TARGETDOWN-INVESTIGATION.md for
+# the full story.
+#
+# jellyfin.labmatt.com (the other host on the main jellyfin Ingress)
+# resolves to the in-cluster ingress-nginx LoadBalancer's private IP
+# (10.0.10.2) and is never internet-reachable, so it doesn't need this.
+#
+# An exact-path rule takes precedence over the main Ingress's "/" prefix
+# rule in nginx's location matching, so this intercepts only /metrics on
+# mattflix.labmatt.com while leaving every other path on that host, and
+# jellyfin.labmatt.com entirely, unaffected.
+#
+# nginx.ingress.kubernetes.io/configuration-snippet (a clean `return 403`)
+# is disabled cluster-wide by the ingress-nginx admission webhook, so
+# instead this points at a Service with no selector/endpoints - nginx
+# returns 503 for any request routed here rather than proxying to jellyfin.
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-metrics-block
+  namespace: jellyfin
+spec:
+  ports:
+    - port: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jellyfin-block-metrics
+  namespace: jellyfin
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mattflix.labmatt.com
+      http:
+        paths:
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: jellyfin-metrics-block
+                port:
+                  number: 80
