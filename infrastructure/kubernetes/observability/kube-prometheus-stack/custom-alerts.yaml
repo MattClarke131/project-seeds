@@ -33,3 +33,58 @@ spec:
               Actual workload RAM usage on {{ $labels.host }} has been above
               90% of host capacity for 15 minutes, is currently at
               {{ printf "%.2f" $value }}%.
+
+    - name: custom-jellyfin-process
+      rules:
+        # Jellyfin is hard-pinned to a single node (the only one with the
+        # passed-through iGPU) with no fallback - see services/jellyfin/
+        # values.yaml. These come from its own EnableMetrics endpoint
+        # (system_runtime_*/microsoft_aspnetcore_* series - .NET/ASP.NET
+        # Core process telemetry, not media-server activity), scraped via
+        # the `jellyfin` ServiceMonitor. See jellyfin-process-health
+        # Grafana dashboard for the panels these mirror.
+        - alert: JellyfinHighMemoryUsage
+          # Container limit is 4Gi (values.yaml resources.limits.memory).
+          # An OOMKill here takes down the only jellyfin instance outright.
+          expr: system_runtime_dotnet_process_memory_working_set{job="jellyfin"} > 3.5 * 1024 * 1024 * 1024
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Jellyfin process memory is approaching its container limit."
+            description: >-
+              Jellyfin's working set has been above 3.5Gi (of a 4Gi limit)
+              for 10 minutes, is currently at
+              {{ printf "%.2f" (div $value 1073741824) }}Gi. An OOMKill here
+              takes down the only jellyfin instance - it has no fallback node.
+        - alert: JellyfinThreadPoolQueueBacklog
+          # Work queuing up faster than the thread pool can drain it - an
+          # early, pre-crash signal of the process falling behind, usually
+          # visible as slow/stalled streams before anything else notices.
+          expr: system_runtime_threadpool_queue_length{job="jellyfin"} > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Jellyfin's .NET thread pool has a sustained work backlog."
+            description: >-
+              Jellyfin's thread pool queue length has been above 0 for 5
+              minutes (currently {{ $value }}) - the process is falling
+              behind on incoming work.
+        - alert: JellyfinExceptionRateSpike
+          # Compares current exception rate to its own trailing 1h average
+          # rather than a fixed threshold, since some baseline exception
+          # noise from internal control flow is normal.
+          expr: |
+            rate(system_runtime_exception_count_total{job="jellyfin"}[5m]) > 0.05
+            and
+            rate(system_runtime_exception_count_total{job="jellyfin"}[5m])
+              > 3 * avg_over_time(rate(system_runtime_exception_count_total{job="jellyfin"}[5m])[1h:5m])
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Jellyfin's internal exception rate has spiked."
+            description: >-
+              Jellyfin is throwing exceptions at {{ printf "%.2f" $value }}/s,
+              more than 3x its trailing 1-hour average, for 5 minutes.

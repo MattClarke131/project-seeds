@@ -1,0 +1,291 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: jellyfin-process-health
+  namespace: observability
+  labels:
+    grafana_dashboard: "1"
+data:
+  jellyfin-process-health.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "panels": [],
+          "title": "Runtime & Memory",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "unit": "bytes" },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+          "id": 1,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "system_runtime_dotnet_process_memory_working_set{job=\"jellyfin\"}",
+              "legendFormat": "Working set"
+            }
+          ],
+          "title": "Process Working Set Memory",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "unit": "decmbytes" },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+          "id": 2,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "system_runtime_gc_heap_size{job=\"jellyfin\"}",
+              "legendFormat": "GC heap size"
+            }
+          ],
+          "title": "GC Heap Size",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "unit": "percentunit", "max": 1, "min": 0 },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 9 },
+          "id": 3,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "system_runtime_cpu_usage{job=\"jellyfin\"}",
+              "legendFormat": "CPU usage"
+            }
+          ],
+          "title": "Process CPU Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "unit": "percent" },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 9 },
+          "id": 4,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "system_runtime_gc_fragmentation{job=\"jellyfin\"}",
+              "legendFormat": "GC heap fragmentation"
+            }
+          ],
+          "title": "GC Heap Fragmentation",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": {
+            "defaults": { "unit": "short" },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 9 },
+          "id": 5,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "rate(system_runtime_exception_count_total{job=\"jellyfin\"}[5m])",
+              "legendFormat": "Exceptions/sec"
+            }
+          ],
+          "title": "Exception Rate",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 },
+          "id": 101,
+          "panels": [],
+          "title": "Web Server (Kestrel / ASP.NET Core)",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 18 },
+          "id": 6,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "microsoft_aspnetcore_hosting_current_requests{job=\"jellyfin\"}"
+            }
+          ],
+          "title": "Current HTTP Requests",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 18 },
+          "id": 7,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "microsoft_aspnetcore_server_kestrel_current_connections{job=\"jellyfin\"}"
+            }
+          ],
+          "title": "Current Connections",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+          "gridPos": { "h": 6, "w": 6, "x": 12, "y": 18 },
+          "id": 8,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "system_runtime_threadpool_queue_length{job=\"jellyfin\"}"
+            }
+          ],
+          "title": "Thread Pool Queue Length",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+          "gridPos": { "h": 6, "w": 6, "x": 18, "y": 18 },
+          "id": 9,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "system_runtime_threadpool_thread_count{job=\"jellyfin\"}"
+            }
+          ],
+          "title": "Thread Pool Thread Count",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+          "id": 10,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "microsoft_aspnetcore_hosting_requests_per_second_total{job=\"jellyfin\"}",
+              "legendFormat": "Requests/sec (as reported)"
+            }
+          ],
+          "title": "HTTP Requests Per Second",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+          "id": 11,
+          "options": {
+            "legend": { "displayMode": "list", "placement": "bottom" },
+            "tooltip": { "mode": "single" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "microsoft_aspnetcore_server_kestrel_current_tls_handshakes{job=\"jellyfin\"}",
+              "legendFormat": "Current TLS handshakes"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "rate(microsoft_aspnetcore_server_kestrel_failed_tls_handshakes{job=\"jellyfin\"}[5m])",
+              "legendFormat": "Failed TLS handshakes/sec"
+            }
+          ],
+          "title": "TLS Handshakes",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 42,
+      "tags": ["jellyfin"],
+      "templating": { "list": [] },
+      "time": { "from": "now-6h", "to": "now" },
+      "timepicker": {},
+      "timezone": "",
+      "title": "Jellyfin Process Health",
+      "uid": "jellyfin-process-health",
+      "version": 1,
+      "weekStart": ""
+    }
