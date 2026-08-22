@@ -1,3 +1,20 @@
 # json-exporter
 
-You need to manually fill in api keys into values.yaml.
+Scrapes Jellyfin's `/Sessions` endpoint for playback metrics.
+
+The `render-config` init container injects the API token at pod startup,
+reading it from the `json-exporter-jellyfin-token` Secret and substituting
+it into a templated config on a shared volume. To (re)create that Secret:
+
+```zsh
+echo -n "Jellyfin API key: "
+read -s JF_KEY
+echo
+kubectl create secret generic json-exporter-jellyfin-token \
+  --namespace=observability \
+  --from-literal=token="$JF_KEY"
+unset JF_KEY
+```
+
+Generate the API key itself via the Jellyfin admin dashboard:
+Dashboard → API Keys → **+**.
