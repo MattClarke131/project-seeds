@@ -81,6 +81,26 @@ data "talos_machine_configuration" "controlplane" {
           "topology.${var.cluster_name}/physical-host" = each.value.proxmox_node
         }
       }
+      # Talos binds these to 127.0.0.1 by default (loopback-only, unreachable
+      # from Prometheus running elsewhere in the cluster). See
+      # docs/adr/003-control-plane-metrics-exposure.md for the tradeoff.
+      cluster = {
+        controllerManager = {
+          extraArgs = {
+            "bind-address" = "0.0.0.0"
+          }
+        }
+        scheduler = {
+          extraArgs = {
+            "bind-address" = "0.0.0.0"
+          }
+        }
+        proxy = {
+          extraArgs = {
+            "metrics-bind-address" = "0.0.0.0:10249"
+          }
+        }
+      }
     })
   ]
 }
