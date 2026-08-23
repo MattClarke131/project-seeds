@@ -15,7 +15,11 @@ kubectl apply -f .
 cd ../../../infrastructure/cloudflare/opentofu && tofu apply
 ```
 2. In the Pangolin dashboard, add `books-sync.labmatt.com` as a Resource
-   pointing at the Newt site / `calibre-web-automated` service, port 8083.
+   pointing at the Newt site / `ingress-nginx` LoadBalancer, port 80 - same
+   as `mattflix.labmatt.com` (see `jellyfin/ingress-block-metrics.yaml`).
+   Pointing it at the `calibre-web-automated` service directly would
+   bypass `ingress-books-sync.yaml`'s `/kobo/`-only path restriction and
+   expose the full admin UI on this host.
 3. Still in Pangolin, add two rules on `books-sync.labmatt.com`, scoped to
    path `/kobo/` (mirrors the existing `/metrics` block-path rule,
    inverted):
