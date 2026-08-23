@@ -1,0 +1,81 @@
+name: Validate
+
+on:
+  pull_request:
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  opentofu:
+    name: OpenTofu (fmt + validate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.11.2"
+
+      - name: tofu fmt -check (changed files only)
+        run: |
+          set -e
+          # Only the .tf files this PR touches - not a repo-wide sweep, so
+          # pre-existing formatting elsewhere doesn't fail an unrelated PR.
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- '*.tf')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No .tf files changed - skipping"
+          else
+            printf '%s\n' "${files[@]}"
+            tofu fmt -check -diff "${files[@]}"
+          fi
+
+      - name: tofu init + validate (each root)
+        run: |
+          set -e
+          # Each directory containing a providers.tf is its own OpenTofu root -
+          # discovered rather than hardcoded so a new root doesn't silently skip validation.
+          for root in $(find infrastructure -name providers.tf -exec dirname {} \; | sort -u); do
+            echo "::group::$root"
+            (cd "$root" && tofu init -backend=false -input=false -no-color)
+            (cd "$root" && tofu validate -no-color)
+            echo "::endgroup::"
+          done
+
+  kubernetes-manifests:
+    name: Kubernetes manifest lint (kubeconform)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        env:
+          KUBECONFORM_VERSION: "0.8.0"
+          KUBECONFORM_SHA256: "9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883"
+        run: |
+          set -e
+          curl -sSLO "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz"
+          echo "${KUBECONFORM_SHA256}  kubeconform-linux-amd64.tar.gz" | sha256sum -c -
+          tar xz -f kubeconform-linux-amd64.tar.gz kubeconform
+          sudo install kubeconform /usr/local/bin/kubeconform
+
+      - name: kubeconform
+        run: |
+          set -e
+          # Same scope as Renovate's kubernetes manager (see renovate.json's
+          # \.ya?ml$ patterns - both .yaml and .yml), minus bare Helm values
+          # files (*values.yaml|yml) - those have no apiVersion/kind, they're
+          # inputs to a chart rather than standalone manifests.
+          files=()
+          while IFS= read -r -d '' f; do
+            files+=("$f")
+          done < <(find services infrastructure/kubernetes \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
+
+          kubeconform -strict -summary -output pretty \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -ignore-missing-schemas \
+            "${files[@]}"
