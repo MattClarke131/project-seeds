@@ -26,9 +26,9 @@ output "control_plane_nodes" {
   description = "All control plane nodes"
   value = {
     for key, node in local.control_plane_nodes : key => {
-      hostname     = node.hostname
-      ip_address   = node.ip_address
-      vm_id        = node.vm_id
+      hostname   = node.hostname
+      ip_address = node.ip_address
+      vm_id      = node.vm_id
       proxmox_node = node.proxmox_node
     }
   }

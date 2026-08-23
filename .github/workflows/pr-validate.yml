@@ -13,13 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: "1.11.2"
 
-      - name: tofu fmt -check
-        run: tofu fmt -check -recursive -diff infrastructure
+      - name: tofu fmt -check (changed files only)
+        run: |
+          set -e
+          # Only the .tf files this PR touches - not a repo-wide sweep, so
+          # pre-existing formatting elsewhere doesn't fail an unrelated PR.
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- '*.tf')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No .tf files changed - skipping"
+          else
+            printf '%s\n' "${files[@]}"
+            tofu fmt -check -diff "${files[@]}"
+          fi
 
       - name: tofu init + validate (each root)
         run: |

@@ -15,12 +15,12 @@ provider "proxmox" {
   insecure  = true
 
   ssh {
-    agent    = true
-    username = "root"
-    node {
-      name    = var.proxmox_node.name
-      address = var.proxmox_node.host_ip
-      port    = 22
-    }
+  agent    = true
+  username = "root"
+  node {
+    name    = var.proxmox_node.name
+    address = var.proxmox_node.host_ip
+    port    = 22
   }
+}
 }
