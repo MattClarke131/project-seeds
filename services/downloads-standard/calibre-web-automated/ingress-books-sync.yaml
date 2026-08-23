@@ -1,0 +1,39 @@
+# Kobo device sync only, routed through Pangolin (books-sync added to
+# tunnel_hostnames in infrastructure/cloudflare/opentofu). Only the
+# /kobo/ prefix is declared here, so anything else on this host 404s at
+# the ingress level - a Pangolin config drift can't accidentally expose
+# the admin UI (see ingress.yaml) through this host. Unlike
+# jellyfin/ingress-block-metrics.yaml, no separate block rule is needed:
+# there's no other Ingress on books-sync.labmatt.com to shadow, so
+# nginx's default 404 already covers every other path.
+#
+# CWA's Kobo Sync token is embedded directly in the URL
+# (/kobo/<token>/...) and checked per-request by CWA itself - that token
+# is the entire auth for this path by design. See issue #17 for the full
+# reasoning and the required Pangolin dashboard steps (bypass-auth +
+# rate-limit rule scoped to /kobo/) that aren't managed as code here.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: calibre-web-automated-books-sync
+  namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - books-sync.labmatt.com
+      secretName: books-sync-tls
+  rules:
+  - host: books-sync.labmatt.com
+    http:
+      paths:
+      - path: /kobo/
+        pathType: Prefix
+        backend:
+          service:
+            name: calibre-web-automated
+            port:
+              number: 8083

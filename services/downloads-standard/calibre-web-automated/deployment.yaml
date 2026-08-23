@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calibre-web-automated
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  # RollingUpdate would briefly run two pods against cwa-config/cwa-library
+  # at once. nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so
+  # concurrent writers from two nodes can corrupt CWA's SQLite metadata db.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: calibre-web-automated
+  template:
+    metadata:
+      labels:
+        app: calibre-web-automated
+    spec:
+      containers:
+      - name: calibre-web-automated
+        image: crocodilestick/calibre-web-automated:latest
+        ports:
+        - containerPort: 8083
+          name: http
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/New_York"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: library
+          mountPath: /calibre-library
+        - name: ingest
+          mountPath: /cwa-book-ingest
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: cwa-config
+      - name: library
+        persistentVolumeClaim:
+          claimName: cwa-library
+      - name: ingest
+        persistentVolumeClaim:
+          claimName: cwa-ingest

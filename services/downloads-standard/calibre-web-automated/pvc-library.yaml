@@ -1,0 +1,15 @@
+# The actual Calibre library (books + metadata.db). Deliberately its own
+# PVC, separate from pv-media-standard-downloads - this is long-term
+# storage CWA owns and writes to directly, not a downloads staging area.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cwa-library
+  namespace: downloads-standard
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-provisioner
+  resources:
+    requests:
+      storage: 50Gi
