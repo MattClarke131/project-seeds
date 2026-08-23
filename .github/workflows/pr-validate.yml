@@ -24,13 +24,6 @@ jobs:
       - name: tofu init + validate (each root)
         run: |
           set -e
-          # infrastructure/tunnel/opentofu reads the operator's own ~/.ssh/id_ed25519.pub
-          # at plan time (real applies run locally, so that's always present there).
-          # `tofu validate` only needs the referenced file to exist, not to be a real
-          # key, so seed a placeholder here rather than touching that config.
-          mkdir -p ~/.ssh
-          [ -f ~/.ssh/id_ed25519.pub ] || echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPlaceholderPlaceholderPlaceholderPlaceholderPlA validate-placeholder" > ~/.ssh/id_ed25519.pub
-
           # Each directory containing a providers.tf is its own OpenTofu root -
           # discovered rather than hardcoded so a new root doesn't silently skip validation.
           for root in $(find infrastructure -name providers.tf -exec dirname {} \; | sort -u); do
