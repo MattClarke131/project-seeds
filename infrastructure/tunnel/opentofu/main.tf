@@ -1,6 +1,6 @@
 resource "hcloud_ssh_key" "homelab" {
   name       = "homelab-key"
-  public_key = file("~/.ssh/id_ed25519.pub")
+  public_key = var.ssh_public_key
 }
 
 resource "hcloud_server" "edge_proxy" {

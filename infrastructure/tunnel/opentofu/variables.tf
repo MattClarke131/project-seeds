@@ -22,3 +22,8 @@ variable "hcloud_token" {
   sensitive   = true
 }
 
+variable "ssh_public_key" {
+  description = "Public SSH key installed on the edge proxy server (contents of e.g. ~/.ssh/id_ed25519.pub). Must include the trailing newline (set it as a heredoc in terraform.tfvars) - a value without one differs from what's already in state and forces the key, server, and floating IP to be replaced."
+  type        = string
+}
+
