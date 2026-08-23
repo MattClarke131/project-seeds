@@ -1,0 +1,62 @@
+name: Validate
+
+on:
+  pull_request:
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  opentofu:
+    name: OpenTofu (fmt + validate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.11.2"
+
+      - name: tofu fmt -check
+        run: tofu fmt -check -recursive -diff infrastructure
+
+      - name: tofu init + validate (each root)
+        run: |
+          set -e
+          # Each directory containing a providers.tf is its own OpenTofu root -
+          # discovered rather than hardcoded so a new root doesn't silently skip validation.
+          for root in $(find infrastructure -name providers.tf -exec dirname {} \; | sort -u); do
+            echo "::group::$root"
+            (cd "$root" && tofu init -backend=false -input=false -no-color)
+            (cd "$root" && tofu validate -no-color)
+            echo "::endgroup::"
+          done
+
+  kubernetes-manifests:
+    name: Kubernetes manifest lint (kubeconform)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo install kubeconform /usr/local/bin/kubeconform
+
+      - name: kubeconform
+        run: |
+          set -e
+          # Same scope as Renovate's kubernetes manager (see renovate.json), minus
+          # bare Helm values files (*values.yaml) - those have no apiVersion/kind,
+          # they're inputs to a chart rather than standalone manifests.
+          files=()
+          while IFS= read -r -d '' f; do
+            files+=("$f")
+          done < <(find services infrastructure/kubernetes -iname "*.yaml" ! -iname "*values.yaml" -print0)
+
+          kubeconform -strict -summary -output pretty \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -ignore-missing-schemas \
+            "${files[@]}"

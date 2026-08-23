@@ -8,9 +8,9 @@ resource "hcloud_server" "edge_proxy" {
   server_type = var.server_type
   location    = var.location
   image       = "ubuntu-24.04"
-  
+
   ssh_keys = [hcloud_ssh_key.homelab.id]
-  
+
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true

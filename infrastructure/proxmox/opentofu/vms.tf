@@ -31,7 +31,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   cdrom {
-    file_id   = "local:iso/${each.key}-cp.iso"
+    file_id = "local:iso/${each.key}-cp.iso"
   }
 
   depends_on = [null_resource.upload_control_plane_iso]
@@ -71,7 +71,7 @@ resource "proxmox_virtual_environment_vm" "worker" {
   }
 
   cdrom {
-    file_id   = "local:iso/${each.key}-w.iso"
+    file_id = "local:iso/${each.key}-w.iso"
   }
 
   depends_on = [null_resource.upload_worker_iso]
