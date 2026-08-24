@@ -107,6 +107,12 @@ helm install metrics-server metrics-server/metrics-server \
 ```bash
 kubectl apply -f observability/dashboards/proxmox-overview.yaml
 kubectl apply -f observability/dashboards/livio-pods.yaml
+kubectl apply -f observability/dashboards/flux-cluster.yaml
+```
+
+**Monitor Flux:**
+```bash
+kubectl apply -f observability/flux-monitoring/podmonitor.yaml
 ```
 
 ## Access Points
