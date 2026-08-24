@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: flux-system
+  namespace: observability
+  labels:
+    app: flux-system
+    release: kube-prometheus-stack
+spec:
+  # source-controller and notification-controller get a Service each (so
+  # they could use a ServiceMonitor), but helm-controller and
+  # kustomize-controller don't - all four expose metrics on the pod
+  # directly, so a single PodMonitor covers all four uniformly.
+  namespaceSelector:
+    matchNames:
+      - flux-system
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: flux
+  podMetricsEndpoints:
+    - port: http-prom
+      path: /metrics
+      interval: 30s
