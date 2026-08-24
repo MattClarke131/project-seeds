@@ -7,18 +7,10 @@ for the cluster name).
 See [issue #15](https://github.com/MattClarke131/project-seeds/issues/15)
 for the decision (Flux over Argo) and full rollout plan.
 
-## What's here right now
+## Conventions
 
-Just the bootstrap: `flux-system/` installs Flux's controllers
-(source-controller, kustomize-controller, helm-controller,
-notification-controller) and points them at this repo, so Flux can manage
-its own manifests going forward. Nothing else is Flux-managed yet -
-`kubectl apply` / `helm install` remain the deploy mechanism for every
-existing workload under `infrastructure/kubernetes/` and `services/`. Real
-categories (starting with `observability`) get their own `Kustomization`
-here in a follow-up.
-
-`flux-system/` was generated with:
+`flux-system/` is regenerated, not hand-edited, when Flux itself needs to
+change (e.g. adding a component, bumping the Flux version):
 ```bash
 flux install --export > flux-system/gotk-components.yaml
 
@@ -36,7 +28,7 @@ flux create kustomization flux-system \
 cat /tmp/gotk-source.yaml /tmp/gotk-kustomization.yaml > flux-system/gotk-sync.yaml
 ```
 
-`flux bootstrap github` wasn't used: it needs a GitHub token with
+`flux bootstrap github` isn't used: it needs a GitHub token with
 deploy-key/admin permissions to auto-provision a deploy key, which the
 token available here doesn't have. It's also unneeded - the repo is
 public, so Flux's `GitRepository` pulls over anonymous HTTPS with no
