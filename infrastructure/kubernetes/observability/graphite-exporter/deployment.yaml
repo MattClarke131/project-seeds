@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: graphite-exporter
-          image: prom/graphite-exporter:v0.15.1
+          image: prom/graphite-exporter:v0.17.0
           ports:
             - containerPort: 2003
               name: graphite
