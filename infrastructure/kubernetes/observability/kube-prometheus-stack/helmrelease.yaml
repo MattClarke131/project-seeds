@@ -12,9 +12,13 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      # Pinned to the version already running so this cutover is a no-op
-      # upgrade. Renovate bumps this going forward.
-      version: "88.5.4"
+      # Reverted from 88.5.4 (2026-08-25): that upgrade's HelmRelease timed
+      # out and failed to remediate cleanly while the cluster hit unrelated
+      # node instability mid-rollout, and was suspended + manually rolled
+      # back to stop further retries. Back to the last known-good version
+      # until the broader rollout-safety issue this surfaced (see follow-up
+      # ticket) is understood and fixed.
+      version: "84.5.0"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
