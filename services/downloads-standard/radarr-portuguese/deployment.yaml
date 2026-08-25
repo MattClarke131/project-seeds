@@ -28,7 +28,7 @@ spec:
       # CreateContainerConfigError until it appears, then proceeds on its own.
       initContainers:
       - name: postgres-config
-        image: busybox:1.36
+        image: busybox:1.38
         command:
         - sh
         - -c

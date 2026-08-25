@@ -16,7 +16,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: upgrade-search
-              image: python:3.12-alpine
+              image: python:3.14-alpine
               command: ["python3", "/scripts/upgrade_search.py"]
               env:
                 - name: RADARR_URL

@@ -25,7 +25,7 @@ spec:
       # gets overwritten back to the Secret's value on next restart.
       initContainers:
       - name: pin-apikey
-        image: busybox:1.36
+        image: busybox:1.38
         command:
         - sh
         - -c
