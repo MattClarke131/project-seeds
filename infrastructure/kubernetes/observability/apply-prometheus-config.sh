@@ -9,7 +9,6 @@ kubectl create configmap prometheus-targets \
   --namespace observability \
   --dry-run=client -o yaml > "$TARGETS_DIR/prometheus-targets-configmap.yaml"
 
-# Apply to cluster
-kubectl apply -f "$TARGETS_DIR/prometheus-targets-configmap.yaml"
-
-echo "✓ Applied prometheus-targets ConfigMap to observability namespace"
+# Flux applies this once it's committed and merged (kustomization.yaml
+# lists it as a managed resource) - no live kubectl apply here any more.
+echo "✓ Regenerated prometheus-targets-configmap.yaml - commit and merge to deploy"

@@ -1,0 +1,17 @@
+# Hand-authored, unlike gotk-components.yaml/gotk-sync.yaml (see README.md)
+# - one Kustomization per top-level directory category, per #15. This is the
+# first cutover; observability was chosen as the low-risk pilot.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: observability
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./infrastructure/kubernetes/observability
+  prune: true
+  wait: true
+  timeout: 5m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

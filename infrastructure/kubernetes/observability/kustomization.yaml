@@ -1,0 +1,29 @@
+# Flux-managed. See clusters/eye-of-michael/flux-system/observability.yaml
+# for the Kustomization CR that reconciles this path, and #15 for the
+# rollout plan this is the first cutover of.
+#
+# json-exporter/, loki/, metrics-server/ are Helm charts still installed by
+# hand (`helm install/upgrade`, per README.md) - not covered by this
+# Kustomization. Converting them to HelmReleases is follow-up work, same as
+# kube-prometheus-stack was here.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - dashboards/flux-cluster.yaml
+  - dashboards/jellyfin-process-health.yaml
+  - dashboards/kubernetes-overview.yaml
+  - dashboards/proxmox-overview.yaml
+  - dashboards/truenas-overview.yaml
+  - flux-monitoring/podmonitor.yaml
+  - graphite-exporter/deployment.yaml
+  - graphite-exporter/servicemonitor.yaml
+  - kube-prometheus-stack/custom-alerts.yaml
+  - kube-prometheus-stack/prometheus-targets-configmap.yaml
+  - kube-prometheus-stack/helmrepository.yaml
+  - kube-prometheus-stack/helmrelease.yaml
+  - ntfy-alertmanager/configmap.yaml
+  - ntfy-alertmanager/deployment.yaml
+  - ntfy/deployment.yaml
+  - ntfy/ingress.yaml
+  - services/jellyfin-servicemonitor.yaml

@@ -10,21 +10,20 @@
 ## Initial Setup
 
 ### Prometheus
-1. Update prometheus variables to match terraform environment
+
+`kube-prometheus-stack` is Flux-managed (`kube-prometheus-stack/helmrelease.yaml`,
+see [../../../clusters/eye-of-michael/README.md](../../../clusters/eye-of-michael/README.md))
+- editing `helmrelease.yaml`'s `spec.values` and merging to `main` is the
+deploy step; there's no `helm upgrade` to run by hand any more.
+
+Scrape targets still need regenerating locally when the Terraform node
+inventory changes, since that step reads live `tofu output`, then commit
+the result for Flux to pick up:
 ```bash
 ./sync-prometheus-targets.sh
-```
-
-2. Apply prometheus configuration
-```bash
 ./apply-prometheus-config.sh
-```
-
-3. Upgrade Prometheus with new values.yaml
-```bash
-helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
-  -f kube-prometheus-stack/values.yaml \
-  -n observability
+git add kube-prometheus-stack/prometheus-targets-configmap.yaml
+git commit
 ```
 
 ### Loki + Promtail
