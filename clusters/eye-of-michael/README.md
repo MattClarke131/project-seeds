@@ -28,6 +28,17 @@ flux create kustomization flux-system \
 cat /tmp/gotk-source.yaml /tmp/gotk-kustomization.yaml > flux-system/gotk-sync.yaml
 ```
 
+Per-category `Kustomization` CRs (`observability.yaml`, and more as other
+top-level directories get cut over per #15) are the opposite: hand-authored,
+not generated, and listed in `flux-system/kustomization.yaml`'s `resources`.
+Each points `spec.path` at one top-level manifest directory
+(`infrastructure/kubernetes/<category>` or `services/<category>`), which
+needs its own `kustomization.yaml` listing the manifests Flux should manage
+there - Helm-only subdirectories (still installed by hand, see that
+directory's README) and anything not meant to be applied stay out of that
+list. Adding a new one needs no imperative step: it's picked up by the next
+`flux-system` self-reconcile (≤1m0s) once merged to `main`.
+
 `flux bootstrap github` isn't used: it needs a GitHub token with
 deploy-key/admin permissions to auto-provision a deploy key, which the
 token available here doesn't have. It's also unneeded - the repo is

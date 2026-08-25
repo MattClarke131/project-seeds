@@ -55,7 +55,7 @@ spec:
             description: >-
               Jellyfin's working set has been above 3.5Gi (of a 4Gi limit)
               for 10 minutes, is currently at
-              {{ printf "%.2f" (div $value 1073741824) }}Gi. An OOMKill here
+              {{ humanize1024 $value }}B. An OOMKill here
               takes down the only jellyfin instance - it has no fallback node.
         - alert: JellyfinThreadPoolQueueBacklog
           # Work queuing up faster than the thread pool can drain it - an
