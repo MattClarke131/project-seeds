@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: signal-cli-rest-api
-          image: bbernhard/signal-cli-rest-api:0.97
+          image: bbernhard/signal-cli-rest-api:0.100
           ports:
             - containerPort: 8080
           env:
