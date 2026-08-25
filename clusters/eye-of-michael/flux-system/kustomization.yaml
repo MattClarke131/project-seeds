@@ -5,3 +5,4 @@ resources:
   - gotk-sync.yaml
   - observability.yaml
   - database.yaml
+  - storage.yaml

@@ -1,0 +1,7 @@
+# Flux-managed. See clusters/eye-of-michael/flux-system/storage.yaml for the
+# Kustomization CR that reconciles this path. Third cutover under #15, after
+# observability and database.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - nfs-provisioner.yaml
