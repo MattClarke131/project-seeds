@@ -10,6 +10,13 @@
       "/^infrastructure/kubernetes/.+\\.ya?ml$/"
     ]
   },
+  "flux": {
+    "managerFilePatterns": [
+      "/^clusters/.+\\.ya?ml$/",
+      "/^services/.+\\.ya?ml$/",
+      "/^infrastructure/kubernetes/.+\\.ya?ml$/"
+    ]
+  },
   "packageRules": [
     {
       "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
