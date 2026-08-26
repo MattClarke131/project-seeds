@@ -117,6 +117,7 @@ spec:
       additionalDataSources:
         - name: Loki
           type: loki
+          uid: loki
           access: proxy
           url: http://loki-gateway.observability.svc.cluster.local
           isDefault: false
