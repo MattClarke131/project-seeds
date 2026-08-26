@@ -105,18 +105,13 @@ data "talos_machine_configuration" "controlplane" {
   ]
 }
 
-# Generate talosconfig for cluster access
+# Talos client configuration for cluster access — rendered on demand via the
+# `talosconfig` output (see outputs.tf), not written to disk automatically.
 data "talos_client_configuration" "this" {
   cluster_name         = var.cluster_name
   client_configuration = talos_machine_secrets.cluster.client_configuration
   endpoints            = [local.bootstrap_node.ip_address]
   nodes                = [for node in local.control_plane_nodes : node.ip_address]
-}
-
-resource "local_file" "talosconfig" {
-  content  = data.talos_client_configuration.this.talos_config
-  filename = "${path.module}/talosconfig"
-  file_permission = "0600"
 }
 
 # Create ISO content for each control plane
