@@ -46,12 +46,12 @@ locals {
 data "talos_machine_configuration" "controlplane" {
   for_each = local.control_plane_nodes
 
-  cluster_name         = var.cluster_name
-  cluster_endpoint     = local.cluster_endpoint
-  machine_type         = "controlplane"
-  machine_secrets      = talos_machine_secrets.cluster.machine_secrets
-  talos_version        = local.talos_version
-  kubernetes_version   = local.kubernetes_version
+  cluster_name       = var.cluster_name
+  cluster_endpoint   = local.cluster_endpoint
+  machine_type       = "controlplane"
+  machine_secrets    = talos_machine_secrets.cluster.machine_secrets
+  talos_version      = local.talos_version
+  kubernetes_version = local.kubernetes_version
 
   config_patches = [
     yamlencode({
@@ -105,7 +105,8 @@ data "talos_machine_configuration" "controlplane" {
   ]
 }
 
-# Generate talosconfig for cluster access
+# Talos client configuration for cluster access — rendered on demand via the
+# `talosconfig` output (see outputs.tf), not written to disk automatically.
 data "talos_client_configuration" "this" {
   cluster_name         = var.cluster_name
   client_configuration = talos_machine_secrets.cluster.client_configuration
@@ -113,29 +114,23 @@ data "talos_client_configuration" "this" {
   nodes                = [for node in local.control_plane_nodes : node.ip_address]
 }
 
-resource "local_file" "talosconfig" {
-  content  = data.talos_client_configuration.this.talos_config
-  filename = "${path.module}/talosconfig"
-  file_permission = "0600"
-}
-
 # Create ISO content for each control plane
 resource "local_file" "user_data" {
   for_each = local.control_plane_nodes
 
-  content  = data.talos_machine_configuration.controlplane[each.key].machine_configuration
-  filename = "${path.module}/iso-content/control-plane/${each.key}/user-data"
+  content         = data.talos_machine_configuration.controlplane[each.key].machine_configuration
+  filename        = "${path.module}/iso-content/control-plane/${each.key}/user-data"
   file_permission = "0600"
 }
 
 resource "local_file" "meta_data" {
   for_each = local.control_plane_nodes
 
-  content  = yamlencode({
+  content = yamlencode({
     instance_id    = each.value.hostname
     local_hostname = each.value.hostname
   })
-  filename = "${path.module}/iso-content/control-plane/${each.key}/meta-data"
+  filename        = "${path.module}/iso-content/control-plane/${each.key}/meta-data"
   file_permission = "0600"
 }
 
@@ -172,12 +167,12 @@ resource "null_resource" "upload_control_plane_iso" {
 data "talos_machine_configuration" "worker" {
   for_each = local.worker_nodes
 
-  cluster_name         = var.cluster_name
-  cluster_endpoint     = local.cluster_endpoint
-  machine_type         = "worker"
-  machine_secrets      = talos_machine_secrets.cluster.machine_secrets
-  talos_version        = local.talos_version
-  kubernetes_version   = local.kubernetes_version
+  cluster_name       = var.cluster_name
+  cluster_endpoint   = local.cluster_endpoint
+  machine_type       = "worker"
+  machine_secrets    = talos_machine_secrets.cluster.machine_secrets
+  talos_version      = local.talos_version
+  kubernetes_version = local.kubernetes_version
 
   config_patches = [
     yamlencode({
@@ -223,11 +218,11 @@ resource "local_file" "worker_user_data" {
 resource "local_file" "worker_meta_data" {
   for_each = local.worker_nodes
 
-  content  = yamlencode({
+  content = yamlencode({
     instance_id    = each.value.hostname
     local_hostname = each.value.hostname
   })
-  filename = "${path.module}/iso-content/worker/${each.key}/meta-data"
+  filename        = "${path.module}/iso-content/worker/${each.key}/meta-data"
   file_permission = "0600"
 }
 

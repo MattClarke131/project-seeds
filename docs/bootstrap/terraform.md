@@ -1,17 +1,22 @@
-# Terraform Bootstrapping
+# OpenTofu Bootstrapping
 
-Configuring Terraform to automate Proxmox VM provisioning for Kubernetes cluster.
+Configuring OpenTofu to automate Proxmox VM provisioning for Kubernetes cluster.
+
+> This project uses [OpenTofu](https://opentofu.org/) (the `tofu` CLI), not
+> Terraform — see [ADR 001](/docs/adr/001-kubernetes-distribution-and-virtualization-layer.md).
+> The `terraform` CLI is drop-in compatible if you already have it installed,
+> but commands below use `tofu`.
 
 ## Prerequisites
 - Proxmox cluster operational
 - SDN configured with k8sVNet (10.0.10.0/24)
 - Tailscale subnet configured (if using Tailnet)
-- Terraform installed on local machine ([install guide](https://developer.hashicorp.com/terraform/install))
+- OpenTofu installed on local machine ([install guide](https://opentofu.org/docs/intro/install/))
 - Talos templates created on each Proxmox node ([see Talos guide](./talos.md))
 
 ## Overview
 
-What Terraform setup provides:
+What the OpenTofu setup provides:
 - Infrastructure as code for VM provisioning
 - Automated Talos configuration and cluster bootstrapping
 - Reproducible environment setup
@@ -19,7 +24,7 @@ What Terraform setup provides:
 
 ## Architecture
 ```
-Terraform (Local Machine)
+OpenTofu (Local Machine)
     ↓ API calls over HTTPS
     ├─→ Proxmox API (Token Auth)
     │       ↓ Creates VMs
@@ -95,21 +100,21 @@ proxmox_nodes = [
 ```
 `terraform.tfvars` is gitignored as it contains secrets
 
-2. Init terraform
+2. Init OpenTofu
 ```bash
-cd infrastructure/terraform/proxmox
-terraform init
+cd infrastructure/proxmox/opentofu
+tofu init
 ```
 3. Validate configuration
 ```bash
-terraform validate
-terraform plan
+tofu validate
+tofu plan
 ```
 
-### Step 3: Apply Terraform Configuration
+### Step 3: Apply OpenTofu Configuration
 1. Apply configuration to create VMs
 ```bash
-terraform apply
+tofu apply
 ```
 
 2. Verify VMs created in Proxmox UI or via CLI
@@ -123,18 +128,26 @@ pvesh get /cluster/resources --type vm
 ping -c 3 10.0.10.10
 ```
 
+The commands below assume `~/.talos/config` (talosctl's default config)
+already has a working context for this cluster. If `talosctl` fails with
+`x509: certificate signed by unknown authority`, that context is stale or
+missing — pull a fresh one straight from OpenTofu state:
+```bash
+tofu output -raw talosconfig > ~/.talos/config
+```
+
 2. Bootstrap Kubernetes cluster using Talosctl
 ```bash
-talosctl --talosconfig ./talosconfig bootstrap --nodes 10.0.10.10
+talosctl bootstrap --nodes 10.0.10.10
 ```
 
 3. Wait 1-2 minutes, then verify cluster health
 ```bash
-talosctl --talosconfig ./talosconfig --nodes 10.0.10.10 health
-talosctl --talosconfig ./talosconfig --nodes 10.0.10.10 etcd members
+talosctl --nodes 10.0.10.10 health
+talosctl --nodes 10.0.10.10 etcd members
 ```
 
 4. Generate kubeconfig for kubectl access
 ```bash
-talosctl kubeconfig --nodes 10.0.10.10 --talosconfig ./talosconfig
+talosctl kubeconfig --nodes 10.0.10.10
 ```

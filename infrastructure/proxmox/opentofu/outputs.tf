@@ -1,7 +1,9 @@
-# Talos config file location
-output "talosconfig_path" {
-  description = "Path to the Talos config file"
-  value       = abspath("${path.module}/talosconfig")
+# Talos client config, rendered on demand from state (not written to disk automatically).
+# Materialize it with: tofu output -raw talosconfig > ~/.talos/config
+output "talosconfig" {
+  description = "Talos client configuration (talosconfig) for the cluster"
+  value       = data.talos_client_configuration.this.talos_config
+  sensitive   = true
 }
 
 # Cluster endpoint
@@ -26,9 +28,9 @@ output "control_plane_nodes" {
   description = "All control plane nodes"
   value = {
     for key, node in local.control_plane_nodes : key => {
-      hostname   = node.hostname
-      ip_address = node.ip_address
-      vm_id      = node.vm_id
+      hostname     = node.hostname
+      ip_address   = node.ip_address
+      vm_id        = node.vm_id
       proxmox_node = node.proxmox_node
     }
   }
