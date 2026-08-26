@@ -13,6 +13,7 @@ resources:
   - dashboards/flux-cluster.yaml
   - dashboards/jellyfin-process-health.yaml
   - dashboards/kubernetes-overview.yaml
+  - dashboards/live-logs.yaml
   - dashboards/proxmox-overview.yaml
   - dashboards/truenas-overview.yaml
   - flux-monitoring/podmonitor.yaml
