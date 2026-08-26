@@ -1,0 +1,29 @@
+# Migrated from a manually-run `helm install` (see README.md for the old
+# imperative steps) as part of #15 - Flux now owns this release. Values
+# below are unchanged from values.yaml; only the wrapper is new. Chart
+# pinned to the already-deployed version so this is a no-op cutover.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: cert-manager
+  chart:
+    spec:
+      chart: cert-manager
+      version: "v1.20.2"
+      sourceRef:
+        kind: HelmRepository
+        name: jetstack
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    crds:
+      enabled: true
