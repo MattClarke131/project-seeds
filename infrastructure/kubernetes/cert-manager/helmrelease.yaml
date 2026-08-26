@@ -1,7 +1,8 @@
-# Migrated from a manually-run `helm install` (see README.md for the old
-# imperative steps) as part of #15 - Flux now owns this release. Values
-# below are unchanged from values.yaml; only the wrapper is new. Chart
-# pinned to the already-deployed version so this is a no-op cutover.
+# Migrated from a manually-run `helm install` (see git history for the old
+# imperative steps in README.md) as part of #15 - Flux now owns this
+# release. Values below are unchanged from values.yaml; only the wrapper is
+# new. Chart pinned to the already-deployed version so this is a no-op
+# cutover.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
