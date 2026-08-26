@@ -6,3 +6,4 @@ resources:
   - observability.yaml
   - database.yaml
   - storage.yaml
+  - cert-manager.yaml
