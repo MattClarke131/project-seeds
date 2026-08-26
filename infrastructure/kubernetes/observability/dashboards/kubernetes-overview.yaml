@@ -9,7 +9,7 @@ metadata:
   annotations:
     grafana_folder: "Infrastructure"
 data:
-  kubernetes-events.json: |
+  kubernetes-overview.json: |
     {
       "annotations": {
         "list": [
