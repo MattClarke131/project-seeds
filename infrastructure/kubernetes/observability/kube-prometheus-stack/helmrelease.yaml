@@ -110,6 +110,9 @@ spec:
       sidecar:
         dashboards:
           folderAnnotation: grafana_folder
+          provider:
+            # foldersFromFilesStructure to create folders in Grafana
+            foldersFromFilesStructure: true
 
       additionalDataSources:
         - name: Loki
