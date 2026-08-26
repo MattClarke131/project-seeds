@@ -1,8 +1,8 @@
 locals {
   # Versions
   kubernetes_version = "v1.34.1"
-  talos_version = "v1.13.8"
-  kube_vip_version = "v1.0.1"
+  talos_version      = "v1.13.8"
+  kube_vip_version   = "v1.0.1"
 
   # Pinned to whatever version the cluster was originally bootstrapped with - this is NOT
   # the fleet's current/target OS version (that's talos_version above) and must never track
@@ -20,7 +20,7 @@ locals {
   # Order matters - the Image Factory hashes the literal request, so this order matches
   # what's already live on the fleet (see docs/bootstrap/talos.md's schematic ID) rather
   # than producing a different-but-equivalent schematic for the same two extensions.
-  worker_extensions         = ["siderolabs/i915", "siderolabs/qemu-guest-agent"]
+  worker_extensions = ["siderolabs/i915", "siderolabs/qemu-guest-agent"]
 
   # GPU passthrough - the livio host's Intel HD 630 iGPU is passed through
   # exclusively to this one worker (a PCI device can only be owned by one VM
@@ -58,16 +58,16 @@ locals {
   # Workers - Many per Proxmox host
   worker_nodes = merge([
     for host_idx, host in var.proxmox_hosts :
-      { for worker_idx, worker in host.workers:
-        "${host.name}-w${worker_idx + 1}" => {
-          proxmox_node   = host.name
-          vm_id          = local.worker_vm_id_base + (host_idx * 10) + worker_idx + 1
-          ip_address     = worker.ip_address
-          mac_address    = worker.mac_address
-          hostname       = "k8s-${host.name}-w${worker_idx + 1}"
-          cores          = worker.cores
-          memory_mb      = worker.memory_mb
-          template_vm_id = host.template_vm_id
+    { for worker_idx, worker in host.workers :
+      "${host.name}-w${worker_idx + 1}" => {
+        proxmox_node   = host.name
+        vm_id          = local.worker_vm_id_base + (host_idx * 10) + worker_idx + 1
+        ip_address     = worker.ip_address
+        mac_address    = worker.mac_address
+        hostname       = "k8s-${host.name}-w${worker_idx + 1}"
+        cores          = worker.cores
+        memory_mb      = worker.memory_mb
+        template_vm_id = host.template_vm_id
       }
     }
   ]...)

@@ -21,9 +21,9 @@ resource "proxmox_virtual_environment_vm" "home_assistant" {
   }
 
   efi_disk {
-    datastore_id = "local"
+    datastore_id      = "local"
     pre_enrolled_keys = false
-    type = "4m"
+    type              = "4m"
   }
 
   disk {

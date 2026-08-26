@@ -25,27 +25,27 @@ variable "proxmox_hosts" {
     host_reserved_mb = number
     template_vm_id   = number
 
-    control_plane    = object({
-      ip_address       = string
-      mac_address      = string
-      cores            = number
-      memory_mb        = number
+    control_plane = object({
+      ip_address  = string
+      mac_address = string
+      cores       = number
+      memory_mb   = number
     })
 
-    workers          = list(object({
-      ip_address       = string
-      mac_address      = string
-      cores            = number
-      memory_mb        = number
+    workers = list(object({
+      ip_address  = string
+      mac_address = string
+      cores       = number
+      memory_mb   = number
     }))
   }))
 
   validation {
     condition = alltrue([
       for host in var.proxmox_hosts :
-      (host.control_plane.memory_mb + sum([for w in host.workers : w.memory_mb]) + host.host_reserved_mb) <= host.memory_mb])
+    (host.control_plane.memory_mb + sum([for w in host.workers : w.memory_mb]) + host.host_reserved_mb) <= host.memory_mb])
 
-      error_message = "Total VM memory allocation + host_reserved_mb exceeds total host memory on one or more hosts."
+    error_message = "Total VM memory allocation + host_reserved_mb exceeds total host memory on one or more hosts."
   }
 
   default = [
