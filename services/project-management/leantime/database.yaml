@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: leantime
+  namespace: database
+spec:
+  name: leantime
+  owner: app
+  cluster:
+    name: postgres

@@ -38,6 +38,7 @@ variable "tunnel_hostnames" {
   type        = set(string)
   default = [
     "gimme",
+    "leantime",
     "mattflix",
     "pangolin",
     "pangolin-test",

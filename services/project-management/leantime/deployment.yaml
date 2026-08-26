@@ -1,0 +1,71 @@
+# Leantime's session/CSRF secret and DB password both need to survive pod
+# restarts, so LEAN_SESSION_PASSWORD is pinned in this Secret rather than
+# left to the image's default (which regenerates per-container and would
+# invalidate every session on every restart). Create it once:
+#   kubectl create secret generic leantime-session -n project-management \
+#     --from-literal=LEAN_SESSION_PASSWORD=$(openssl rand -hex 32)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leantime
+  namespace: project-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leantime
+  template:
+    metadata:
+      labels:
+        app: leantime
+    spec:
+      containers:
+        - name: leantime
+          image: leantime/leantime:v3.7.3
+          ports:
+            - containerPort: 80
+              name: http
+          env:
+            - name: LEAN_DB_TYPE
+              value: postgres
+            - name: LEAN_DB_HOST
+              value: postgres-rw.database
+            - name: LEAN_DB_PORT
+              value: "5432"
+            - name: LEAN_DB_DATABASE
+              value: leantime
+            - name: LEAN_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app
+                  key: username
+            - name: LEAN_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-app
+                  key: password
+            - name: LEAN_SESSION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: leantime-session
+                  key: LEAN_SESSION_PASSWORD
+            - name: LEAN_APP_URL
+              value: https://leantime.labmatt.com
+          volumeMounts:
+            - name: userfiles
+              mountPath: /var/www/html/public/userfiles
+              subPath: public_userfiles
+            - name: userfiles
+              mountPath: /var/www/html/userfiles
+              subPath: userfiles
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      volumes:
+        - name: userfiles
+          persistentVolumeClaim:
+            claimName: leantime-userfiles
