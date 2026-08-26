@@ -12,15 +12,15 @@ Create one at: Cloudflare Dashboard → My Profile → API Tokens → Create Tok
 
 ## Installation
 
-### 1. Create namespace
+`namespace.yaml`, `cluster-issuer.yaml`, and `cert-manager` itself are all
+Flux-managed (see below) - the only imperative step left is the secret,
+since it's deliberately not tracked in git.
 
-```bash
-kubectl apply -f infrastructure/kubernetes/cert-manager/namespace.yaml
-```
+### 1. Create Cloudflare API token secret
 
-### 2. Create Cloudflare API token secret
-
-This secret is not tracked in git and must be created imperatively:
+The namespace must exist first if this is a fresh cluster (Flux will
+create it on first reconcile, or apply `namespace.yaml` by hand to unblock
+the secret sooner):
 
 ```bash
 kubectl create secret generic cloudflare-api-token \
@@ -28,24 +28,15 @@ kubectl create secret generic cloudflare-api-token \
   --from-literal=api-token=<your-cloudflare-api-token>
 ```
 
-### 3. Install cert-manager
+### 2. cert-manager and the ClusterIssuers
 
-```bash
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-
-helm install cert-manager jetstack/cert-manager \
-  -n cert-manager \
-  -f infrastructure/kubernetes/cert-manager/values.yaml
-```
-
-### 4. Apply ClusterIssuers
+`cert-manager` is Flux-managed (`helmrelease.yaml`, see
+[../../../clusters/eye-of-michael/README.md](../../../clusters/eye-of-michael/README.md))
+- editing `helmrelease.yaml`'s `spec.values` and merging to `main` is the
+deploy step; there's no `helm install`/`helm upgrade` to run by hand any
+more. `cluster-issuer.yaml` is Flux-managed the same way.
 
 Two issuers are provided: `letsencrypt-cloudflare` (production) and `letsencrypt-cloudflare-staging` (staging). Use staging when testing to avoid hitting Let's Encrypt rate limits.
-
-```bash
-kubectl apply -f infrastructure/kubernetes/cert-manager/cluster-issuer.yaml
-```
 
 Verify both issuers are ready:
 
