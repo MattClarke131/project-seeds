@@ -1,5 +1,3 @@
-# Flux owns this release. Chart pinned to the already-deployed version so
-# this is a no-op cutover.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
