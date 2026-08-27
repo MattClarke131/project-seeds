@@ -34,21 +34,15 @@ deploy step; there's no `helm upgrade` to run by hand any more.
 
 ### Loki + Promtail
 
-`promtail` is Flux-managed (`promtail/helmrelease.yaml`) - editing
-`helmrelease.yaml`'s `spec.values` and merging to `main` is the deploy
-step; there's no `helm upgrade` to run by hand any more.
+Both are Flux-managed (`loki/helmrelease.yaml`, `promtail/helmrelease.yaml`)
+- editing `helmrelease.yaml`'s `spec.values` and merging to `main` is the
+deploy step; there's no `helm upgrade` to run by hand any more.
+`loki/values.yaml` is kept as a standalone reference copy of the same
+values, not wired in.
 
-1. Install Loki
-```bash
-cd loki
-helm install loki grafana/loki \
-  --namespace observability \
-  --values values.yaml
-```
-
-2. Add Loki datasource to Grafana
-   - URL: `http://loki-gateway.observability.svc.cluster.local`
-   - Configuration → Data Sources → Add Loki
+Add Loki datasource to Grafana:
+- URL: `http://loki-gateway.observability.svc.cluster.local`
+- Configuration → Data Sources → Add Loki
 
 ## Accessing Grafana
 
