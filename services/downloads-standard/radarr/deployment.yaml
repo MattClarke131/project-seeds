@@ -10,6 +10,11 @@ spec:
   # concurrent writers from two nodes can corrupt state on this PVC.
   strategy:
     type: Recreate
+    # Explicit null, not omitted: if rollingUpdate is ever set live (even
+    # by something outside this file), Kubernetes rejects any apply that
+    # sets type: Recreate without also clearing it - omitting the key
+    # here wouldn't clear an existing value, only setting it null does.
+    rollingUpdate: null
   selector:
     matchLabels:
       app: radarr-standard
