@@ -8,3 +8,4 @@ resources:
   - storage.yaml
   - cert-manager.yaml
   - ingress.yaml
+  - ci-cd.yaml
