@@ -1,0 +1,34 @@
+# The chart's own clusterRoleBinding (helmrelease.yaml) binds the headlamp
+# ServiceAccount to the built-in `view` ClusterRole - broad read access to
+# most resources, but excludes Secrets and doesn't cover Flux's CRDs (view's
+# aggregation labels predate Flux and were never extended to its API
+# groups). This ClusterRole/Binding adds read access to those four groups
+# on top, so Headlamp (and its Flux plugin) can see Kustomizations,
+# HelmReleases, sources, and Alerts/Providers without granting anything
+# broader - RBAC bindings union, so this simply adds to what `view` already
+# grants rather than replacing it.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: headlamp-flux-view
+rules:
+  - apiGroups:
+      - kustomize.toolkit.fluxcd.io
+      - helm.toolkit.fluxcd.io
+      - source.toolkit.fluxcd.io
+      - notification.toolkit.fluxcd.io
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: headlamp-flux-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: headlamp-flux-view
+subjects:
+  - kind: ServiceAccount
+    name: headlamp
+    namespace: observability
