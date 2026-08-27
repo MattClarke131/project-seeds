@@ -2,10 +2,10 @@
 # for the Kustomization CR that reconciles this path, and #15 for the
 # rollout plan this is the first cutover of.
 #
-# json-exporter/ is a Helm chart still installed by hand
-# (`helm install/upgrade`, per README.md) - not covered by this
-# Kustomization. Converting it to a HelmRelease is follow-up work, same as
-# kube-prometheus-stack, metrics-server, promtail, and loki were here.
+# json-exporter/values.yaml.example stays out of this list - it's
+# documentation, not a manifest. The json-exporter-jellyfin-token Secret
+# it depends on also stays manual, same as renovate-github-token/
+# newt-auth - see json-exporter/README.md.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -28,6 +28,7 @@ resources:
   - promtail/helmrepository.yaml
   - promtail/helmrelease.yaml
   - loki/helmrelease.yaml
+  - json-exporter/helmrelease.yaml
   - ntfy-alertmanager/configmap.yaml
   - ntfy-alertmanager/deployment.yaml
   - ntfy/deployment.yaml
