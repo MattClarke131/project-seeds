@@ -31,10 +31,6 @@ singleBinary:
   persistence:
     enabled: true
     storageClass: nfs-provisioner
-    # Was 50Gi, already stale (live usage is ~117GiB - nfs-provisioner
-    # doesn't enforce this as a real quota, so nothing broke, but the
-    # number was lying). Bumped to roughly match the ~108GiB steady-state
-    # the new 180-day retention above settles at.
     size: 150Gi
     # Chart defaults both to Delete - under Flux's prune:true, a bad merge
     # that drops this manifest from the kustomization would delete the
