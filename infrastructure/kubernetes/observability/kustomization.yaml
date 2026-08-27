@@ -2,10 +2,8 @@
 # for the Kustomization CR that reconciles this path, and #15 for the
 # rollout plan this is the first cutover of.
 #
-# json-exporter/values.yaml.example stays out of this list - it's
-# documentation, not a manifest. The json-exporter-jellyfin-token Secret
-# it depends on also stays manual, same as renovate-github-token/
-# newt-auth - see json-exporter/README.md.
+# json-exporter's json-exporter-jellyfin-token Secret stays manual, same
+# as renovate-github-token/newt-auth - see json-exporter/README.md.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

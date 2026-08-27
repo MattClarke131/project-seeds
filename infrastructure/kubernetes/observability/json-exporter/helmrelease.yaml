@@ -1,9 +1,9 @@
 # Migrated from a manually-run `helm install/upgrade` (see README.md) as
-# part of #15 - Flux now owns this release. Values transcribed from
-# values.yaml (kept as reference alongside values.yaml.example), which is
-# also the source of the still-manual json-exporter-jellyfin-token
-# Secret dependency - see README.md, excluded from this kustomization the
-# same as renovate-github-token/newt-auth were.
+# part of #15 - Flux now owns this release. Values transcribed from the
+# old standalone values.yaml (removed, now redundant with spec.values
+# below). Still relies on the json-exporter-jellyfin-token Secret - see
+# README.md - excluded from this kustomization the same as
+# renovate-github-token/newt-auth were.
 #
 # Uses the `prometheus-community` HelmRepository defined in
 # ../kube-prometheus-stack/helmrepository.yaml, same chart source.
