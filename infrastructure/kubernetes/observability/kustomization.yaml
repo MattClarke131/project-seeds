@@ -32,3 +32,4 @@ resources:
   - ntfy/deployment.yaml
   - ntfy/ingress.yaml
   - services/jellyfin-servicemonitor.yaml
+  - headlamp

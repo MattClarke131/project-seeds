@@ -1,0 +1,14 @@
+# See services/jellyfin/ingress-block-metrics.yaml for the mechanism this
+# relies on: headlamp.labmatt.com sits under the labmatt.com Cloudflare
+# wildcard record like every other host, but only resolves to the
+# in-cluster ingress-nginx LoadBalancer's private IP for tailnet/LAN
+# clients via internal DNS - it's never registered as internet-reachable,
+# so no equivalent Pangolin/Cloudflare-facing route is needed. That
+# internal DNS override lives outside this repo and still needs adding for
+# this host - see #77.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - helmrepository.yaml
+  - helmrelease.yaml
+  - flux-rbac.yaml

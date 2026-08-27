@@ -17,6 +17,19 @@
       "/^infrastructure/kubernetes/.+\\.ya?ml$/"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The kubernetes/flux managers above extract chart versions and top-level manifest images, but not images nested inside arbitrary HelmRelease values (e.g. an initContainer) - this tracks Headlamp's pinned Flux plugin image tag explicitly so it isn't silently missed.",
+      "managerFilePatterns": [
+        "/^infrastructure/kubernetes/observability/headlamp/helmrelease\\.yaml$/"
+      ],
+      "matchStrings": [
+        "image: (?<depName>ghcr\\.io/headlamp-k8s/headlamp-plugin-flux):(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
   "packageRules": [
     {
       "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
