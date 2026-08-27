@@ -42,21 +42,37 @@ spec:
               period: 24h
       storage:
         type: filesystem
+      # No retention was ever configured before this cutover - logs had
+      # been accumulating since the 2026-02-08 install (~117GiB and
+      # growing, already past the PVC's nominal 50Gi since nfs-provisioner
+      # doesn't enforce that as a real quota). 180 days at the observed
+      # ~0.6GiB/day growth rate settles around ~108GiB steady-state -
+      # see singleBinary.persistence.size below, bumped to stay honest
+      # about that.
+      limits_config:
+        retention_period: 4320h
+      compactor:
+        working_directory: /var/loki/compactor
+        retention_enabled: true
+        delete_request_store: filesystem
 
     singleBinary:
       replicas: 1
       persistence:
         enabled: true
         storageClass: nfs-provisioner
-        size: 50Gi
+        # Was 50Gi, already stale (live usage is ~117GiB - nfs-provisioner
+        # doesn't enforce this as a real quota, so nothing broke, but the
+        # number was lying). Bumped to roughly match the ~108GiB
+        # steady-state the new 180-day retention above settles at.
+        size: 150Gi
         # Chart defaults both to Delete - under Flux's prune:true, a bad
         # merge that drops this manifest from the kustomization would
-        # delete the StatefulSet and, with the chart default, the 50Gi
-        # PVC and all log history along with it (the PV's own reclaim
-        # policy is also Delete, so PVC deletion is unrecoverable).
-        # Retain means the same accidental deletion only removes the
-        # StatefulSet; the PVC/PV survive since nothing deletes them as
-        # a side effect.
+        # delete the StatefulSet and, with the chart default, the PVC and
+        # all log history along with it (the PV's own reclaim policy is
+        # also Delete, so PVC deletion is unrecoverable). Retain means
+        # the same accidental deletion only removes the StatefulSet; the
+        # PVC/PV survive since nothing deletes them as a side effect.
         whenDeleted: Retain
         whenScaled: Retain
 
