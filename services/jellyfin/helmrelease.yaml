@@ -1,0 +1,112 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: jellyfin
+  chart:
+    spec:
+      chart: jellyfin
+      version: "3.2.0"
+      sourceRef:
+        kind: HelmRepository
+        name: jellyfin
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    image:
+      repository: jellyfin/jellyfin
+      tag: 10.11.11
+      pullPolicy: IfNotPresent
+
+    persistence:
+      config:
+        enabled: true
+        storageClass: nfs-provisioner
+        accessMode: ReadWriteOnce
+        size: 100Gi
+      media:
+        enabled: true
+        existingClaim: jellyfin-media
+
+    service:
+      type: ClusterIP
+      port: 8096
+
+    ingress:
+      enabled: true
+      className: nginx
+      hosts:
+        - host: jellyfin.labmatt.com
+          paths:
+            - path: /
+              pathType: Prefix
+        - host: mattflix.labmatt.com
+          paths:
+            - path: /
+              pathType: Prefix
+
+    # Recreate (not the chart default RollingUpdate): with only one iGPU on the
+    # one pinned node (see affinity below) and no fallback, RollingUpdate
+    # deadlocks - it tries to schedule the new pod before killing the old one,
+    # but the new pod can never get the GPU while the old pod still holds it.
+    # Recreate kills first, so the GPU is free when the new pod schedules.
+    # Costs a short downtime per deploy.
+    deploymentStrategy:
+      type: Recreate
+
+    # Keep enough rollout history to `kubectl rollout undo` back several
+    # releases (K8s default is 10; this chart defaults to 3, which is too
+    # shallow given Renovate sends frequent small version bumps). Cost is
+    # negligible - retained revisions are scaled-to-0 ReplicaSet objects, not
+    # running pods or images.
+    revisionHistoryLimit: 10
+
+    # Hard-pinned to k8s-livio-w1: it's the only node with the iGPU passed
+    # through (a PCI device can only be owned by one VM), so this is the only
+    # node that can do hardware transcoding. No fallback node - if w1 is down,
+    # Jellyfin is down.
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - k8s-livio-w1
+
+    # GPU access for hardware transcoding (see affinity above), granted via
+    # the Intel GPU device plugin (infrastructure/kubernetes/intel-gpu-plugin/),
+    # which registers /dev/dri with kubelet as the allocatable resource
+    # requested below.
+    #
+    # LIBVA_DRIVER_NAME pinned to iHD (Intel's modern/actively-maintained
+    # VAAPI driver): without it, libva auto-detection in this minimal
+    # container (no pciutils/vainfo) isn't reliable and can silently fall
+    # back to the legacy i965 driver, which has known gaps in VPP filters
+    # like scale_vaapi on Gen9+ hardware.
+    #
+    # NOTE: `env` is nested under `jellyfin:` (not top-level) - that's the
+    # chart's actual schema (jellyfin/jellyfin-helm), confirmed by inspecting
+    # templates/deployment.yaml after a top-level `env:` silently rendered to
+    # nothing.
+    jellyfin:
+      env:
+        - name: LIBVA_DRIVER_NAME
+          value: iHD
+
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        memory: 4Gi
+        gpu.intel.com/i915: 1

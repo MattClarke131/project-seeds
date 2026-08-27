@@ -1,0 +1,10 @@
+# Not its own Flux category - deploys into the jellyfin namespace, bundled
+# into that category by services/jellyfin/kustomization.yaml referencing
+# this directory as a base. secret.yaml excluded: it's Reflector-managed
+# (mirrors database/postgres-app), not something to hand to Flux's prune.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - ingress.yaml
+  - service.yaml

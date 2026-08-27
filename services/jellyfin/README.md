@@ -1,7 +1,4 @@
 # Jellyfin
 
-## Installation
-```bash
-helm repo add jellyfin https://jellyfin.github.io/jellyfin-helm
-helm repo update
-```
+Flux-managed via `helmrepository.yaml`/`helmrelease.yaml` - merging to
+`main` is the deploy step.
