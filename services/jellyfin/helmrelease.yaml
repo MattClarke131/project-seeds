@@ -44,6 +44,10 @@ spec:
       enabled: true
       className: nginx
       hosts:
+        - host: jellyfin.labmatt.com
+          paths:
+            - path: /
+              pathType: Prefix
         - host: mattflix.labmatt.com
           paths:
             - path: /
