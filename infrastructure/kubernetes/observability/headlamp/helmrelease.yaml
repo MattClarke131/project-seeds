@@ -47,10 +47,11 @@ spec:
         command:
           - sh
           - -c
-          # No chown needed: this image's own default user is already
-          # 100:101, matching the main container. Adding one would
-          # actually fail - a non-root process can't change file
-          # ownership, even on files it already owns.
+          # No chown needed (unlike the plugin's own doc example): this
+          # image's own default user is already 100:101, matching the
+          # main container - a chown here would actually fail, since a
+          # non-root process can't change file ownership even on files
+          # it already owns.
           - cp -r /plugins/* /headlamp/plugins/
         volumeMounts:
           - name: plugins
