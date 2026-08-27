@@ -185,17 +185,25 @@ spec:
     kubeStateMetrics:
       enabled: true
 
-    # Flux doesn't expose a Ready/Reconciling/Failed metric itself (that was
-    # dropped in favor of this kube-state-metrics mechanism - see the
-    # flux-cluster dashboard's own description for the panels that had to be
-    # cut without it). This adds gotk_resource_info readiness metrics
-    # *alongside* kube-state-metrics' normal kube_pod_*/kube_deployment_*
-    # output, scoped to the Flux kinds already tracked on that dashboard
-    # (Kustomization/HelmRelease reconcilers, GitRepository/HelmRepository/
-    # Bucket/OCIRepository sources) - deliberately not the full set from
-    # fluxcd/flux2-monitoring-example, and deliberately not passing that
-    # example's --custom-resource-state-only, which would silence the
-    # existing kubernetes-overview/proxmox-overview dashboards.
+    # Flux no longer exposes a Ready/Reconciling/Failed metric itself. See
+    # the flux-cluster dashboard's own description for the panels that got
+    # dropped for lack of it. kube-state-metrics is the replacement: it
+    # reads status.conditions off the CRDs directly.
+    #
+    # This adds gotk_resource_info readiness metrics on top of
+    # kube-state-metrics' normal kube_pod_*/kube_deployment_* output. It
+    # doesn't replace that output.
+    #
+    # Scoped to the kinds already tracked on the flux-cluster dashboard:
+    # Kustomization/HelmRelease reconcilers, and
+    # GitRepository/HelmRepository/Bucket/OCIRepository sources. This is
+    # deliberately a subset of the full config in
+    # fluxcd/flux2-monitoring-example.
+    #
+    # Also deliberately skips that example's --custom-resource-state-only
+    # flag. It would silence the kube_pod_*/kube_deployment_* metrics that
+    # the existing kubernetes-overview and proxmox-overview dashboards
+    # depend on.
     kube-state-metrics:
       rbac:
         extraRules:
