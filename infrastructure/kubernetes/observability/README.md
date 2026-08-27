@@ -40,9 +40,9 @@ deploy step; there's no `helm upgrade` to run by hand any more.
 `loki/values.yaml` is kept as a standalone reference copy of the same
 values, not wired in.
 
-Add Loki datasource to Grafana:
-- URL: `http://loki-gateway.observability.svc.cluster.local`
-- Configuration → Data Sources → Add Loki
+The Loki datasource in Grafana is also declarative - see
+`kube-prometheus-stack/helmrelease.yaml`'s `grafana.additionalDataSources`
+- no manual "Add Loki" step needed.
 
 ## Dashboards
 
