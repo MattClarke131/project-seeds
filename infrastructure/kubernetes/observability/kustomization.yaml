@@ -5,7 +5,7 @@
 # json-exporter/, loki/ are Helm charts still installed by hand
 # (`helm install/upgrade`, per README.md) - not covered by this
 # Kustomization. Converting them to HelmReleases is follow-up work, same as
-# kube-prometheus-stack and metrics-server were here.
+# kube-prometheus-stack, metrics-server, and promtail were here.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -25,6 +25,8 @@ resources:
   - kube-prometheus-stack/helmrelease.yaml
   - metrics-server/helmrepository.yaml
   - metrics-server/helmrelease.yaml
+  - promtail/helmrepository.yaml
+  - promtail/helmrelease.yaml
   - ntfy-alertmanager/configmap.yaml
   - ntfy-alertmanager/deployment.yaml
   - ntfy/deployment.yaml
