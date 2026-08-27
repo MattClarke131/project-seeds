@@ -47,9 +47,12 @@ spec:
         command:
           - sh
           - -c
-          # chown to 100:101: the main container runs as that non-root
-          # user/group and can't read root-owned files otherwise.
-          - cp -r /plugins/* /headlamp/plugins/ && chown -R 100:101 /headlamp/plugins
+          # No chown needed (unlike the plugin's own doc example): this
+          # image's own default user is already 100:101, matching the
+          # main container - a chown here would actually fail, since a
+          # non-root process can't change file ownership even on files
+          # it already owns.
+          - cp -r /plugins/* /headlamp/plugins/
         volumeMounts:
           - name: plugins
             mountPath: /headlamp/plugins
