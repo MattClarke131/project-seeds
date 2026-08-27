@@ -1,0 +1,12 @@
+# immich ships only as an OCI chart, no traditional chart repo - url is
+# the registry root; helmrelease.yaml's spec.chart.chart names the chart
+# within it (immich).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: immich
+  namespace: immich
+spec:
+  type: oci
+  interval: 1h
+  url: oci://ghcr.io/immich-app/immich-charts

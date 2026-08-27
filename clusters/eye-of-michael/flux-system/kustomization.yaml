@@ -12,3 +12,4 @@ resources:
   - intel-gpu-plugin.yaml
   - tunnel.yaml
   - downloads-standard.yaml
+  - immich.yaml
