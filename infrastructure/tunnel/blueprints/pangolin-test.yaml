@@ -1,0 +1,10 @@
+public-resources:
+  pangolin-test:
+    name: "Pangolin Test"
+    mode: http
+    full-domain: pangolin-test.labmatt.com
+    targets:
+      - site: faithful-brachyurophis-fasciolatus
+        method: http
+        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        port: 80
