@@ -18,10 +18,11 @@ cluster-side pieces that run the bot itself.
   `MattClarke131/project-seeds`
 
 ## Apply
-```
-kubectl apply -f infrastructure/kubernetes/ci-cd/namespace.yaml
-kubectl apply -f infrastructure/kubernetes/ci-cd/renovate/cronjob.yaml
-```
+
+This namespace and the CronJob are Flux-managed (see
+[../../../../clusters/eye-of-michael/README.md](../../../../clusters/eye-of-michael/README.md))
+- editing `cronjob.yaml` and merging to `main` is the deploy step; there's
+no `kubectl apply` to run by hand any more.
 
 ## GitHub token
 
