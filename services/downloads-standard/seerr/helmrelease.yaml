@@ -1,0 +1,41 @@
+# image.tag is pinned deliberately, not left at the chart default -
+# never track :latest on a release with persistent state. Only
+# gimme.labmatt.com is listed; that's the one host actually in use.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: seerr
+  namespace: downloads-standard
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: seerr
+  chart:
+    spec:
+      chart: seerr-chart
+      version: "3.9.1"
+      sourceRef:
+        kind: HelmRepository
+        name: seerr
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    image:
+      tag: v3.4.1
+
+    config:
+      persistence:
+        size: 20Gi
+
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - host: gimme.labmatt.com
+          paths:
+            - path: /
+              pathType: Prefix

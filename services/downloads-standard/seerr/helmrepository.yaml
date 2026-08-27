@@ -1,0 +1,12 @@
+# seerr ships only as an OCI chart, no traditional chart repo - url is
+# the registry root; helmrelease.yaml's spec.chart.chart names the chart
+# within it (seerr-chart).
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: seerr
+  namespace: downloads-standard
+spec:
+  type: oci
+  interval: 1h
+  url: oci://ghcr.io/seerr-team/seerr

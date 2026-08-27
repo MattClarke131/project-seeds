@@ -11,3 +11,4 @@ resources:
   - ci-cd.yaml
   - intel-gpu-plugin.yaml
   - tunnel.yaml
+  - downloads-standard.yaml
