@@ -14,3 +14,4 @@ resources:
   - downloads-standard.yaml
   - immich.yaml
   - jellyfin.yaml
+  - project-management.yaml
