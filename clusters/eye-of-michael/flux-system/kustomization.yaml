@@ -10,3 +10,4 @@ resources:
   - ingress.yaml
   - ci-cd.yaml
   - intel-gpu-plugin.yaml
+  - tunnel.yaml
