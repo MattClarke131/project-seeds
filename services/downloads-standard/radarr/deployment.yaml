@@ -10,6 +10,7 @@ spec:
   # concurrent writers from two nodes can corrupt state on this PVC.
   strategy:
     type: Recreate
+    rollingUpdate: null
   selector:
     matchLabels:
       app: radarr-standard
