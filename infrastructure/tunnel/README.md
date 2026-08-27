@@ -65,3 +65,22 @@ kubectl logs -n tunnel -l app=newt
 ```
 
 Site should show "Online" in Pangolin dashboard.
+
+## Version tracking
+
+Pangolin/Gerbil/Traefik/Badger on the VPS aren't Flux-managed, so nothing
+auto-upgrades them. `docker-compose.yml` and `badger-plugin-version.yml`
+in this directory are mirrors of the real files on the VPS, kept only so
+Renovate scans them and surfaces version drift (PRs / Dependency
+Dashboard entries) - they are never applied by CI. When Renovate flags a
+bump here:
+
+1. SSH to the VPS (`root@<floating IP from opentofu output>`) and check
+   `docker ps` for the versions actually running - the mirrors can lag if
+   a manual upgrade wasn't reflected back here.
+2. Upgrade for real via `docker compose down/pull/up -d` in `/root`,
+   backing up `/root/config` first. Prefer incremental hops over large
+   version jumps; check upstream release notes for breaking changes and
+   required Badger/Newt versions first.
+3. Update the versions in `docker-compose.yml` / `badger-plugin-version.yml`
+   here to match, and merge the Renovate PR (or close it) accordingly.

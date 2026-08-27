@@ -1,0 +1,12 @@
+# Tracking stub for the Traefik Badger plugin version configured in
+# config/traefik/traefik_config.yml on the edge-proxy VPS (see
+# docker-compose.yml in this directory for why this file exists).
+# Pangolin's own migrations bump the real file automatically when you
+# upgrade pangolin past a version that requires a newer Badger - keep
+# this in sync with whatever ends up deployed so Renovate can flag when
+# a newer Badger release exists independently of a pangolin bump.
+experimental:
+  plugins:
+    badger:
+      moduleName: github.com/fosrl/badger
+      version: v1.5.0

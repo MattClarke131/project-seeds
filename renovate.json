@@ -17,6 +17,17 @@
       "/^infrastructure/kubernetes/.+\\.ya?ml$/"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "infrastructure/tunnel/README.md - Pangolin's edge-proxy VPS stack runs outside Kubernetes/Flux, so track the Traefik Badger plugin version via this stub instead of the kubernetes/flux managers",
+      "managerFilePatterns": ["/^infrastructure/tunnel/badger-plugin-version\\.ya?ml$/"],
+      "matchStrings": ["moduleName:\\s*github\\.com/fosrl/badger\\s*\\n\\s*version:\\s*(?<currentValue>v?[\\d.]+)"],
+      "depNameTemplate": "fosrl/badger",
+      "packageNameTemplate": "fosrl/badger",
+      "datasourceTemplate": "github-releases"
+    }
+  ],
   "packageRules": [
     {
       "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
