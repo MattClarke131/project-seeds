@@ -6,3 +6,47 @@ resources:
   - namespace.yaml
   - seerr/helmrepository.yaml
   - seerr/helmrelease.yaml
+  - prowlarr/deployment.yaml
+  - prowlarr/ingress.yaml
+  - prowlarr/pvc.yaml
+  - prowlarr/service.yaml
+  - radarr/deployment.yaml
+  - radarr/ingress.yaml
+  - radarr/postgres-databases.yaml
+  - radarr/pvc-config.yaml
+  - radarr/pvc-media.yaml
+  - radarr/service.yaml
+  - radarr-portuguese/deployment.yaml
+  - radarr-portuguese/ingress.yaml
+  - radarr-portuguese/postgres-databases.yaml
+  - radarr-portuguese/pvc-config.yaml
+  - radarr-portuguese/service.yaml
+  - sonarr/deployment.yaml
+  - sonarr/ingress.yaml
+  - sonarr/postgres-databases.yaml
+  - sonarr/pvc-config.yaml
+  - sonarr/service.yaml
+  - sonarr-anime/deployment.yaml
+  - sonarr-anime/ingress.yaml
+  - sonarr-anime/postgres-databases.yaml
+  - sonarr-anime/pvc-config.yaml
+  - sonarr-anime/service.yaml
+  - sonarr-portuguese/deployment.yaml
+  - sonarr-portuguese/ingress.yaml
+  - sonarr-portuguese/postgres-databases.yaml
+  - sonarr-portuguese/pvc-config.yaml
+  - sonarr-portuguese/service.yaml
+  - bazarr/deployment.yaml
+  - bazarr/ingress.yaml
+  - bazarr/postgres-databases.yaml
+  - bazarr/pvc-config.yaml
+  - bazarr/service.yaml
+  - sabnzbd/deployment.yaml
+  - sabnzbd/ingress.yaml
+  - sabnzbd/pvc-config.yaml
+  - sabnzbd/service.yaml
+  - recyclarr/configmap.yaml
+  - recyclarr/cronjob.yaml
+  - upgrade-search/configmap.yaml
+  - upgrade-search/cronjob.yaml
+  - upgrade-search/pvc.yaml
