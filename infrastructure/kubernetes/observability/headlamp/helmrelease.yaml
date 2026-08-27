@@ -5,8 +5,6 @@ metadata:
   namespace: observability
 spec:
   interval: 30m
-  # Flux's own default (unlike jellyfin's 15m, copied from that chart's
-  # heavier pull/startup - too generous for this single small binary).
   timeout: 5m
   releaseName: headlamp
   chart:
