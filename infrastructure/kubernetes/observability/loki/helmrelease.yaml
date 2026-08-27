@@ -45,10 +45,7 @@ spec:
       # No retention was ever configured before this cutover - logs had
       # been accumulating since the 2026-02-08 install (~117GiB and
       # growing, already past the PVC's nominal 50Gi since nfs-provisioner
-      # doesn't enforce that as a real quota). 180 days at the observed
-      # ~0.6GiB/day growth rate settles around ~108GiB steady-state -
-      # see singleBinary.persistence.size below, bumped to stay honest
-      # about that.
+      # doesn't enforce that as a real quota).
       limits_config:
         retention_period: 4320h
       compactor:
@@ -61,7 +58,16 @@ spec:
       persistence:
         enabled: true
         storageClass: nfs-provisioner
-        size: 150Gi
+        # Left at 50Gi, matching the live PVC, even though actual usage
+        # is already ~117GiB - a StatefulSet's volumeClaimTemplates size
+        # is immutable in place (Kubernetes rejects any change to it
+        # server-side, confirmed live: changing this to 150Gi here failed
+        # the whole HelmRelease reconcile with "Forbidden: updates to
+        # statefulset spec ... other than ... are forbidden"). Fixing the
+        # PVC's declared size for real means a deliberate, disruptive
+        # StatefulSet delete+recreate - not something to fold into a
+        # routine values change.
+        size: 50Gi
         # Chart defaults both to Delete - under Flux's prune:true, a bad
         # merge that drops this manifest from the kustomization would
         # delete the StatefulSet and, with the chart default, the PVC and

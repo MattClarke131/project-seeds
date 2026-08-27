@@ -16,9 +16,7 @@ loki:
   storage:
     type: filesystem
   # No retention was ever configured before this cutover - logs had been
-  # accumulating since the 2026-02-08 install. 180 days at the observed
-  # ~0.6GiB/day growth rate settles around ~108GiB steady-state - see
-  # singleBinary.persistence.size below, bumped to stay honest about that.
+  # accumulating since the 2026-02-08 install.
   limits_config:
     retention_period: 4320h
   compactor:
@@ -31,7 +29,16 @@ singleBinary:
   persistence:
     enabled: true
     storageClass: nfs-provisioner
-    size: 150Gi
+    # Left at 50Gi, matching the live PVC, even though actual usage is
+    # already ~117GiB - a StatefulSet's volumeClaimTemplates size is
+    # immutable in place (Kubernetes rejects any change to it
+    # server-side, confirmed live: changing this to 150Gi failed the
+    # whole HelmRelease reconcile with "Forbidden: updates to
+    # statefulset spec ... other than ... are forbidden"). Fixing the
+    # PVC's declared size for real means a deliberate, disruptive
+    # StatefulSet delete+recreate - not something to fold into a
+    # routine values change.
+    size: 50Gi
     # Chart defaults both to Delete - under Flux's prune:true, a bad merge
     # that drops this manifest from the kustomization would delete the
     # StatefulSet and, with the chart default, the PVC and all log history
