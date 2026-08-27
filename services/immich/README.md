@@ -34,11 +34,10 @@ kubectl create secret generic immich-db-user \
 mkdir -p /mnt/sleipnir/photos/{thumbs,upload,backups,library,profile,encoded-video}
 touch /mnt/sleipnir/photos/{thumbs,upload,backups,library,profile,encoded-video}/.immich
 ```
-2. `kubectl apply -f namespace.yaml`
-3. Create secrets (above)
-4. `kubectl apply -f cnpg-cluster.yaml`
-5. `kubectl apply -f library-pvc.yaml`
-6. `helm install immich oci://ghcr.io/immich-app/immich-charts/immich --namespace immich -f helm-values.yaml`
+2. Create secrets (above) - Flux doesn't manage these, see the Secrets section
+3. Everything else (namespace, CNPG cluster, library PVC, the `immich` Helm
+   release via `HelmRepository`/`HelmRelease`) is Flux-managed - merging to
+   `main` is the deploy step.
 
 ## Post-deploy notes
 

@@ -1,0 +1,9 @@
+# Not its own Flux category - deploys into the immich namespace, bundled
+# into that category by services/immich/kustomization.yaml referencing this
+# directory as a base.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - ingress.yaml
+  - service.yaml
