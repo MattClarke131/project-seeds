@@ -9,3 +9,4 @@ resources:
   - cert-manager.yaml
   - ingress.yaml
   - ci-cd.yaml
+  - intel-gpu-plugin.yaml
