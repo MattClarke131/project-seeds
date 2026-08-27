@@ -7,3 +7,4 @@ resources:
   - database.yaml
   - storage.yaml
   - cert-manager.yaml
+  - ingress.yaml
