@@ -1,11 +1,10 @@
-# See services/jellyfin/ingress-block-metrics.yaml for the mechanism this
-# relies on: headlamp.labmatt.com sits under the labmatt.com Cloudflare
-# wildcard record like every other host, but only resolves to the
-# in-cluster ingress-nginx LoadBalancer's private IP for tailnet/LAN
-# clients via internal DNS - it's never registered as internet-reachable,
-# so no equivalent Pangolin/Cloudflare-facing route is needed. That
-# internal DNS override lives outside this repo and still needs adding for
-# this host - see #77.
+# headlamp.labmatt.com resolves via the *.labmatt.com Cloudflare wildcard
+# (infrastructure/cloudflare/opentofu/main.tf), which already points at
+# ingress-nginx's internal LoadBalancer IP (10.0.10.2), not a public one -
+# same mechanism jellyfin.labmatt.com uses (see
+# services/jellyfin/ingress-block-metrics.yaml). Only names listed in
+# tunnel_hostnames get an override to Pangolin's public IP instead; this
+# host isn't in that list, so no DNS work is needed here - see #77.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
