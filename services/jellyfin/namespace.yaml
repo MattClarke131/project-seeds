@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jellyfin
+  labels:
+    # Required for the jellyfin pod's hostPath mount of /dev/dri (Intel iGPU
+    # passthrough for hardware transcoding, see values.yaml's affinity) -
+    # hostPath volumes are blocked below the privileged PSA level.
+    pod-security.kubernetes.io/enforce: privileged

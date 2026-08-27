@@ -13,3 +13,4 @@ resources:
   - tunnel.yaml
   - downloads-standard.yaml
   - immich.yaml
+  - jellyfin.yaml

@@ -6,14 +6,10 @@
 # infrastructure/kubernetes/observability/TARGETDOWN-INVESTIGATION.md for
 # the full story.
 #
-# jellyfin.labmatt.com (the other host on the main jellyfin Ingress)
-# resolves to the in-cluster ingress-nginx LoadBalancer's private IP
-# (10.0.10.2) and is never internet-reachable, so it doesn't need this.
-#
 # An exact-path rule takes precedence over the main Ingress's "/" prefix
 # rule in nginx's location matching, so this intercepts only /metrics on
-# mattflix.labmatt.com while leaving every other path on that host, and
-# jellyfin.labmatt.com entirely, unaffected.
+# mattflix.labmatt.com while leaving every other path on that host
+# unaffected.
 #
 # nginx.ingress.kubernetes.io/configuration-snippet (a clean `return 403`)
 # is disabled cluster-wide by the ingress-nginx admission webhook, so

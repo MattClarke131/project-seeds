@@ -15,7 +15,9 @@ spec:
     spec:
       containers:
         - name: jellystat
-          image: cyfershepard/jellystat:latest
+          # Pinned from :latest - resolved via the running pod's imageID
+          # digest against Docker Hub's tag API (issue #12).
+          image: cyfershepard/jellystat:1.1.11
           env:
             - name: POSTGRES_DB
               value: jfstat
