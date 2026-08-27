@@ -26,6 +26,12 @@ git add kube-prometheus-stack/prometheus-targets-configmap.yaml
 git commit
 ```
 
+### Metrics Server
+
+`metrics-server` is Flux-managed (`metrics-server/helmrelease.yaml`) -
+editing `helmrelease.yaml`'s `spec.values` and merging to `main` is the
+deploy step; there's no `helm upgrade` to run by hand any more.
+
 ### Loki + Promtail
 1. Install Loki
 ```bash
