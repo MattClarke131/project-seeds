@@ -50,3 +50,7 @@ resources:
   - upgrade-search/configmap.yaml
   - upgrade-search/cronjob.yaml
   - upgrade-search/pvc.yaml
+  - qbittorrent-vpn/deployment.yaml
+  - qbittorrent-vpn/ingress.yaml
+  - qbittorrent-vpn/pvc-config.yaml
+  - qbittorrent-vpn/service.yaml
