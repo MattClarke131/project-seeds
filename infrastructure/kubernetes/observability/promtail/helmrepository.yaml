@@ -1,0 +1,12 @@
+# Shared with loki's eventual HelmRelease (same chart source,
+# grafana.github.io/helm-charts) - defined here since promtail is
+# cutting over first; loki's cutover will reference this by name rather
+# than redefining it.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: observability
+spec:
+  interval: 1h
+  url: https://grafana.github.io/helm-charts
