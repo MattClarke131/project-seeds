@@ -1,7 +1,3 @@
-# Migrated from a manually-run `helm install`/`helm upgrade` (see
-# services/immich/README.md's old install step and git history for the
-# retired helm-values.yaml) as part of #15 - Flux now owns this release.
-# Values below are unchanged from that file; only the wrapper is new.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
