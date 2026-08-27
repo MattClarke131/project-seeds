@@ -1,10 +1,5 @@
 # Flux-managed. See clusters/eye-of-michael/flux-system/downloads-standard.yaml
 # for the Kustomization CR that reconciles this path.
-#
-# Only namespace.yaml + seerr/ are listed here - everything else in this
-# directory (the *arr apps, bazarr, sabnzbd, prowlarr, recyclarr,
-# upgrade-search, qbittorrent-vpn) is still manually managed, deliberately
-# excluded from this list rather than just not yet added.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:

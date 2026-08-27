@@ -1,6 +1,5 @@
 # image.tag is pinned deliberately, not left at the chart default -
-# never track :latest on a release with persistent state. Only
-# gimme.labmatt.com is listed; that's the one host actually in use.
+# never track :latest on a release with persistent state.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
