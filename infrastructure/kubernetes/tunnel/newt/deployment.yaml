@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: newt
-        image: fosrl/newt:latest
+        image: fosrl/newt:1.15.0
         env:
         - name: PANGOLIN_ENDPOINT
           valueFrom:
