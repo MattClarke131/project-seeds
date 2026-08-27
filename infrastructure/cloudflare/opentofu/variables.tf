@@ -40,6 +40,7 @@ variable "tunnel_hostnames" {
     "gimme",
     "mattflix",
     "pangolin",
+    "pangolin-test",
   ]
 }
 
