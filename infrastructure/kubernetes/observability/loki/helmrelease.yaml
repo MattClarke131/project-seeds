@@ -1,0 +1,88 @@
+# Migrated from a manually-run `helm install` (see values.yaml for the
+# equivalent standalone file, kept as reference) as part of #15 - Flux
+# now owns this release. Uses the `grafana` HelmRepository defined in
+# ../promtail/helmrepository.yaml, same chart source.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: observability
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: loki
+  chart:
+    spec:
+      chart: loki
+      version: "6.52.0"
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    deploymentMode: SingleBinary
+
+    loki:
+      auth_enabled: false
+      commonConfig:
+        replication_factor: 1
+      schemaConfig:
+        configs:
+          - from: "2026-01-01"
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: loki_index_
+              period: 24h
+      storage:
+        type: filesystem
+
+    singleBinary:
+      replicas: 1
+      persistence:
+        enabled: true
+        storageClass: nfs-provisioner
+        size: 50Gi
+        # Chart defaults both to Delete - under Flux's prune:true, a bad
+        # merge that drops this manifest from the kustomization would
+        # delete the StatefulSet and, with the chart default, the 50Gi
+        # PVC and all log history along with it (the PV's own reclaim
+        # policy is also Delete, so PVC deletion is unrecoverable).
+        # Retain means the same accidental deletion only removes the
+        # StatefulSet; the PVC/PV survive since nothing deletes them as
+        # a side effect.
+        whenDeleted: Retain
+        whenScaled: Retain
+
+    read:
+      replicas: 0
+    write:
+      replicas: 0
+    backend:
+      replicas: 0
+
+    resultsCache:
+      enabled: true
+
+    chunksCache:
+      enabled: false
+
+    lokiCanary:
+      enabled: false
+
+    monitoring:
+      selfMonitoring:
+        enabled: false
+        grafanaAgent:
+          installOperator: false
+        lokiCanary:
+          enabled: false
+
+    test:
+      enabled: false

@@ -22,6 +22,15 @@ singleBinary:
     enabled: true
     storageClass: nfs-provisioner
     size: 50Gi
+    # Chart defaults both to Delete - under Flux's prune:true, a bad merge
+    # that drops this manifest from the kustomization would delete the
+    # StatefulSet and, with the chart default, the 50Gi PVC and all log
+    # history along with it (the PV's own reclaim policy is also Delete,
+    # so PVC deletion is unrecoverable). Retain means the same accidental
+    # deletion only removes the StatefulSet; the PVC/PV survive since
+    # nothing deletes them as a side effect.
+    whenDeleted: Retain
+    whenScaled: Retain
 
 read:
   replicas: 0
