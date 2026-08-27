@@ -2,6 +2,10 @@
 
 Scrapes Jellyfin's `/Sessions` endpoint for playback metrics.
 
+The chart itself is Flux-managed (`helmrelease.yaml`). Only the Secret
+below stays a manual step - it's excluded from the kustomization the same
+as `renovate-github-token`/`newt-auth` are.
+
 The `render-config` init container injects the API token at pod startup,
 reading it from the `json-exporter-jellyfin-token` Secret and substituting
 it into a templated config on a shared volume. To (re)create that Secret:

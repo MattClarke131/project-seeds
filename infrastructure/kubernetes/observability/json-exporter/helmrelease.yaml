@@ -1,0 +1,121 @@
+# Migrated from a manually-run `helm install/upgrade` (see README.md) as
+# part of #15 - Flux now owns this release. Values transcribed from the
+# old standalone values.yaml (removed, now redundant with spec.values
+# below). Still relies on the json-exporter-jellyfin-token Secret - see
+# README.md - excluded from this kustomization the same as
+# renovate-github-token/newt-auth were.
+#
+# Uses the `prometheus-community` HelmRepository defined in
+# ../kube-prometheus-stack/helmrepository.yaml, same chart source.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: json-exporter
+  namespace: observability
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: json-exporter
+  chart:
+    spec:
+      chart: prometheus-json-exporter
+      version: "0.19.2"
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    replicaCount: 1
+
+    serviceMonitor:
+      enabled: true
+      defaults:
+        interval: 30s
+        scrapeTimeout: 10s
+        labels:
+          release: kube-prometheus-stack
+      targets:
+        - name: jellyfin
+          url: http://jellyfin.jellyfin.svc.cluster.local:8096/Sessions
+          module: jellyfin
+
+    # Template only - ${JELLYFIN_TOKEN} gets substituted at pod startup by
+    # the render-config init container below, reading from a Secret. Never
+    # contains a real token, safe to commit.
+    configuration:
+      config: |
+        ---
+        modules:
+          jellyfin:
+            headers:
+              Content-Type: application/json
+              Accept: application/json
+              Authorization: "MediaBrowser Token=${JELLYFIN_TOKEN}"
+            metrics:
+              - name: jellyfin
+                type: object
+                help: User playback metrics from Jellyfin
+                path: '{ [?(@.NowPlayingItem)] }'
+                labels:
+                  user_name: '{ .UserName }'
+                  item_type: '{ .NowPlayingItem.Type }'
+                  item_name: '{ .NowPlayingItem.Name }'
+                  series_name: '{ .NowPlayingItem.SeriesName }'
+                  client_name: '{ .Client }'
+                  device_name: '{ .DeviceName }'
+                  session_id: '{ .Id }'
+                  item_path: '{ .NowPlayingItem.Path }'
+                  episode_index: 'e{ .NowPlayingItem.IndexNumber }'
+                  season_index: 's{ .NowPlayingItem.ParentIndexNumber }'
+                  play_method: '{ .PlayState.PlayMethod }'
+                values:
+                  is_paused: '{ .PlayState.IsPaused }'
+
+    # Renders the real config (with the actual token) onto a shared
+    # emptyDir at startup. The chart always mounts its own ConfigMap (the
+    # template above) at config-configmap-volume - referenced here by
+    # name, not redefined - so this only needs to add where the
+    # *rendered* copy goes.
+    extraInitContainers:
+      - name: render-config
+        image: alpine:3.24
+        command:
+          - sh
+          - -c
+          - apk add --no-cache gettext >/dev/null && envsubst < /template/config.yml > /shared/config.yml
+        env:
+          - name: JELLYFIN_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: json-exporter-jellyfin-token
+                key: token
+        volumeMounts:
+          - name: config-configmap-volume
+            mountPath: /template/config.yml
+            subPath: config.yml
+          - name: rendered-config
+            mountPath: /shared
+
+    # Point the main container at the rendered copy instead of the raw
+    # template. log.level=warn is load-bearing, not just quieter output:
+    # at the default "info" level this binary logs its fully-parsed
+    # config - including the resolved Authorization header - in
+    # plaintext on every startup.
+    extraArgs:
+      - name: --config.file
+        value: /shared/config.yml
+      - name: --log.level
+        value: warn
+
+    additionalVolumes:
+      - name: rendered-config
+        emptyDir: {}
+
+    additionalVolumeMounts:
+      - name: rendered-config
+        mountPath: /shared
