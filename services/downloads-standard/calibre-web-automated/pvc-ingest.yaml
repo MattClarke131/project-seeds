@@ -1,0 +1,17 @@
+# CWA's watched ingest folder: anything dropped here is auto-converted and
+# imported into cwa-library, then removed from here. Kept small and
+# separate from the library PVC since it's meant to be transient. The
+# future book-acquisition ticket (issue #18) will point its output at
+# this same PVC/mount.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cwa-ingest
+  namespace: downloads-standard
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-provisioner
+  resources:
+    requests:
+      storage: 5Gi

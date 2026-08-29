@@ -37,6 +37,7 @@ variable "tunnel_hostnames" {
   description = "Subdomains routed through the Pangolin tunnel on the Hetzner edge proxy"
   type        = set(string)
   default = [
+    "books-sync",
     "gimme",
     "mattflix",
     "pangolin",
