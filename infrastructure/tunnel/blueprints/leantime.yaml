@@ -17,3 +17,7 @@ public-resources:
         match: path
         value: /metrics
         priority: 1
+      - action: allow
+        match: country
+        value: US
+        priority: 2
