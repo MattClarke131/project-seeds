@@ -1,5 +1,5 @@
 public-resources:
-  organic-nile-monitor:
+  seerr:
     name: "Seerr"
     mode: http
     full-domain: gimme.labmatt.com

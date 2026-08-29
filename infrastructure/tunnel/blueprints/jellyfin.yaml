@@ -1,5 +1,5 @@
 public-resources:
-  growing-roses-rain-frog:
+  jellyfin:
     name: "Jellyfin"
     mode: http
     full-domain: mattflix.labmatt.com
