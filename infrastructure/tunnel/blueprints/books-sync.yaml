@@ -1,0 +1,24 @@
+# Kobo device sync only (see services/downloads-standard/calibre-web-
+# automated/README.md and issue #17). No SSO: a Kobo can't complete an
+# SSO redirect or hold a session cookie, and the k8s ingress
+# (ingress-books-sync.yaml) already restricts this host to the /kobo/
+# path prefix, so there's nothing else behind it worth gating - auth is
+# the per-user token embedded in the sync URL itself, checked by CWA.
+#
+# Rate limiting on /kobo/ (the one thing not covered by SSO on other
+# resources) isn't expressible in the Blueprint schema - no rate-limit
+# rule action exists alongside allow/deny/pass. Apply it manually in the
+# dashboard if wanted; it won't be clobbered by future blueprint applies
+# since applies only touch the fields specified here.
+public-resources:
+  books-sync:
+    name: "Books Sync"
+    mode: http
+    full-domain: books-sync.labmatt.com
+    targets:
+      - site: faithful-brachyurophis-fasciolatus
+        method: http
+        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        port: 80
+    auth:
+      sso-enabled: false

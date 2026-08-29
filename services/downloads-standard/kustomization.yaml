@@ -54,3 +54,10 @@ resources:
   - qbittorrent-vpn/ingress.yaml
   - qbittorrent-vpn/pvc-config.yaml
   - qbittorrent-vpn/service.yaml
+  - calibre-web-automated/deployment.yaml
+  - calibre-web-automated/ingress.yaml
+  - calibre-web-automated/ingress-books-sync.yaml
+  - calibre-web-automated/pvc-config.yaml
+  - calibre-web-automated/pvc-ingest.yaml
+  - calibre-web-automated/pvc-library.yaml
+  - calibre-web-automated/service.yaml
