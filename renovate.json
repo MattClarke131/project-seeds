@@ -4,6 +4,10 @@
   "dependencyDashboard": true,
   "labels": ["renovate"],
   "prConcurrentLimit": 5,
+  "minimumReleaseAge": "7 days",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0 days"
+  },
   "kubernetes": {
     "managerFilePatterns": [
       "/^services/.+\\.ya?ml$/",
