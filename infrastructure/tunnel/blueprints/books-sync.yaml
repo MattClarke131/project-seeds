@@ -6,10 +6,14 @@
 # the per-user token embedded in the sync URL itself, checked by CWA.
 #
 # Rate limiting on /kobo/ (the one thing not covered by SSO on other
-# resources) isn't expressible in the Blueprint schema - no rate-limit
-# rule action exists alongside allow/deny/pass. Apply it manually in the
-# dashboard if wanted; it won't be clobbered by future blueprint applies
-# since applies only touch the fields specified here.
+# resources) isn't a Pangolin dashboard feature at all - checked the docs,
+# there's no rate-limit rule action, resource setting, or Blueprint field
+# for it. Traefik (which Pangolin runs on) does have a native RateLimit
+# middleware, but that's substrate config on the VPS (out of scope per
+# issue #7), not something reachable from here. If wanted, do it instead
+# via nginx.ingress.kubernetes.io/limit-rps on ingress-books-sync.yaml -
+# enforced at the same ingress that does the /kobo/-only path restriction,
+# fully git-tracked.
 public-resources:
   books-sync:
     name: "Books Sync"
