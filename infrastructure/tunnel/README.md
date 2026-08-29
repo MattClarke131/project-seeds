@@ -82,17 +82,19 @@ this file.
    page and apply. This step is deliberately manual - no scheduled apply,
    no CI trigger, no API call - so it can never silently clobber a change
    made through the dashboard.
-4. **Restart the Newt connector immediately after any apply where a
-   target's stored values actually changed** (site/method/hostname/port),
-   even if nothing looks broken yet:
+4. Watch for an apply error like `Resource already exists: <domain> in
+   org <org>` - it means the resource's key in `blueprint.yaml` doesn't
+   match its real niceId (see schema gotchas below). The apply is
+   rejected outright when this happens; nothing gets touched, so it's
+   safe, but it means the key needs fixing before retrying.
+5. **If the paste touched more than one resource's target**, restart
+   Newt immediately, even if nothing looks broken yet:
    ```bash
    kubectl rollout restart deployment/newt -n tunnel
    ```
-   A no-op apply - identical target values to what's already live - does
-   not trigger this and can skip the restart. When in doubt (e.g. you're
-   not sure the dashboard's stored config matches the file), restart
-   anyway; it's cheap and the alternative is a silent 503.
-5. Verify by curling the actual domain, not the dashboard's health badge:
+   A single-resource apply doesn't need this - verify with curl first
+   (next step) and only restart if something's actually broken.
+6. Verify by curling the actual domain, not the dashboard's health badge:
    ```bash
    curl -o /dev/null -w "%{http_code}\n" https://<domain>
    ```
@@ -101,24 +103,46 @@ this file.
    that's continuously refreshing feedback, just a frozen record from
    whenever it last actually ran.
 
-### Why the Newt restart is (sometimes) required
+### What actually causes the 503s (confirmed by direct testing)
 
-Applying a Blueprint target update whose values actually *differ* from
-what's currently stored reassigns that target a new internal tunnel port
-on the Pangolin side (`checkIfTargetChanged` in `fosrl/pangolin` gates
-this - a no-op apply with identical values skips it entirely, confirmed
-empirically: reapplying jellyfin/seerr unchanged left both healthy with
-no restart). Newt has a live-update path for a changed assignment
-(`newt/tcp/add` / `newt/tcp/remove` over its persistent websocket) that's
-supposed to make a restart unnecessary - but in practice the reassignment
-doesn't propagate, and the resource returns `503` externally even though
-the actual backend is completely healthy. This isn't documented anywhere
-in Pangolin's docs and looks like a real gap between the intended
-live-update path and what `fosrl/pangolin`/`fosrl/newt` actually do on a
-changed target - not something to code around further here, just
-something to expect and correct for. A pod restart forces a full
-reconnect, which picks up the current port assignment and fixes it in a
-few seconds.
+The first real apply of the consolidated `jellyfin`/`seerr`/`pangolin-test`
+blueprint caused `mattflix.labmatt.com` and `gimme.labmatt.com` to both
+503 until `kubectl rollout restart deployment/newt -n tunnel` was run.
+Two theories were tested directly before landing on the real cause:
+
+- **"Any target change reassigns a port and the live-update path doesn't
+  propagate it."** Disproven: isolated single-resource applies with a
+  genuinely different target (hostname-only, then hostname+port
+  together, against `pangolin-test`) live-updated cleanly with zero
+  downtime every time.
+- **"`jellyfin`'s and `seerr`'s keys were wrong"** (written as the
+  display names `jellyfin`/`seerr` instead of their real niceIds,
+  `growing-roses-rain-frog`/`organic-nile-monitor`). This *was* a real
+  bug - fixed in `blueprint.yaml` - but a single-resource apply with a
+  bad key just fails atomically with `Resource already exists: <domain>`
+  and touches nothing, so it doesn't explain the original 503s by
+  itself.
+
+**Confirmed root cause: applying more than one resource's target in the
+same paste breaks Newt's live-update path for all but one of them.**
+Reproduced directly - applying the corrected (correctly-keyed)
+`jellyfin` + `seerr` + `pangolin-test` blueprint together immediately
+502'd `mattflix.labmatt.com`, and the Newt logs showed why:
+`Replacing existing target with ID 1` and `...with ID 2` both fired, but
+only one `Started tcp proxy to ...` line followed - the second target's
+proxy handler never came back up. A restart fixed it immediately, same
+as originally. `pangolin-test` alone (single resource, values genuinely
+different) never showed this; only a same-paste multi-target apply does.
+
+**Practical upshot:** treat a restart as required whenever a paste
+touches **more than one resource's target in the same apply**. A
+single-resource apply - even with a real target diff - does not need
+one; verify with curl first and only restart if something's actually
+broken. Always double-check a resource's key against its real niceId
+before applying, especially for anything not originally created via a
+blueprint (see schema gotchas below) - a bad key at least fails safely
+on its own, but there's no reason to rely on that when it's just as
+easy to get the key right upfront.
 
 ### Blueprint schema gotchas
 

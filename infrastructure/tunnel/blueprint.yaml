@@ -34,7 +34,7 @@ public-resources:
         value: GB
         priority: 5
 
-  jellyfin:
+  growing-roses-rain-frog:
     name: "Jellyfin"
     mode: http
     full-domain: mattflix.labmatt.com
@@ -69,7 +69,7 @@ public-resources:
         value: GB
         priority: 5
 
-  seerr:
+  organic-nile-monitor:
     name: "Seerr"
     mode: http
     full-domain: gimme.labmatt.com
