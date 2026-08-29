@@ -69,31 +69,43 @@ Site should show "Online" in Pangolin dashboard.
 ## Managing Resources via Blueprints
 
 What's exposed through Pangolin (resources, targets, access rules) is
-tracked in git as a [Blueprint](https://docs.pangolin.net/manage/blueprints):
-`infrastructure/tunnel/blueprint.yaml`. This is the source of truth for
-resource/rule config - the dashboard's Settings > Blueprints page is only
-how it gets applied, never edited directly there for anything tracked in
-this file.
+tracked in git as [Blueprints](https://docs.pangolin.net/manage/blueprints):
+**one file per resource** under `infrastructure/tunnel/blueprints/`
+(`jellyfin.yaml`, `seerr.yaml`, `pangolin-test.yaml`, ...). This is the
+source of truth for resource/rule config - the dashboard's
+Settings > Blueprints page is only how it gets applied, never edited
+directly there for anything tracked in these files.
+
+One file per resource is deliberate, not just organizational: applying
+more than one resource's target in the same paste has a confirmed bug
+(see below) where Newt's live-update path breaks for all but one of
+them. Keeping resources in separate files makes "one resource per
+apply" the natural default - "copy this file, paste it" - instead of
+something to remember to do by hand.
 
 **Workflow:**
-1. Edit `blueprint.yaml` (or ask Claude to).
+1. Edit the relevant file(s) under `blueprints/` (or ask Claude to).
 2. Review the diff like any other change.
-3. Paste the file's contents into the dashboard's **Settings > Blueprints**
-   page and apply. This step is deliberately manual - no scheduled apply,
-   no CI trigger, no API call - so it can never silently clobber a change
-   made through the dashboard.
+3. For **each changed file**, paste its full contents into the
+   dashboard's **Settings > Blueprints** page and apply - one file, one
+   apply. Don't combine multiple files into a single paste; if more than
+   one resource genuinely needs updating, apply them one at a time. This
+   step is deliberately manual - no scheduled apply, no CI trigger, no
+   API call - so it can never silently clobber a change made through the
+   dashboard.
 4. Watch for an apply error like `Resource already exists: <domain> in
-   org <org>` - it means the resource's key in `blueprint.yaml` doesn't
-   match its real niceId (see schema gotchas below). The apply is
-   rejected outright when this happens; nothing gets touched, so it's
-   safe, but it means the key needs fixing before retrying.
-5. **If the paste touched more than one resource's target**, restart
-   Newt immediately, even if nothing looks broken yet:
+   org <org>` - it means the resource's key in that file doesn't match
+   its real niceId (see schema gotchas below). The apply is rejected
+   outright when this happens; nothing gets touched, so it's safe, but
+   it means the key needs fixing before retrying.
+5. A single-resource apply (the normal case, one file) does not need a
+   Newt restart - confirmed via direct testing, including with a
+   genuinely different target value. Only restart if you deliberately
+   applied more than one file's resources back-to-back without verifying
+   in between, or if curl (next step) shows something's actually broken:
    ```bash
    kubectl rollout restart deployment/newt -n tunnel
    ```
-   A single-resource apply doesn't need this - verify with curl first
-   (next step) and only restart if something's actually broken.
 6. Verify by curling the actual domain, not the dashboard's health badge:
    ```bash
    curl -o /dev/null -w "%{http_code}\n" https://<domain>
@@ -118,7 +130,8 @@ Two theories were tested directly before landing on the real cause:
 - **"`jellyfin`'s and `seerr`'s keys were wrong"** (written as the
   display names `jellyfin`/`seerr` instead of their real niceIds,
   `growing-roses-rain-frog`/`organic-nile-monitor`). This *was* a real
-  bug - fixed in `blueprint.yaml` - but a single-resource apply with a
+  bug - fixed in the resource's blueprint file - but a single-resource
+  apply with a
   bad key just fails atomically with `Resource already exists: <domain>`
   and touches nothing, so it doesn't explain the original 503s by
   itself.

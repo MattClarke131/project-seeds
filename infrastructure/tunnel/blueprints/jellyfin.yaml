@@ -1,0 +1,35 @@
+public-resources:
+  growing-roses-rain-frog:
+    name: "Jellyfin"
+    mode: http
+    full-domain: mattflix.labmatt.com
+    targets:
+      - site: faithful-brachyurophis-fasciolatus
+        method: http
+        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        port: 80
+    auth:
+      sso-enabled: true
+      sso-roles:
+        - Member
+    rules:
+      - action: deny
+        match: path
+        value: /metrics
+        priority: 1
+      - action: allow
+        match: country
+        value: US
+        priority: 2
+      - action: allow
+        match: country
+        value: DE
+        priority: 3
+      - action: allow
+        match: country
+        value: NL
+        priority: 4
+      - action: allow
+        match: country
+        value: GB
+        priority: 5

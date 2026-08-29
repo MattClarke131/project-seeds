@@ -1,0 +1,31 @@
+public-resources:
+  organic-nile-monitor:
+    name: "Seerr"
+    mode: http
+    full-domain: gimme.labmatt.com
+    targets:
+      - site: faithful-brachyurophis-fasciolatus
+        method: http
+        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        port: 80
+    auth:
+      sso-enabled: true
+      sso-roles:
+        - Member
+    rules:
+      - action: allow
+        match: country
+        value: US
+        priority: 1
+      - action: allow
+        match: country
+        value: DE
+        priority: 2
+      - action: allow
+        match: country
+        value: NL
+        priority: 3
+      - action: allow
+        match: country
+        value: GB
+        priority: 4
