@@ -3,8 +3,6 @@
 ## Infrastructure
 ### TODO
 - [ ] Security audit and hardening
-- [ ] Deploy Velero - Backup/recovery platform
-- [ ] Implement regular restore testing
 - [ ] Tailscale UDP performance optimizations
   ```bash
     root@host:~# tailscale up --advertise-routes=10.0.10.0/24 --accept-routes --ssh --login-server=<login-server>
