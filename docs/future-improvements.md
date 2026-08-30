@@ -6,12 +6,6 @@
   - Replace root SSH password auth on the 3 Proxmox hosts (nicholas, livio, razlo)
     with key-based auth, distinct per node. Scope is just these 3 hypervisors -
     Talos nodes have no SSH/shell at all (accessed via `talosctl` only).
-- [ ] Tailscale UDP performance optimizations
-  ```bash
-    root@host:~# tailscale up --advertise-routes=10.0.10.0/24 --accept-routes --ssh --login-server=<login-server>
-    Warning: UDP GRO forwarding is suboptimally configured on vmbr0, UDP forwarding throughput capability will increase with a configuration change.
-    See https://tailscale.com/s/ethtool-config-udp-gro
-  ```
 
 ### Completed
 - [x] Deploy Jellyfin
