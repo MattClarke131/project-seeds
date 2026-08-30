@@ -26,6 +26,9 @@ kind: Ingress
 metadata:
   name: calibre-web-automated-books-sync
   namespace: downloads-standard
+  annotations:
+    # CWA requires >4k to enable sync
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
 spec:
   ingressClassName: nginx
   rules:
