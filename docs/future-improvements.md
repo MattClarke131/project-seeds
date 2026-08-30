@@ -5,9 +5,6 @@
 - [ ] Security audit and hardening
 - [ ] Deploy Velero - Backup/recovery platform
 - [ ] Implement regular restore testing
-- [ ] Abstract dashboard queries - Add custom labels to Prometheus scrape configs, refactor dashboards to use labels instead of hardcoded IPs
-  - Have Terraform generate a config file with Helm
-  - Terraform should not feed the config directly into Grafana
 - [ ] CI/CD Pipeline
   - Update terraform, talos, kubernetes, and docker images automatically
   - Adopt GitOps (FluxCD or ArgoCD) so committed manifest changes reconcile onto the
@@ -43,3 +40,11 @@
 - [x] Deploy Prometheus and Grafana for monitoring
 - [x] Migrate Bazarr from SQLite to the shared Postgres cluster
 - [x] Set up cloudflare terraform provider for DNS records, firewall settings, etc.
+- [x] Abstract dashboard queries - custom labels (`host`/`hostname`/`role`) on Prometheus
+  scrape configs, dashboards query by label instead of hardcoded IPs. Terraform's
+  `prometheus_scrape_targets` output is the source of truth; `sync-prometheus-targets.sh`
+  + `apply-prometheus-config.sh` turn it into a committed ConfigMap that Flux applies -
+  no direct Terraform-to-Grafana feed. The one remaining manual step (re-running those
+  scripts and committing after a node change) isn't automated: this Terraform root has
+  no remote backend, so CI can't read `tofu output` without that migrating first. Not
+  worth chasing for how rarely nodes change - left as a documented manual step.
