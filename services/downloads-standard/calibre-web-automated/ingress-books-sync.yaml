@@ -10,8 +10,7 @@
 # CWA's Kobo Sync token is embedded directly in the URL
 # (/kobo/<token>/...) and checked per-request by CWA itself - that token
 # is the entire auth for this path by design. See issue #17 for the full
-# reasoning and the required Pangolin dashboard steps (bypass-auth +
-# rate-limit rule scoped to /kobo/) that aren't managed as code here.
+# reasoning.
 #
 # No TLS/cert-manager/force-ssl-redirect here, unlike ingress.yaml
 # (books.labmatt.com): this host is Pangolin-fronted, same pattern as
@@ -38,6 +37,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
     nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "256k"
+    nginx.ingress.kubernetes.io/limit-rps: "5"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
 spec:
   ingressClassName: nginx
   rules:
