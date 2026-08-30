@@ -11,7 +11,6 @@
   ```
 - [ ] Replace SSH password auth with key-based or Vault integration
   - Have different passwords for each node
-- [ ] Template retention/cleanup automation (keep last N template versions for X days)
 
 ### Completed
 - [x] Deploy Jellyfin
