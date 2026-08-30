@@ -5,10 +5,6 @@
 - [ ] Security audit and hardening
 - [ ] Deploy Velero - Backup/recovery platform
 - [ ] Implement regular restore testing
-- [ ] CI/CD Pipeline
-  - Update terraform, talos, kubernetes, and docker images automatically
-  - Adopt GitOps (FluxCD or ArgoCD) so committed manifest changes reconcile onto the
-    cluster automatically instead of requiring manual `kubectl apply`/`tofu apply`.
 - [ ] Tailscale UDP performance optimizations
   ```bash
     root@host:~# tailscale up --advertise-routes=10.0.10.0/24 --accept-routes --ssh --login-server=<login-server>
@@ -48,3 +44,10 @@
   scripts and committing after a node change) isn't automated: this Terraform root has
   no remote backend, so CI can't read `tofu output` without that migrating first. Not
   worth chasing for how rarely nodes change - left as a documented manual step.
+- [x] CI/CD Pipeline - image/manifest/provider bumps auto-PR'd via Renovate (docker,
+  kubernetes, terraform, and now Talos OS version too - see #106); GitOps rollout
+  tracked in #15, hardening in #56. The one remaining piece, OpenTofu apply
+  automation (Atlantis or similar), was deliberately declined for now: not worth
+  the remote-state-backend migration and credential relocation it'd require, given
+  how infrequently this Terraform root actually changes. No ticket filed - revisit
+  if that calculus changes.
