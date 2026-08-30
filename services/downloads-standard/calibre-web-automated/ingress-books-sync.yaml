@@ -12,20 +12,22 @@
 # is the entire auth for this path by design. See issue #17 for the full
 # reasoning and the required Pangolin dashboard steps (bypass-auth +
 # rate-limit rule scoped to /kobo/) that aren't managed as code here.
+#
+# No TLS/cert-manager/force-ssl-redirect here, unlike ingress.yaml
+# (books.labmatt.com): this host is Pangolin-fronted, same pattern as
+# jellyfin's mattflix.labmatt.com and seerr's gimme.labmatt.com - TLS is
+# terminated entirely at the Pangolin/Traefik edge, and Newt tunnels
+# plain HTTP to ingress-nginx from there. force-ssl-redirect on a
+# plain-HTTP-from-Newt request just 308s it instead of serving content -
+# confirmed this broke the resource's cert/health flow on the Pangolin
+# side when it was set.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: calibre-web-automated-books-sync
   namespace: downloads-standard
-  annotations:
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-        - books-sync.labmatt.com
-      secretName: books-sync-tls
   rules:
   - host: books-sync.labmatt.com
     http:
