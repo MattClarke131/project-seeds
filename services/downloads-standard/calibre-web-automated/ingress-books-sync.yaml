@@ -26,6 +26,18 @@ kind: Ingress
 metadata:
   name: calibre-web-automated-books-sync
   namespace: downloads-standard
+  annotations:
+    # CWA's /v1/library/sync packs enough into response headers that a
+    # single proxy-buffer-size bump isn't enough - proxy-buffers-number
+    # and proxy-busy-buffers-size need to grow together or nginx's config
+    # validation itself can reject the value. Sized generously rather
+    # than minimally: this route serves one Kobo's occasional syncs, so
+    # buffer memory cost is negligible, while under-sizing means another
+    # full device-retry debug loop. See:
+    # https://github.com/kubernetes/ingress-nginx/issues/363
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "256k"
 spec:
   ingressClassName: nginx
   rules:
