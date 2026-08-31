@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: sabnzbd-standard
-        image: lscr.io/linuxserver/sabnzbd:latest
+        image: lscr.io/linuxserver/sabnzbd:5.1.2-ls270
         ports:
         - containerPort: 8080
           name: http
