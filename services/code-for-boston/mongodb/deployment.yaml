@@ -1,7 +1,7 @@
 # Dedicated MongoDB for Wekan only - nothing else in this cluster uses
 # Mongo, so this doesn't join the shared Postgres cluster pattern used
-# elsewhere. No auth configured: it's only reachable in-cluster via the
-# ClusterIP Service below, never exposed through an Ingress.
+# elsewhere. No auth configured, so networkpolicy.yaml (not the absence
+# of an Ingress) is what actually keeps this reachable only from wekan.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,7 +22,7 @@ spec:
       containers:
         - name: mongo
           image: mongo:7
-          command: ["mongod", "--storageEngine=wiredTiger"]
+          command: ["mongod", "--storageEngine=wiredTiger", "--bind_ip_all"]
           ports:
             - containerPort: 27017
           volumeMounts:
