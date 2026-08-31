@@ -28,11 +28,11 @@ spec:
       # One line per tenant.
       # e.g.:
       #   - hostssl leantime leantime_user all scram-sha-256
+      - hostssl leantime leantime all scram-sha-256
       #
       # Catch-all: only tenants listed above get in.
       # CNPG appends its own permissive catch-all after this list.
       # This reject line runs first and shadows it.
-      - hostssl leantime leantime all scram-sha-256
       - host all all all reject
   inheritedMetadata:
     annotations:
