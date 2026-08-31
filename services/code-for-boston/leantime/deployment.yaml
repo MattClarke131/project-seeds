@@ -30,7 +30,7 @@ spec:
         - name: leantime
           image: leantime/leantime:3.9.8
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: http
           env:
             - name: LEAN_DB_TYPE
