@@ -1,7 +1,0 @@
-# Flux-managed. See clusters/eye-of-michael/flux-system/databases.yaml for
-# the Kustomization CR that reconciles this path. One directory per
-# datastore engine serving the code-for-boston tenant group.
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - postgres

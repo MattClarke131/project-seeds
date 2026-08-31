@@ -1,13 +1,13 @@
-# Hand-authored, one Kustomization per top-level directory category -
-# see clusters/eye-of-michael/README.md.
+# Hand-authored, same pattern as observability.yaml/database.yaml/etc -
+# see that file's comment.
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: databases
+  name: code-for-boston
   namespace: flux-system
 spec:
   interval: 10m0s
-  path: ./databases
+  path: ./services/code-for-boston
   prune: true
   wait: true
   timeout: 5m0s
