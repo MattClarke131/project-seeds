@@ -36,7 +36,7 @@ spec:
             - name: LEAN_DB_TYPE
               value: postgres
             - name: LEAN_DB_HOST
-              value: postgres-rw.code-for-boston-database
+              value: postgres-rw.code-for-boston-database.svc.cluster.local
             - name: LEAN_DB_PORT
               value: "5432"
             - name: LEAN_DB_DATABASE
