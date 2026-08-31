@@ -102,16 +102,28 @@ jobs:
           tar xz -f kube-linter-linux.tar.gz kube-linter
           sudo install kube-linter /usr/local/bin/kube-linter
 
-      - name: kube-linter (changed manifests only)
+      - name: kube-linter
         id: lint
         run: |
           set -e
-          # Only the manifests this PR touches, same as tofu fmt above - not
-          # a repo-wide sweep, so pre-existing findings elsewhere don't fail
-          # an unrelated PR.
-          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
-            'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
-            ':(exclude)*values.yaml' ':(exclude)*values.yml')
+          # If the ruleset itself changed, a diff-scoped run wouldn't catch
+          # pre-existing violations of a newly-enabled check elsewhere in the
+          # fleet - so that needs every manifest, not just what this PR
+          # touches. Otherwise, only the manifests this PR touches, same as
+          # tofu fmt above, so pre-existing findings elsewhere don't fail an
+          # unrelated PR.
+          config_changed=$(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- .kube-linter.yaml)
+          if [ -n "$config_changed" ]; then
+            echo ".kube-linter.yaml changed - checking the full manifest tree"
+            files=()
+            while IFS= read -r -d '' f; do
+              files+=("$f")
+            done < <(find services infrastructure/kubernetes \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
+          else
+            mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
+              'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
+              ':(exclude)*values.yaml' ':(exclude)*values.yml')
+          fi
 
           echo "files_changed=$([ "${#files[@]}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           if [ "${#files[@]}" -eq 0 ]; then
