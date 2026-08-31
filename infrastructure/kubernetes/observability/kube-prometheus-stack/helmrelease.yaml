@@ -103,8 +103,7 @@ spec:
       # nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so a
       # RollingUpdate can briefly double-mount this PVC across old and new pods.
       # Grafana stores its own state in SQLite, which doesn't tolerate two
-      # concurrent writers - same failure mode that hit Bazarr, see
-      # docs/future-improvements.md.
+      # concurrent writers - same failure mode that hit Bazarr, see #13.
       deploymentStrategy:
         type: Recreate
 
