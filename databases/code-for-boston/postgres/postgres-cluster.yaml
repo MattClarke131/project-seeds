@@ -1,7 +1,5 @@
-# Dedicated CNPG cluster for internet-facing apps shared with the Code for
-# Boston volunteer group (e.g. Leantime) — kept separate from
-# infrastructure/kubernetes/database's cluster so a compromise of a
-# public-facing app can't reach internal-only apps' data.
+# Postgres for apps shared with the Code for Boston volunteer group
+# (e.g. Leantime).
 #
 # Each tenant app should get its own Database + role rather than reusing
 # the bootstrap "app" role below, so one tenant can't read another's data.
