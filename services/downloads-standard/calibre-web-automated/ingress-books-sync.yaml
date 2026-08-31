@@ -1,0 +1,54 @@
+# Kobo device sync only, routed through Pangolin (books-sync added to
+# tunnel_hostnames in infrastructure/cloudflare/opentofu). Only the
+# /kobo/ prefix is declared here, so anything else on this host 404s at
+# the ingress level - a Pangolin config drift can't accidentally expose
+# the admin UI (see ingress.yaml) through this host. Unlike
+# jellyfin/ingress-block-metrics.yaml, no separate block rule is needed:
+# there's no other Ingress on books-sync.labmatt.com to shadow, so
+# nginx's default 404 already covers every other path.
+#
+# CWA's Kobo Sync token is embedded directly in the URL
+# (/kobo/<token>/...) and checked per-request by CWA itself - that token
+# is the entire auth for this path by design. See issue #17 for the full
+# reasoning.
+#
+# No TLS/cert-manager/force-ssl-redirect here, unlike ingress.yaml
+# (books.labmatt.com): this host is Pangolin-fronted, same pattern as
+# jellyfin's mattflix.labmatt.com and seerr's gimme.labmatt.com - TLS is
+# terminated entirely at the Pangolin/Traefik edge, and Newt tunnels
+# plain HTTP to ingress-nginx from there. force-ssl-redirect on a
+# plain-HTTP-from-Newt request just 308s it instead of serving content -
+# confirmed this broke the resource's cert/health flow on the Pangolin
+# side when it was set.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: calibre-web-automated-books-sync
+  namespace: downloads-standard
+  annotations:
+    # CWA's /v1/library/sync packs enough into response headers that a
+    # single proxy-buffer-size bump isn't enough - proxy-buffers-number
+    # and proxy-busy-buffers-size need to grow together or nginx's config
+    # validation itself can reject the value. Sized generously rather
+    # than minimally: this route serves one Kobo's occasional syncs, so
+    # buffer memory cost is negligible, while under-sizing means another
+    # full device-retry debug loop. See:
+    # https://github.com/kubernetes/ingress-nginx/issues/363
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-busy-buffers-size: "256k"
+    nginx.ingress.kubernetes.io/limit-rps: "5"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "3"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: books-sync.labmatt.com
+    http:
+      paths:
+      - path: /kobo/
+        pathType: Prefix
+        backend:
+          service:
+            name: calibre-web-automated
+            port:
+              number: 8083

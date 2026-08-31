@@ -1,0 +1,29 @@
+# Postgres for apps shared with the Code for Boston volunteer group.
+#
+# Each tenant app should get its own Database + role rather than reusing
+# the "app" role CNPG creates by default, so one tenant can't read
+# another's data.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: code-for-boston
+spec:
+  instances: 1
+  storage:
+    size: 10Gi
+    storageClass: nfs-provisioner
+  postgresql:
+    pg_hba:
+      # One line per tenant.
+      # e.g.:
+      #   - hostssl leantime leantime_user all scram-sha-256
+      #
+      # Catch-all: only tenants listed above get in.
+      # CNPG appends its own permissive catch-all after this list.
+      # This reject line runs first and shadows it.
+      - host all all all reject
+  inheritedMetadata:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ""

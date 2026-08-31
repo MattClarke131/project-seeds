@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: gluetun
-        image: ghcr.io/qdm12/gluetun:v3.41.1
+        image: ghcr.io/qdm12/gluetun:v3.41.3
         securityContext:
           capabilities:
             add:
@@ -115,7 +115,7 @@ spec:
       # needs gluetun's network namespace so the call is actually made
       # from the VPN exit IP.
       - name: mam-dynamic-seedbox
-        image: curlimages/curl:8.11.1
+        image: curlimages/curl:8.21.0
         env:
         - name: MAM_ID
           valueFrom:

@@ -65,3 +65,13 @@ kubectl logs -n tunnel -l app=newt
 ```
 
 Site should show "Online" in Pangolin dashboard.
+
+## Managing Resources via Blueprints
+
+What's exposed through Pangolin (resources, targets, access rules) is
+tracked in git as [Blueprints](https://docs.pangolin.net/manage/blueprints)
+under [`infrastructure/tunnel/blueprints/`](blueprints/README.md) - one
+YAML file per resource, applied by hand through the dashboard's
+Settings > Blueprints page. See that directory's README for the
+workflow, why it's one file per resource, and the Blueprint schema
+gotchas.

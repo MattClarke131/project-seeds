@@ -4,6 +4,10 @@
   "dependencyDashboard": true,
   "labels": ["renovate"],
   "prConcurrentLimit": 5,
+  "minimumReleaseAge": "7 days",
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0 days"
+  },
   "kubernetes": {
     "managerFilePatterns": [
       "/^services/.+\\.ya?ml$/",
@@ -17,6 +21,31 @@
       "/^infrastructure/kubernetes/.+\\.ya?ml$/"
     ]
   },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The kubernetes/flux managers above extract chart versions and top-level manifest images, but not images nested inside arbitrary HelmRelease values (e.g. an initContainer) - this tracks Headlamp's pinned Flux plugin image tag explicitly so it isn't silently missed.",
+      "managerFilePatterns": [
+        "/^infrastructure/kubernetes/observability/headlamp/helmrelease\\.yaml$/"
+      ],
+      "matchStrings": [
+        "image: (?<depName>ghcr\\.io/headlamp-k8s/headlamp-plugin-flux):(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the fleet's target Talos OS version (locals.talos_version) so a new release shows up as a PR - this only bumps the pinned version string, it does not run talosctl upgrade against live nodes. Deliberately excludes cluster_secrets_talos_version right below it, which must never track this value (see comment in locals.tf).",
+      "managerFilePatterns": [
+        "/^infrastructure/proxmox/opentofu/locals\\.tf$/"
+      ],
+      "matchStrings": [
+        "(?<!cluster_secrets_)talos_version\\s*=\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "depNameTemplate": "siderolabs/talos",
+      "datasourceTemplate": "github-releases"
+    }
+  ],
   "packageRules": [
     {
       "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",

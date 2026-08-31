@@ -5,6 +5,7 @@ resources:
   - gotk-sync.yaml
   - observability.yaml
   - database.yaml
+  - databases.yaml
   - storage.yaml
   - cert-manager.yaml
   - ingress.yaml

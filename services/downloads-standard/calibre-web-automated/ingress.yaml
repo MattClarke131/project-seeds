@@ -1,0 +1,30 @@
+# Full web UI/admin, tailnet/LAN-only: resolves via the *.labmatt.com
+# wildcard -> in-cluster ingress-nginx LoadBalancer's private IP, never
+# touches Pangolin. Same pattern as sonarr.labmatt.com. See
+# ingress-books-sync.yaml for the separate, path-restricted public host
+# used for Kobo device sync.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: calibre-web-automated
+  namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - books.labmatt.com
+      secretName: books-tls
+  rules:
+  - host: books.labmatt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: calibre-web-automated
+            port:
+              number: 8083

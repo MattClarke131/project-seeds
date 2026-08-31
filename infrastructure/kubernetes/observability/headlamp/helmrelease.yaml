@@ -1,0 +1,89 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: headlamp
+  namespace: observability
+spec:
+  interval: 30m
+  timeout: 15m
+  releaseName: headlamp
+  chart:
+    spec:
+      chart: headlamp
+      version: "0.45.0"
+      sourceRef:
+        kind: HelmRepository
+        name: headlamp
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    serviceAccount:
+      # Named explicitly (chart default is fullname-generated) so
+      # flux-rbac.yaml's ClusterRoleBinding subject can reference it without
+      # guessing the generated name.
+      name: headlamp
+
+    clusterRoleBinding:
+      # Chart default is cluster-admin. `view` (built-in, read-only,
+      # excludes Secrets) plus flux-rbac.yaml's extra read access to Flux's
+      # own CRDs covers everything the UI and its Flux plugin need.
+      clusterRoleName: view
+
+    config:
+      # Tailnet-only exposure (no OIDC provider set up anywhere in this
+      # cluster) - let the pod authenticate as its own ServiceAccount
+      # instead of prompting for a token. Safe here specifically because
+      # that ServiceAccount is scoped to view/flux-view above, not
+      # cluster-admin.
+      unsafeUseServiceAccountToken: true
+
+    initContainers:
+      - name: install-flux-plugin
+        image: ghcr.io/headlamp-k8s/headlamp-plugin-flux:v0.7.0
+        command:
+          - sh
+          - -c
+          # No chown needed (unlike the plugin's own doc example): this
+          # image's own default user is already 100:101, matching the
+          # main container - a chown here would actually fail, since a
+          # non-root process can't change file ownership even on files
+          # it already owns.
+          - cp -r /plugins/* /headlamp/plugins/
+        volumeMounts:
+          - name: plugins
+            mountPath: /headlamp/plugins
+
+    volumes:
+      - name: plugins
+        emptyDir: {}
+
+    volumeMounts:
+      - name: plugins
+        mountPath: /headlamp/plugins
+
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      hosts:
+        - host: headlamp.labmatt.com
+          paths:
+            - path: /
+              type: Prefix
+      tls:
+        - hosts:
+            - headlamp.labmatt.com
+          secretName: headlamp-tls
+
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 256Mi
