@@ -29,9 +29,8 @@ so it isn't the right mitigation for that case.)
 
 ---
 
-**IF** a GitOps controller (FluxCD/ArgoCD, already on
-`docs/future-improvements.md`) gets deployed with broad standing
-permissions to reconcile this repo onto the cluster -
+**IF** a GitOps controller (FluxCD/ArgoCD, see #15) gets deployed with
+broad standing permissions to reconcile this repo onto the cluster -
 
 **THEN** scope its ServiceAccount's RBAC tightly (deny
 `hostNetwork`/privileged pod creation at minimum) and add an admission
