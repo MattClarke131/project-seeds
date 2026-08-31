@@ -1,7 +1,6 @@
 # code-for-boston
 
-Apps serving the Code for Boston volunteer group, plus the dedicated
-Postgres cluster (`postgres/`) they share. Flux-managed — see
+Apps serving the Code for Boston volunteer group. Flux-managed — see
 `clusters/eye-of-michael/flux-system/code-for-boston.yaml` for the
 Kustomization CR that reconciles this path.
 
@@ -12,11 +11,10 @@ alongside Wekan (below) in the shared `code-for-boston` namespace.
 
 ### Dependencies
 
-- The `postgres/` cluster in this directory — a dedicated `leantime`
-  role/database there (least-privilege: just the `leantime` database,
-  not the internal cluster's shared `app` role), plus a matching
-  `pg_hba` line and `code-for-boston` in
-  `reflection-allowed-namespaces`.
+- Needs MySQL, not the shared Postgres cluster used elsewhere in this
+  repo: the `leantime/leantime` Docker image has no `pdo_pgsql` PHP
+  extension (only `pdo_mysql`), so it gets its own single-instance
+  MariaDB (`mariadb/`) reachable only in-cluster.
 - Pangolin tunnel — `leantime.labmatt.com` is added to `tunnel_hostnames`
   in `infrastructure/cloudflare/opentofu`.
 
@@ -43,10 +41,10 @@ These aren't covered by Flux and need doing once, after merge:
 kubectl create secret generic leantime-session -n code-for-boston \
   --from-literal=LEAN_SESSION_PASSWORD=$(openssl rand -hex 32)
 
-kubectl create secret generic leantime-postgres-credentials \
-  -n code-for-boston-database \
+kubectl create secret generic leantime-mysql-credentials -n code-for-boston \
   --from-literal=username=leantime \
-  --from-literal=password=$(openssl rand -hex 32)
+  --from-literal=password=$(openssl rand -hex 32) \
+  --from-literal=root-password=$(openssl rand -hex 32)
 ```
 
 Also run `tofu apply` in `infrastructure/cloudflare/opentofu` for the two
