@@ -79,3 +79,34 @@ jobs:
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             -ignore-missing-schemas \
             "${files[@]}"
+
+  kubernetes-manifest-lint:
+    name: Kubernetes manifest lint (kube-linter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install kube-linter
+        env:
+          KUBE_LINTER_VERSION: "0.8.3"
+          KUBE_LINTER_SHA256: "618d299a3e2839c8ca9d86fce0db617be0fba41f0fecbbbfb7fbf1c04299fae1"
+        run: |
+          set -e
+          curl -sSLO "https://github.com/stackrox/kube-linter/releases/download/v${KUBE_LINTER_VERSION}/kube-linter-linux"
+          echo "${KUBE_LINTER_SHA256}  kube-linter-linux" | sha256sum -c -
+          sudo install kube-linter-linux /usr/local/bin/kube-linter
+
+      - name: kube-linter
+        # Advisory for now (see #115) - reports findings without failing the
+        # build, since the fleet already has a backlog of pre-existing
+        # findings to work through before this can block PRs.
+        continue-on-error: true
+        run: |
+          set -e
+          # Same scope as the kubeconform job above.
+          files=()
+          while IFS= read -r -d '' f; do
+            files+=("$f")
+          done < <(find services infrastructure/kubernetes \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
+
+          kube-linter lint "${files[@]}"
