@@ -27,7 +27,7 @@ spec:
     pg_hba:
       # One line per tenant.
       # e.g.:
-      #   - hostssl leantime leantime_user all scram-sha-256
+      #   - hostssl service service_user all scram-sha-256
       - hostssl leantime leantime all scram-sha-256
       #
       # Catch-all: only tenants listed above get in.
