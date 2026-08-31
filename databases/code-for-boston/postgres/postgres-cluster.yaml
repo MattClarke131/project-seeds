@@ -15,6 +15,21 @@ spec:
   storage:
     size: 10Gi
     storageClass: nfs-provisioner
+  postgresql:
+    pg_hba:
+      # One line per tenant, pinning its role to only its own database,
+      # e.g.:
+      #   - hostssl leantime leantime_user all scram-sha-256
+      #
+      # CNPG always appends its own "host all all all scram-sha-256"
+      # catch-all after whatever's listed here, and that can't be
+      # removed - so without the reject line below, a tenant whose role
+      # doesn't match any line above would just fall through to CNPG's
+      # catch-all and be let in anyway. This reject line is what
+      # actually enforces "only the tenants listed above get in" -
+      # being a custom rule, it's evaluated before CNPG's catch-all ever
+      # comes into play.
+      - host all all all reject
   inheritedMetadata:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
