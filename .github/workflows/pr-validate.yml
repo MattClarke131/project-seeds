@@ -106,9 +106,9 @@ jobs:
         id: lint
         run: |
           set -e
-          # Scoped to manifests this PR touches, same as tofu fmt above -
-          # repo-wide has ~100 pre-existing findings today, so a full sweep
-          # would drown every PR in noise unrelated to what it's changing.
+          # Only the manifests this PR touches, same as tofu fmt above - not
+          # a repo-wide sweep, so pre-existing findings elsewhere don't fail
+          # an unrelated PR.
           mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
             'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
             ':(exclude)*values.yaml' ':(exclude)*values.yml')
@@ -133,10 +133,6 @@ jobs:
             echo "KUBE_LINTER_EOF"
           } >> "$GITHUB_OUTPUT"
 
-          # Required check, not advisory - .kube-linter.yaml starts with zero
-          # checks enabled (doNotAutoAddDefaults: true), so this passes
-          # trivially until checks are opted in one at a time, each paired
-          # with the fixes for whatever it finds. See #115/#116.
           exit "$exit_code"
 
       - name: Comment findings on PR
