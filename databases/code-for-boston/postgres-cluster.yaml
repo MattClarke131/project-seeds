@@ -1,0 +1,21 @@
+# Dedicated CNPG cluster for internet-facing apps shared with the Code for
+# Boston volunteer group (e.g. Leantime) — kept separate from
+# infrastructure/kubernetes/database's cluster so a compromise of a
+# public-facing app can't reach internal-only apps' data.
+#
+# Each tenant app should get its own Database + role rather than reusing
+# the bootstrap "app" role below, so one tenant can't read another's data.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: code-for-boston
+spec:
+  instances: 1
+  storage:
+    size: 10Gi
+    storageClass: nfs-provisioner
+  inheritedMetadata:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ""
