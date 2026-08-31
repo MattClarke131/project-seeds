@@ -1,0 +1,30 @@
+# Config for the kube-linter CI job in .github/workflows/pr-validate.yml (#115).
+#
+# This job is a required check, but starts with zero checks enabled
+# (doNotAutoAddDefaults: true, empty include) - it passes trivially today by
+# design. The fleet has a real backlog of pre-existing findings (~100+ across
+# services/ and infrastructure/kubernetes), so turning on kube-linter's full
+# default set here on day one would make this required check unpassable
+# until all of that's fixed first.
+#
+# The plan is to add checks to `include` one at a time, each in its own PR
+# that also fixes whatever it finds - so the required check is always real
+# (never advisory, never silently ignorable) and only ever grows in scope
+# once the fleet actually passes it. E.g.:
+#
+#   checks:
+#     doNotAutoAddDefaults: true
+#     include:
+#       - latest-tag              # opted in once #130's fixes landed
+#     exclude:
+#       - no-anti-affinity        # turn off a default check that's too
+#                                 # noisy/not useful for this repo
+#     ignorePaths:
+#       - some/generated/path     # skip files that shouldn't be linted
+#
+# The KUBE_LINTER_VERSION pin in pr-validate.yml is tracked by Renovate
+# (see renovate.json) - a version bump PR is a natural point to check
+# `kube-linter checks list` for anything new worth opting into.
+checks:
+  doNotAutoAddDefaults: true
+  include: []

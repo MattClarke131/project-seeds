@@ -79,3 +79,84 @@ jobs:
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             -ignore-missing-schemas \
             "${files[@]}"
+
+  kube-linter:
+    name: Kubernetes manifest lint (kube-linter)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install kube-linter
+        env:
+          KUBE_LINTER_VERSION: "0.8.3"
+          KUBE_LINTER_SHA256: "1a6d8419b11971372971fdbc22682b684ebfb7cf1c39591662d1b6ca736c41df"
+        run: |
+          set -e
+          curl -sSLO "https://github.com/stackrox/kube-linter/releases/download/v${KUBE_LINTER_VERSION}/kube-linter-linux.tar.gz"
+          echo "${KUBE_LINTER_SHA256}  kube-linter-linux.tar.gz" | sha256sum -c -
+          tar xz -f kube-linter-linux.tar.gz kube-linter
+          sudo install kube-linter /usr/local/bin/kube-linter
+
+      - name: kube-linter (changed manifests only)
+        id: lint
+        run: |
+          set -e
+          # Scoped to manifests this PR touches, same as tofu fmt above -
+          # repo-wide has ~100 pre-existing findings today, so a full sweep
+          # would drown every PR in noise unrelated to what it's changing.
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
+            'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
+            ':(exclude)*values.yaml' ':(exclude)*values.yml')
+
+          echo "files_changed=$([ "${#files[@]}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No Kubernetes manifests changed - skipping"
+            exit 0
+          fi
+
+          printf '%s\n' "${files[@]}"
+          set +e
+          output=$(kube-linter lint --config .kube-linter.yaml --format plain "${files[@]}" 2>&1)
+          exit_code=$?
+          set -e
+
+          echo "$output"
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          {
+            echo "report<<KUBE_LINTER_EOF"
+            echo "$output"
+            echo "KUBE_LINTER_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          # Required check, not advisory - .kube-linter.yaml starts with zero
+          # checks enabled (doNotAutoAddDefaults: true), so this passes
+          # trivially until checks are opted in one at a time, each paired
+          # with the fixes for whatever it finds. See #115/#116.
+          exit "$exit_code"
+
+      - name: Comment findings on PR
+        if: always() && steps.lint.outputs.files_changed == 'true'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: kube-linter
+          message: |
+            ### kube-linter ${{ steps.lint.outputs.exit_code == '0' && '✅ passed' || '❌ failed' }}
+
+            Checked against the Kubernetes manifests changed in this PR.
+            Required check - `.kube-linter.yaml` currently enables checks
+            one at a time as the fleet is brought into compliance with each
+            (see [#115](../../issues/115)); it can't yet fail on anything
+            that isn't listed there.
+
+            <details><summary>kube-linter output</summary>
+
+            ```
+            ${{ steps.lint.outputs.report }}
+            ```
+
+            </details>
