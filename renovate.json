@@ -40,7 +40,7 @@
         "/^infrastructure/proxmox/opentofu/locals\\.tf$/"
       ],
       "matchStrings": [
-        "(?<!cluster_secrets_)talos_version\\s*=\\s*\"(?<currentValue>v[0-9.]+)\""
+        "(?:^|\\n)\\s*talos_version\\s*=\\s*\"(?<currentValue>v[0-9.]+)\""
       ],
       "depNameTemplate": "siderolabs/talos",
       "datasourceTemplate": "github-releases"
