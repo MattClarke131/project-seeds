@@ -81,7 +81,7 @@ jobs:
             "${files[@]}"
 
   kube-linter:
-    name: Kubernetes manifest lint (kube-linter, advisory)
+    name: Kubernetes manifest lint (kube-linter)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -106,10 +106,9 @@ jobs:
         id: lint
         run: |
           set -e
-          # Advisory pass 1 (issue #115): scoped to manifests this PR
-          # touches, same as tofu fmt above - repo-wide has ~130 pre-existing
-          # findings today, so a full sweep would drown every PR in noise
-          # unrelated to what it's changing.
+          # Scoped to manifests this PR touches, same as tofu fmt above -
+          # repo-wide has ~100 pre-existing findings today, so a full sweep
+          # would drown every PR in noise unrelated to what it's changing.
           mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
             'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
             ':(exclude)*values.yaml' ':(exclude)*values.yml')
@@ -134,17 +133,25 @@ jobs:
             echo "KUBE_LINTER_EOF"
           } >> "$GITHUB_OUTPUT"
 
+          # Required check, not advisory - .kube-linter.yaml starts with zero
+          # checks enabled (doNotAutoAddDefaults: true), so this passes
+          # trivially until checks are opted in one at a time, each paired
+          # with the fixes for whatever it finds. See #115/#116.
+          exit "$exit_code"
+
       - name: Comment findings on PR
-        if: steps.lint.outputs.files_changed == 'true'
+        if: always() && steps.lint.outputs.files_changed == 'true'
         uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: kube-linter
           message: |
-            ### kube-linter ${{ steps.lint.outputs.exit_code == '0' && '✅ no findings' || '⚠️ findings' }} (advisory, non-blocking)
+            ### kube-linter ${{ steps.lint.outputs.exit_code == '0' && '✅ passed' || '❌ failed' }}
 
-            Checked against the Kubernetes manifests changed in this PR. This is
-            advisory-only for now (see [#115](../../issues/115)) - it does not
-            block merge.
+            Checked against the Kubernetes manifests changed in this PR.
+            Required check - `.kube-linter.yaml` currently enables checks
+            one at a time as the fleet is brought into compliance with each
+            (see [#115](../../issues/115)); it can't yet fail on anything
+            that isn't listed there.
 
             <details><summary>kube-linter output</summary>
 
