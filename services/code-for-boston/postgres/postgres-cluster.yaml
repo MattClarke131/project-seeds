@@ -13,11 +13,20 @@ spec:
   storage:
     size: 10Gi
     storageClass: nfs-provisioner
+  managed:
+    roles:
+      # One entry per tenant. passwordSecret is created manually (see
+      # services/code-for-boston/README.md for leantime's) rather
+      # than committed to git.
+      - name: leantime
+        ensure: present
+        login: true
+        passwordSecret:
+          name: leantime-postgres-credentials
   postgresql:
     pg_hba:
       # One line per tenant.
-      # e.g.:
-      #   - hostssl leantime leantime_user all scram-sha-256
+      - hostssl leantime leantime all scram-sha-256
       #
       # Catch-all: only tenants listed above get in.
       # CNPG appends its own permissive catch-all after this list.
@@ -26,4 +35,4 @@ spec:
   inheritedMetadata:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ""
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "code-for-boston"
