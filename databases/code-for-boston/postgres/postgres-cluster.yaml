@@ -7,7 +7,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgres
-  namespace: code-for-boston
+  namespace: code-for-boston-database
 spec:
   instances: 1
   storage:
@@ -16,7 +16,7 @@ spec:
   managed:
     roles:
       # One entry per tenant. passwordSecret is created manually (see
-      # services/project-management/README.md for leantime's) rather
+      # services/code-for-boston/README.md for leantime's) rather
       # than committed to git.
       - name: leantime
         ensure: present
@@ -37,4 +37,4 @@ spec:
   inheritedMetadata:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "project-management"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "code-for-boston"

@@ -2,7 +2,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:
   name: leantime
-  namespace: code-for-boston
+  namespace: code-for-boston-database
 spec:
   name: leantime
   owner: leantime

@@ -6,7 +6,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: leantime
-  namespace: project-management
+  namespace: code-for-boston
 spec:
   ingressClassName: nginx
   rules:
