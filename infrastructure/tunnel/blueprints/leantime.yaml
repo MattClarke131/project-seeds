@@ -10,8 +10,3 @@ public-resources:
         port: 80
     auth:
       sso-enabled: false
-    rules:
-      - action: allow
-        match: country
-        value: US
-        priority: 1
