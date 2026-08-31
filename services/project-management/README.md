@@ -8,10 +8,11 @@ Kustomization CR that reconciles this path.
 
 ## Dependencies
 
-- Shared Postgres cluster (`infrastructure/kubernetes/database`) — this PR
-  adds `project-management` to its `reflection-allowed-namespaces`
-  annotation and provisions a `leantime` database via
-  `leantime/database.yaml`.
+- `databases/code-for-boston` cluster — must merge first. It provisions
+  a dedicated `leantime` role/database (least-privilege: just the
+  `leantime` database, not the internal cluster's shared `app` role)
+  and needs its `pg_hba` and `reflection-allowed-namespaces` updated to
+  admit `project-management`.
 - Pangolin tunnel — `leantime.labmatt.com` is added to `tunnel_hostnames`
   in `infrastructure/cloudflare/opentofu`.
 
@@ -22,6 +23,11 @@ These aren't covered by Flux and need doing once, after merge:
 ```bash
 kubectl create secret generic leantime-session -n project-management \
   --from-literal=LEAN_SESSION_PASSWORD=$(openssl rand -hex 32)
+
+kubectl create secret generic leantime-postgres-credentials \
+  -n code-for-boston \
+  --from-literal=username=leantime \
+  --from-literal=password=$(openssl rand -hex 32)
 ```
 
 Also run `tofu apply` in `infrastructure/cloudflare/opentofu` for the DNS
