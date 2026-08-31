@@ -22,7 +22,7 @@ spec:
       containers:
         - name: mongo
           image: mongo:7
-          command: ["mongod", "--storageEngine=wiredTiger"]
+          command: ["mongod", "--storageEngine=wiredTiger", "--bind_ip_all"]
           ports:
             - containerPort: 27017
           volumeMounts:
