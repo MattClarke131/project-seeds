@@ -5,12 +5,10 @@
 #   kubectl create secret generic leantime-session -n code-for-boston \
 #     --from-literal=LEAN_SESSION_PASSWORD=$(openssl rand -hex 32)
 #
-# LEAN_DB_USER/LEAN_DB_PASSWORD come from leantime-postgres-credentials,
-# reflected from the code-for-boston-database cluster - see
-# ../postgres/postgres-cluster.yaml for the dedicated "leantime" role
-# this database.yaml's owner points at.
-# It's scoped to just the leantime database, not the shared "app" role
-# other apps use on the internal cluster.
+# LEAN_DB_USER/LEAN_DB_PASSWORD come from leantime-mysql-credentials
+# (see ../mariadb/deployment.yaml, which the same secret configures,
+# and its comment for why MySQL rather than the shared Postgres
+# cluster).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,23 +31,21 @@ spec:
             - containerPort: 8080
               name: http
           env:
-            - name: LEAN_DB_TYPE
-              value: postgres
             - name: LEAN_DB_HOST
-              value: postgres-rw.code-for-boston-database.svc.cluster.local
+              value: leantime-mysql.code-for-boston.svc.cluster.local
             - name: LEAN_DB_PORT
-              value: "5432"
+              value: "3306"
             - name: LEAN_DB_DATABASE
               value: leantime
             - name: LEAN_DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: leantime-postgres-credentials
+                  name: leantime-mysql-credentials
                   key: username
             - name: LEAN_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: leantime-postgres-credentials
+                  name: leantime-mysql-credentials
                   key: password
             - name: LEAN_SESSION_PASSWORD
               valueFrom:
