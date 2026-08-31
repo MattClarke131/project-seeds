@@ -15,6 +15,7 @@ resources:
   - mongodb/pvc.yaml
   - mongodb/deployment.yaml
   - mongodb/service.yaml
+  - mongodb/networkpolicy.yaml
   - wekan/deployment.yaml
   - wekan/service.yaml
   - wekan/ingress.yaml
