@@ -7,7 +7,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: postgres
-  namespace: code-for-boston
+  namespace: code-for-boston-database
 spec:
   instances: 1
   storage:
