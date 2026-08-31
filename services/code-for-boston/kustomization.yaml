@@ -12,3 +12,9 @@ resources:
   - leantime/deployment.yaml
   - leantime/service.yaml
   - leantime/ingress.yaml
+  - mongodb/pvc.yaml
+  - mongodb/deployment.yaml
+  - mongodb/service.yaml
+  - wekan/deployment.yaml
+  - wekan/service.yaml
+  - wekan/ingress.yaml
