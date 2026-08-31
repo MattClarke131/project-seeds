@@ -1,0 +1,23 @@
+public-resources:
+  leantime:
+    name: "Leantime"
+    mode: http
+    full-domain: leantime.labmatt.com
+    targets:
+      - site: faithful-brachyurophis-fasciolatus
+        method: http
+        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        port: 80
+    auth:
+      sso-enabled: true
+      sso-roles:
+        - Member
+    rules:
+      - action: deny
+        match: path
+        value: /metrics
+        priority: 1
+      - action: allow
+        match: country
+        value: US
+        priority: 2
