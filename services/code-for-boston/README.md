@@ -8,8 +8,7 @@ Kustomization CR that reconciles this path.
 ## Leantime
 
 Goals-focused project management, for a volunteer-feedback trial
-alongside Wekan (`wekan-trial` branch/PR) in the shared `code-for-boston`
-namespace.
+alongside Wekan (below) in the shared `code-for-boston` namespace.
 
 ### Dependencies
 
@@ -21,7 +20,22 @@ namespace.
 - Pangolin tunnel — `leantime.labmatt.com` is added to `tunnel_hostnames`
   in `infrastructure/cloudflare/opentofu`.
 
-### Manual steps (not yet automated)
+First run creates an admin account at first login on
+`leantime.labmatt.com`.
+
+## Wekan
+
+Trello-style kanban board, deployed for a volunteer-feedback trial
+alongside Leantime.
+
+- Needs MongoDB, not the shared Postgres cluster, so it gets its own
+  single-instance Mongo (`mongodb/`) reachable only in-cluster.
+- Exposed at `wekan.labmatt.com` via the Pangolin tunnel
+  (`tunnel_hostnames` in `infrastructure/cloudflare/opentofu`).
+
+First user to register becomes admin on `wekan.labmatt.com`.
+
+## Manual steps (not yet automated)
 
 These aren't covered by Flux and need doing once, after merge:
 
@@ -35,10 +49,7 @@ kubectl create secret generic leantime-postgres-credentials \
   --from-literal=password=$(openssl rand -hex 32)
 ```
 
-Also run `tofu apply` in `infrastructure/cloudflare/opentofu` for the DNS
-record (tracked for automation in #57), and create the matching resource
-+ access rule in the Pangolin dashboard per
+Also run `tofu apply` in `infrastructure/cloudflare/opentofu` for the two
+new DNS records (tracked for automation in #57), and create the matching
+resource + access rule for each hostname in the Pangolin dashboard per
 `infrastructure/tunnel/blueprints/README.md` (tracked in #7).
-
-First run creates an admin account at first login on
-`leantime.labmatt.com`.

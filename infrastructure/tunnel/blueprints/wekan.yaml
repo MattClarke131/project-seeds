@@ -1,0 +1,10 @@
+public-resources:
+  wekan:
+    name: "Wekan"
+    mode: http
+    full-domain: wekan.labmatt.com
+    targets:
+      - site: faithful-brachyurophis-fasciolatus
+        method: http
+        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        port: 80

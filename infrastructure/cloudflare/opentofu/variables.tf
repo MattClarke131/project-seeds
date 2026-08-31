@@ -43,6 +43,7 @@ variable "tunnel_hostnames" {
     "mattflix",
     "pangolin",
     "pangolin-test",
+    "wekan",
   ]
 }
 
