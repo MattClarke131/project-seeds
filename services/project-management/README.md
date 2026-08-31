@@ -8,11 +8,11 @@ Kustomization CR that reconciles this path.
 
 ## Dependencies
 
-- `databases/code-for-boston` cluster — must merge first. It provisions
-  a dedicated `leantime` role/database (least-privilege: just the
-  `leantime` database, not the internal cluster's shared `app` role)
-  and needs its `pg_hba` and `reflection-allowed-namespaces` updated to
-  admit `project-management`.
+- `databases/code-for-boston` cluster (#118) — must merge first. This PR
+  still needs a follow-up commit once it does: add a dedicated
+  `leantime` role there (least-privilege: just the `leantime` database,
+  not the internal cluster's shared `app` role), a matching `pg_hba`
+  line, and `project-management` to `reflection-allowed-namespaces`.
 - Pangolin tunnel — `leantime.labmatt.com` is added to `tunnel_hostnames`
   in `infrastructure/cloudflare/opentofu`.
 
