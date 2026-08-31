@@ -9,9 +9,7 @@ public-resources:
         hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
         port: 80
     auth:
-      sso-enabled: true
-      sso-roles:
-        - Member
+      sso-enabled: false
     rules:
       - action: deny
         match: path
