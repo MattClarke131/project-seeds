@@ -18,4 +18,4 @@ spec:
   inheritedMetadata:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "jellyfin,signal-messaging,downloads-standard,project-management"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "jellyfin,signal-messaging,downloads-standard"
