@@ -1,8 +1,8 @@
-# Postgres for apps shared with the Code for Boston volunteer group
-# (e.g. Leantime).
+# Postgres for apps shared with the Code for Boston volunteer group.
 #
 # Each tenant app should get its own Database + role rather than reusing
-# the bootstrap "app" role below, so one tenant can't read another's data.
+# the "app" role CNPG creates by default, so one tenant can't read
+# another's data.
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
