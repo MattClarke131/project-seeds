@@ -44,6 +44,19 @@
       ],
       "depNameTemplate": "siderolabs/talos",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Track kube-linter releases (#115) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Renovate only bumps KUBE_LINTER_VERSION here; KUBE_LINTER_SHA256 right below it still needs updating by hand in the same PR, or the checksum step fails CI.",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/pr-validate\\.yml$/"
+      ],
+      "matchStrings": [
+        "KUBE_LINTER_VERSION: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "depNameTemplate": "stackrox/kube-linter",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
   "packageRules": [
