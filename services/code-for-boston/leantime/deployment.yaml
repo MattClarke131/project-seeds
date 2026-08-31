@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: leantime
-          image: leantime/leantime:v3.7.3
+          image: leantime/leantime:3.9.8
           ports:
             - containerPort: 80
               name: http
