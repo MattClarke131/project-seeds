@@ -1,0 +1,48 @@
+# Config for the kube-linter CI job in .github/workflows/pr-validate.yml (#115).
+#
+# Explicitly pins the check set rather than relying on kube-linter's built-in
+# "default" profile, so:
+#   - the actual rules running are reviewable in a diff, not implicit in
+#     whatever version of the binary CI happens to have installed
+#   - a kube-linter upgrade can't silently change what's enforced by
+#     changing its defaults out from under us
+#   - future additions/exclusions (e.g. an exception for a VPN sidecar
+#     needing NET_ADMIN) have one obvious place to go
+#
+# This list is kube-linter v0.8.3's own default-enabled set, reproduced
+# as-is - `kube-linter checks list` shows each check's "Enabled by default"
+# status. No behavior change from the CLI defaults; just made explicit.
+checks:
+  doNotAutoAddDefaults: true
+  include:
+    - dangling-service
+    - deprecated-service-account-field
+    - docker-sock
+    - drop-net-raw-capability
+    - duplicate-env-var
+    - env-var-secret
+    - host-ipc
+    - host-network
+    - host-pid
+    - invalid-target-ports
+    - job-ttl-seconds-after-finished
+    - latest-tag
+    - liveness-port
+    - mismatching-selector
+    - no-anti-affinity
+    - no-extensions-v1beta
+    - no-read-only-root-fs
+    - non-existent-service-account
+    - pdb-max-unavailable
+    - pdb-min-available
+    - pdb-unhealthy-pod-eviction-policy
+    - privilege-escalation-container
+    - privileged-container
+    - readiness-port
+    - run-as-non-root
+    - sensitive-host-mounts
+    - ssh-port
+    - startup-port
+    - unsafe-sysctls
+    - unset-cpu-requirements
+    - unset-memory-requirements

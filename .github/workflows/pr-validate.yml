@@ -122,7 +122,7 @@ jobs:
 
           printf '%s\n' "${files[@]}"
           set +e
-          output=$(kube-linter lint --format plain "${files[@]}" 2>&1)
+          output=$(kube-linter lint --config .kube-linter.yaml --format plain "${files[@]}" 2>&1)
           exit_code=$?
           set -e
 
