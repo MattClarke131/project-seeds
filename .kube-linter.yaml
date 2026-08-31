@@ -10,12 +10,10 @@
 # The plan is to add checks to `include` one at a time, each in its own PR
 # that also fixes whatever it finds - so the required check is always real
 # (never advisory, never silently ignorable) and only ever grows in scope
-# once the fleet actually passes it. E.g.:
+# once the fleet actually passes it. `latest-tag` is the first one enabled
+# below (its fixes landed in #128, before this repo checked for it). Further
+# opt-ins look like:
 #
-#   checks:
-#     doNotAutoAddDefaults: true
-#     include:
-#       - latest-tag              # opted in once #130's fixes landed
 #     exclude:
 #       - no-anti-affinity        # turn off a default check that's too
 #                                 # noisy/not useful for this repo
@@ -27,4 +25,5 @@
 # `kube-linter checks list` for anything new worth opting into.
 checks:
   doNotAutoAddDefaults: true
-  include: []
+  include:
+    - latest-tag
