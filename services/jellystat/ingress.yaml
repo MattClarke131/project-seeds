@@ -5,8 +5,14 @@ metadata:
   namespace: jellyfin
   annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - jellystat.labmatt.com
+      secretName: jellystat-tls
   rules:
     - host: jellystat.labmatt.com
       http:
