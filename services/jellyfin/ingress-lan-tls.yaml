@@ -1,5 +1,5 @@
-# Standalone Ingress split out from helmrelease.yaml, intended to be
-# reached only over private networks (LAN, Tailnet)
+# Standalone Ingress split out from helmrelease.yaml.
+# Intended to be reached only over private networks (LAN, Tailnet)
 #See issue #10
 apiVersion: networking.k8s.io/v1
 kind: Ingress
