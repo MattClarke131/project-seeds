@@ -1,4 +1,7 @@
-# Standalone Ingress (split out from helmrelease.yaml) so jellyfin.labmatt.com - reached only over the private/LAN network - can get a real TLS cert without forcing a redirect on mattflix.labmatt.com's plain-HTTP Newt traffic. See issue #10.
+# Standalone Ingress split out from helmrelease.yaml, intended to be
+# reached only over private networks (LAN, Tailnet) - so it can carry a
+# real TLS cert without forcing a redirect on mattflix.labmatt.com's
+# plain-HTTP Newt traffic. See issue #10.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
