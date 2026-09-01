@@ -8,3 +8,5 @@ checks:
   include:
     - latest-tag
     - job-ttl-seconds-after-finished
+    - no-anti-affinity
+    - dangling-service
