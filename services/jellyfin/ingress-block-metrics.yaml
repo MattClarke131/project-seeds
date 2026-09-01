@@ -24,6 +24,8 @@ kind: Service
 metadata:
   name: jellyfin-metrics-block
   namespace: jellyfin
+  annotations:
+    ignore-check.kube-linter.io/dangling-service: "no selector is intentional - see file header comment"
 spec:
   ports:
     - port: 80
