@@ -1,17 +1,4 @@
-# Standalone Ingress for jellyfin.labmatt.com (LAN-only - resolves to
-# ingress-nginx's internal LoadBalancer IP, never internet-reachable; see
-# ingress-block-metrics.yaml for the DNS split with mattflix.labmatt.com).
-#
-# Split out from the main jellyfin Ingress (helmrelease.yaml) on purpose:
-# jellyfin.labmatt.com is reached directly by LAN clients, so it benefits
-# from a real TLS cert. mattflix.labmatt.com, the other host on the
-# jellyfin service, is Pangolin-fronted - TLS terminates at the
-# Pangolin/Traefik edge, and Newt tunnels plain HTTP to ingress-nginx from
-# there. force-ssl-redirect below would 308 those plain-HTTP Newt
-# requests instead of serving content (same failure already hit on
-# books-sync, see ingress-books-sync.yaml), and ingress-nginx annotations
-# apply per-Ingress-object rather than per-host, so this host can't carry
-# a redirect while sharing an Ingress with mattflix. See issue #10.
+# Standalone Ingress (split out from helmrelease.yaml) so jellyfin.labmatt.com - reached only over the private/LAN network - can get a real TLS cert without forcing a redirect on mattflix.labmatt.com's plain-HTTP Newt traffic. See issue #10.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

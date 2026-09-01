@@ -40,17 +40,6 @@ spec:
       type: ClusterIP
       port: 8096
 
-    # jellyfin.labmatt.com (LAN-only) is intentionally NOT listed here -
-    # it lives on its own Ingress (ingress-lan-tls.yaml) instead, so it can
-    # carry a TLS cert + force-ssl-redirect without forcing HTTPS on
-    # mattflix.labmatt.com too. mattflix is Pangolin-fronted and Newt only
-    # ever sends it plain HTTP - force-ssl-redirect on that host 308s
-    # Newt's request instead of serving content (confirmed break, see
-    # ingress-books-sync.yaml's comment for the same failure on a
-    # different service). ingress-nginx annotations apply per-Ingress
-    # object, not per-host, so the two hosts can't safely share one
-    # Ingress once jellyfin.labmatt.com needs a redirect and mattflix.
-    # labmatt.com must not have one. See issue #10.
     ingress:
       enabled: true
       className: nginx
