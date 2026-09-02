@@ -6,8 +6,8 @@ Kustomization CR that reconciles this path.
 
 ## Leantime
 
-Goals-focused project management, for a volunteer-feedback trial
-alongside Wekan (below) in the shared `code-for-boston` namespace.
+Goals-focused project management, deployed in the shared
+`code-for-boston` namespace.
 
 ### Dependencies
 
@@ -20,18 +20,6 @@ alongside Wekan (below) in the shared `code-for-boston` namespace.
 
 First run creates an admin account at first login on
 `leantime.labmatt.com`.
-
-## Wekan
-
-Trello-style kanban board, deployed for a volunteer-feedback trial
-alongside Leantime.
-
-- Needs MongoDB, not the shared Postgres cluster, so it gets its own
-  single-instance Mongo (`mongodb/`) reachable only in-cluster.
-- Exposed at `wekan.labmatt.com` via the Pangolin tunnel
-  (`tunnel_hostnames` in `infrastructure/cloudflare/opentofu`).
-
-First user to register becomes admin on `wekan.labmatt.com`.
 
 ## Manual steps (not yet automated)
 
@@ -47,7 +35,11 @@ kubectl create secret generic leantime-mysql-credentials -n code-for-boston \
   --from-literal=root-password=$(openssl rand -hex 32)
 ```
 
-Also run `tofu apply` in `infrastructure/cloudflare/opentofu` for the two
-new DNS records (tracked for automation in #57), and create the matching
-resource + access rule for each hostname in the Pangolin dashboard per
+Also run `tofu apply` in `infrastructure/cloudflare/opentofu` for the new
+`leantime.labmatt.com` DNS record (tracked for automation in #57), and
+create the matching resource + access rule in the Pangolin dashboard per
 `infrastructure/tunnel/blueprints/README.md` (tracked in #7).
+
+Blueprints don't cover deletion: removing a resource (e.g. Wekan's) from
+`tunnel_hostnames` still needs its Pangolin resource and access rule
+deleted by hand in the dashboard.
