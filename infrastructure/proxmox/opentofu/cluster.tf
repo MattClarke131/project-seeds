@@ -100,6 +100,11 @@ data "talos_machine_configuration" "controlplane" {
             "metrics-bind-address" = "0.0.0.0:10249"
           }
         }
+        etcd = {
+          extraArgs = {
+            "listen-metrics-urls" = "http://0.0.0.0:2381"
+          }
+        }
       }
     })
   ]
