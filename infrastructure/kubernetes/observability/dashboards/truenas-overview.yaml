@@ -310,10 +310,17 @@ data:
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(rate(scale_truenas_truenas_disk_stats__devicename_sdg_writes[5m]))",
-              "legendFormat": "TrueNAS",
+              "expr": "sum({__name__=~\"scale_truenas_truenas_disk_stats__.*_reads\"})",
+              "legendFormat": "Reads",
               "range": true,
               "refId": "A"
+            },
+            {
+              "editorMode": "code",
+              "expr": "sum({__name__=~\"scale_truenas_truenas_disk_stats__.*_writes\"})",
+              "legendFormat": "Writes",
+              "range": true,
+              "refId": "B"
             }
           ],
           "title": "Disk I/O",
