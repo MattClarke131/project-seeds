@@ -62,6 +62,30 @@ spec:
                 target_label: host
               - source_labels: [role]
                 target_label: role
+          # Reuses the same target file as node-exporter (control_plane-role
+          # entries only), rewritten to etcd's metrics port. Talos binds
+          # etcd's --listen-metrics-urls to 127.0.0.1 by default - see
+          # docs/adr/003-control-plane-metrics-exposure.md, which this
+          # extends to etcd's own listen-metrics-urls (0.0.0.0:2381).
+          # Unauthenticated by design, same accepted tradeoff as that ADR.
+          - job_name: 'etcd'
+            file_sd_configs:
+              - files:
+                  - /etc/prometheus/configmaps/prometheus-targets/prometheus-targets.json
+            relabel_configs:
+              - source_labels: [role]
+                regex: control_plane
+                action: keep
+              - source_labels: [__address__]
+                regex: '([^:]+):.*'
+                target_label: __address__
+                replacement: '${1}:2381'
+              - source_labels: [__address__]
+                target_label: instance
+              - source_labels: [hostname]
+                target_label: hostname
+              - source_labels: [host]
+                target_label: host
         storageSpec:
           volumeClaimTemplate:
             spec:
