@@ -5,10 +5,3 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
-  - mariadb/pvc.yaml
-  - mariadb/deployment.yaml
-  - mariadb/service.yaml
-  - leantime/pvc.yaml
-  - leantime/deployment.yaml
-  - leantime/service.yaml
-  - leantime/ingress.yaml

@@ -39,7 +39,6 @@ variable "tunnel_hostnames" {
   default = [
     "books-sync",
     "gimme",
-    "leantime",
     "mattflix",
     "pangolin",
     "pangolin-test",
