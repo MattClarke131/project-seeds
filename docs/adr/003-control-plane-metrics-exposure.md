@@ -129,20 +129,10 @@ as a new `etcd` job, reusing the existing `prometheus-targets.json` file_sd
 source (filtered to `role: control_plane`, address rewritten to port 2381)
 rather than adding a second target file.
 
-**Rollout complete (2026-09-01, same night).** `cluster.tf`'s
-`data.talos_machine_configuration` only affects new/recreated VMs, so the
-three already-running control-plane nodes each needed a live
-`talosctl patch mc` (not `apply-config` - etcd doesn't support a plain
-service restart via the Talos API, `rpc error: ... service "etcd" doesn't
-support restart operation via API`) followed by a full node reboot to
-actually bounce the etcd process and pick up the new arg. Done one node at
-a time - `livio-cp` first, then `nicholas-cp`, then `razlo-cp` (the etcd
-leader at the time, so its reboot triggered one leader election, expected
-and harmless) - verifying quorum (`etcd status`/`etcd members`) and the
-metrics port (`curl .../2381/metrics`) after each before moving to the
-next. All three confirmed `up` in Prometheus's `etcd` job afterward, with
-`etcd_disk_wal_fsync_duration_seconds` actively incrementing on all three.
-Quorum stayed healthy throughout (3 members, no missed elections beyond
-the one expected one). Jellyfin playback (running on a worker VM, not any
-of the rebooted control-plane VMs) was unaffected by any of the three
-reboots.
+**Rollout complete (2026-09-01).** Applying this to a running control
+plane needs a full node reboot, not just `talosctl patch mc`/`apply-config`
+- etcd refuses a plain service restart via the Talos API
+(`rpc error: ... service "etcd" doesn't support restart operation via
+API`), so the config change alone doesn't bounce the process. All three
+control planes are confirmed `up` in Prometheus's `etcd` job with
+`etcd_disk_wal_fsync_duration_seconds` incrementing.
