@@ -88,3 +88,44 @@ spec:
             description: >-
               Jellyfin is throwing exceptions at {{ printf "%.2f" $value }}/s,
               more than 3x its trailing 1-hour average, for 5 minutes.
+
+    - name: custom-etcd-latency
+      rules:
+        # Scraped via the etcd job added alongside docs/adr/003-control-
+        # plane-metrics-exposure.md's etcd addendum - see etcd-overview
+        # Grafana dashboard for the panels these mirror. Thresholds (10ms
+        # fsync p99, 25ms backend commit p99) are etcd's own documented
+        # healthy-cluster guidance, not values tuned to this cluster.
+        #
+        # Built investigating issue #125 (recurring etcd-overload/NotReady
+        # flapping, one recurrence causing a live Jellyfin stutter) - host-
+        # level proxies (disk busy%, CPU steal) stayed flat through that
+        # incident, so these are the metrics that would have actually shown
+        # whether it was real disk latency.
+        - alert: EtcdHighFsyncDuration
+          expr: histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="etcd"}[5m]))) > 0.01
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "etcd WAL fsync latency is above etcd's healthy-cluster guidance."
+            description: >-
+              {{ $labels.hostname }}'s etcd WAL fsync p99 has been above
+              10ms for 10 minutes, is currently
+              {{ printf "%.1f" (mul $value 1000) }}ms. This is etcd's own
+              write path, not host CPU/memory - a sustained miss here means
+              the disk backing etcd can't keep up, which is what drives the
+              request-timeout/NodeNotReady cascade tracked in issue #125.
+        - alert: EtcdHighBackendCommitDuration
+          expr: histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_backend_commit_duration_seconds_bucket{job="etcd"}[5m]))) > 0.025
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "etcd backend commit latency is above etcd's healthy-cluster guidance."
+            description: >-
+              {{ $labels.hostname }}'s etcd backend commit p99 has been
+              above 25ms for 10 minutes, is currently
+              {{ printf "%.1f" (mul $value 1000) }}ms. Same underlying
+              concern as EtcdHighFsyncDuration - see that alert's
+              description.

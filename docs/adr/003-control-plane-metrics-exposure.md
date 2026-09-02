@@ -128,10 +128,3 @@ Prometheus scrape config added to `kube-prometheus-stack`'s `helmrelease.yaml`
 as a new `etcd` job, reusing the existing `prometheus-targets.json` file_sd
 source (filtered to `role: control_plane`, address rewritten to port 2381)
 rather than adding a second target file.
-
-**Rollout is code-only as of this addendum** - `cluster.tf`'s
-`data.talos_machine_configuration` only affects new/recreated VMs; getting
-this onto the three already-running control-plane nodes needs a live
-`talosctl apply-config` per node (same as the original three did), applied
-one node at a time with an `etcd status`/quorum check between each given
-etcd is the exact component already showing instability. Not yet run.

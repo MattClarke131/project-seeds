@@ -100,6 +100,7 @@ data "talos_machine_configuration" "controlplane" {
             "metrics-bind-address" = "0.0.0.0:10249"
           }
         }
+        # A full node reboot is required to apply changes to etcd.
         etcd = {
           extraArgs = {
             "listen-metrics-urls" = "http://0.0.0.0:2381"
