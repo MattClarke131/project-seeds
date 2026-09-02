@@ -100,6 +100,10 @@ data "talos_machine_configuration" "controlplane" {
             "metrics-bind-address" = "0.0.0.0:10249"
           }
         }
+        # On an already-running node, talosctl patch mc/apply-config alone
+        # persists this but doesn't bounce etcd - it refuses a plain
+        # service restart via the Talos API. A full node reboot is what
+        # actually picks up a change here.
         etcd = {
           extraArgs = {
             "listen-metrics-urls" = "http://0.0.0.0:2381"

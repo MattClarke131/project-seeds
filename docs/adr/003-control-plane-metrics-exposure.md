@@ -128,11 +128,3 @@ Prometheus scrape config added to `kube-prometheus-stack`'s `helmrelease.yaml`
 as a new `etcd` job, reusing the existing `prometheus-targets.json` file_sd
 source (filtered to `role: control_plane`, address rewritten to port 2381)
 rather than adding a second target file.
-
-**Rollout complete (2026-09-01).** Applying this to a running control
-plane needs a full node reboot, not just `talosctl patch mc`/`apply-config`
-- etcd refuses a plain service restart via the Talos API
-(`rpc error: ... service "etcd" doesn't support restart operation via
-API`), so the config change alone doesn't bounce the process. All three
-control planes are confirmed `up` in Prometheus's `etcd` job with
-`etcd_disk_wal_fsync_duration_seconds` incrementing.
