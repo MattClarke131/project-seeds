@@ -148,12 +148,12 @@ jobs:
           exit "$exit_code"
 
       - name: Comment findings on PR
-        if: always() && steps.lint.outputs.files_changed == 'true'
+        if: always() && steps.lint.outputs.files_changed == 'true' && steps.lint.outputs.exit_code != '0'
         uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: kube-linter
           message: |
-            ### kube-linter ${{ steps.lint.outputs.exit_code == '0' && '✅ passed' || '❌ failed' }}
+            ### kube-linter ❌ failed
 
             Checked against the Kubernetes manifests changed in this PR.
             Required check - `.kube-linter.yaml` currently enables checks
@@ -168,3 +168,12 @@ jobs:
             ```
 
             </details>
+
+      # Clears a stale failure comment from an earlier run once the PR is fixed -
+      # the check's own pass/fail status is already visible in the merge panel.
+      - name: Remove stale comment on pass
+        if: always() && steps.lint.outputs.files_changed == 'true' && steps.lint.outputs.exit_code == '0'
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: kube-linter
+          delete: true
