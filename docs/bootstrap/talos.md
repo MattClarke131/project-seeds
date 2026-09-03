@@ -13,8 +13,6 @@ Talos is an immutable OS, meaning it is read-only and cannot be modified after d
 
 `i915` is the Intel GPU driver - it's universal across all workers even though only `k8s-livio-w1` actually has a GPU passed through (see `services/jellyfin/README.md` and the GPU passthrough section below).
 
-Talos reinstalls itself to `install.image` on first boot **regardless of what the template already had**, so `install.image`/`cluster.tf` is the sole source of truth for which extensions actually end up running. That means no extension - not even `qemu-guest-agent` - needs to be baked into the template itself.
-
 The **template** (Step 1 below) is a fully generic, stock Talos image with no extensions baked in at all. It only needs to boot and start talking to Terraform/the Talos API; `install.image` fully owns what's actually installed. This means `vms.tf`'s VM resources can't rely on the QEMU guest agent responding quickly - it isn't present until *after* Talos's own reinstall completes - so they don't have an `agent` block at all. Nothing needs agent-discovered IPs anyway: every node's static IP is already known up front (`locals.control_plane_nodes`/`worker_nodes`). See #16.
 
 If the extension set in `cluster.tf` ever changes, that takes effect fleet-wide the next time each node goes through an install cycle (`talosctl upgrade`, or a destroy/recreate against the current template) - **no template rebuild required**.
