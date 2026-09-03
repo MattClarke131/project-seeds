@@ -89,6 +89,63 @@ spec:
               Jellyfin is throwing exceptions at {{ printf "%.2f" $value }}/s,
               more than 3x its trailing 1-hour average, for 5 minutes.
 
+    - name: custom-container-memory
+      rules:
+        # Cluster-wide OOM detection - kube-prometheus-stack's default rules
+        # only catch OOMs indirectly via KubePodCrashLooping, which needs
+        # several restarts in a short window. A single OOM+restart (like
+        # sabnzbd's on 2026-09-02, see services/downloads-standard/sabnzbd)
+        # doesn't trigger that. This fires on the restart itself, gated to
+        # only those actually caused by OOMKilled (not e.g. a crash or a
+        # manual `kubectl rollout restart`) by requiring the container's
+        # last-terminated reason to have been OOMKilled within the same
+        # window. `ignoring(reason)` is a no-op on the join (restarts_total
+        # doesn't carry a reason label) but is required for the `and` to
+        # match at all.
+        - alert: ContainerOOMKilled
+          expr: |
+            (
+              kube_pod_container_status_restarts_total
+              - (kube_pod_container_status_restarts_total offset 15m) >= 1
+            )
+            and ignoring(reason) (
+              max_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[15m]) == 1
+            )
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A container was OOMKilled."
+            description: >-
+              {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})
+              was restarted after being OOMKilled in the last 15 minutes.
+              Check whether its memory limit needs raising.
+        # Early warning ahead of ContainerOOMKilled - catches a container
+        # climbing toward its limit before it actually gets killed, same
+        # idea as JellyfinHighMemoryUsage above but generalized to every
+        # container with a memory limit set (pods with no limit are excluded
+        # by the join, not scored as 0%).
+        - alert: ContainerMemoryNearLimit
+          # Scaled to a percentage in the expr itself (not the description
+          # template) - Prometheus's annotation templates don't have a "mul"
+          # function; see EtcdHighFsyncDuration's note below, which had the
+          # same bug.
+          expr: |
+            100 * sum by (namespace, pod, container) (container_memory_working_set_bytes{container!="", container!="POD"})
+            / on (namespace, pod, container) group_left
+            sum by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"})
+            > 85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A container's memory usage is approaching its limit."
+            description: >-
+              {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})
+              has used more than 85% of its memory limit for 15 minutes,
+              currently {{ printf "%.1f" $value }}%. Risks an OOMKill if it
+              keeps climbing.
+
     - name: custom-etcd-latency
       rules:
         # Scraped via the etcd job added alongside docs/adr/003-control-
@@ -102,8 +159,16 @@ spec:
         # level proxies (disk busy%, CPU steal) stayed flat through that
         # incident, so these are the metrics that would have actually shown
         # whether it was real disk latency.
+        #
+        # Both thresholds are expressed in ms directly in the expr (not
+        # left as seconds and converted for display) - Prometheus's
+        # annotation templates don't have a "mul" function, so a `(mul
+        # $value 1000)` in the description silently fails PrometheusRule's
+        # admission webhook. That's exactly what had these two rules (and
+        # this whole file) failing Flux reconciliation since they were
+        # added - see git blame.
         - alert: EtcdHighFsyncDuration
-          expr: histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="etcd"}[5m]))) > 0.01
+          expr: 1000 * histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="etcd"}[5m]))) > 10
           for: 10m
           labels:
             severity: warning
@@ -112,12 +177,12 @@ spec:
             description: >-
               {{ $labels.hostname }}'s etcd WAL fsync p99 has been above
               10ms for 10 minutes, is currently
-              {{ printf "%.1f" (mul $value 1000) }}ms. This is etcd's own
+              {{ printf "%.1f" $value }}ms. This is etcd's own
               write path, not host CPU/memory - a sustained miss here means
               the disk backing etcd can't keep up, which is what drives the
               request-timeout/NodeNotReady cascade tracked in issue #125.
         - alert: EtcdHighBackendCommitDuration
-          expr: histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_backend_commit_duration_seconds_bucket{job="etcd"}[5m]))) > 0.025
+          expr: 1000 * histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_backend_commit_duration_seconds_bucket{job="etcd"}[5m]))) > 25
           for: 10m
           labels:
             severity: warning
@@ -126,6 +191,6 @@ spec:
             description: >-
               {{ $labels.hostname }}'s etcd backend commit p99 has been
               above 25ms for 10 minutes, is currently
-              {{ printf "%.1f" (mul $value 1000) }}ms. Same underlying
+              {{ printf "%.1f" $value }}ms. Same underlying
               concern as EtcdHighFsyncDuration - see that alert's
               description.

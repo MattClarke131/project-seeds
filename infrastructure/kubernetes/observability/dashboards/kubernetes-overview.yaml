@@ -420,6 +420,60 @@ data:
               {
                 "matcher": {
                   "id": "byName",
+                  "options": "Memory Limit"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Memory %"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "percentunit"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 1
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": 0
+                        },
+                        {
+                          "color": "yellow",
+                          "value": 0.6
+                        },
+                        {
+                          "color": "red",
+                          "value": 0.8
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
                   "options": "Restarts"
                 },
                 "properties": [
@@ -519,6 +573,18 @@ data:
               "instant": true,
               "range": false,
               "refId": "C"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "sum by (namespace, pod) (kube_pod_container_resource_limits{namespace!=\"\", container!=\"\", container!=\"POD\", resource=\"memory\"})",
+              "format": "table",
+              "instant": true,
+              "range": false,
+              "refId": "D"
             }
           ],
           "title": "Pod Resource Usage",
@@ -526,6 +592,19 @@ data:
             {
               "id": "merge",
               "options": {}
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Memory %",
+                "binary": {
+                  "left": "Value #B",
+                  "operator": "/",
+                  "right": "Value #D"
+                },
+                "mode": "binary",
+                "replaceFields": false
+              }
             },
             {
               "id": "organize",
@@ -538,7 +617,8 @@ data:
                 "renameByName": {
                   "Value #A": "CPU (cores)",
                   "Value #B": "Memory",
-                  "Value #C": "Restarts"
+                  "Value #C": "Restarts",
+                  "Value #D": "Memory Limit"
                 }
               }
             }
