@@ -134,25 +134,11 @@ jobs:
           exit_code=$?
           set -e
 
-          echo "$output"
-
           # No PR comment - the check's own pass/fail status is already
           # visible in the merge panel, and a comment on every run either
           # emails on each failure or risks re-notifying on deletion once
-          # fixed. The output above and this summary are the record.
-          if [ "$exit_code" -ne 0 ]; then
-            {
-              echo '### kube-linter ❌ failed'
-              echo
-              echo 'Checked against the Kubernetes manifests changed in this PR.'
-              echo 'Required check - `.kube-linter.yaml` currently enables checks'
-              echo 'one at a time as the fleet is brought into compliance with each'
-              echo '(see #115); it cannot yet fail on anything that is not listed there.'
-              echo
-              echo '```'
-              echo "$output"
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-          fi
+          # fixed. This log output is the record - see the failing check's
+          # details for findings.
+          echo "$output"
 
           exit "$exit_code"
