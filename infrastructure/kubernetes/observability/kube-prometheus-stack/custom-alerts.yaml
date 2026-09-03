@@ -10,13 +10,8 @@ spec:
     - name: custom-node-workload
       rules:
         - alert: NodeWorkloadMemoryHighUtilization
-          # Replaces the default NodeMemoryHighUtilization, which measures
-          # raw host MemAvailable - that tracks VM RAM *allocation* on this
-          # cluster (KVM reserves each VM's configured size whether or not
-          # it's actually used), not real memory pressure. This instead
-          # sums each host's VMs' actual guest-reported usage as a % of
-          # host capacity - same formula validated in proxmox-overview's
-          # "Workload RAM Used %" gauge.
+          # Replaces NodeMemoryHighUtilization, which measures raw MemAvailable
+          # (VM allocation, not real usage) - this sums actual guest RAM used.
           expr: |
             100 * sum by (host) (
               node_memory_MemTotal_bytes{job="node-exporter", role!="host"}
@@ -37,15 +32,10 @@ spec:
     - name: custom-jellyfin-process
       rules:
         # Jellyfin is hard-pinned to a single node (the only one with the
-        # passed-through iGPU) with no fallback - see services/jellyfin/
-        # values.yaml. These come from its own EnableMetrics endpoint
-        # (system_runtime_*/microsoft_aspnetcore_* series - .NET/ASP.NET
-        # Core process telemetry, not media-server activity), scraped via
-        # the `jellyfin` ServiceMonitor. See jellyfin-process-health
-        # Grafana dashboard for the panels these mirror.
+        # iGPU) with no fallback. Metrics come from its own EnableMetrics endpoint.
         - alert: JellyfinHighMemoryUsage
-          # Container limit is 4Gi (values.yaml resources.limits.memory).
-          # An OOMKill here takes down the only jellyfin instance outright.
+          # Container limit is 4Gi. An OOMKill here takes down the only
+          # jellyfin instance outright.
           expr: system_runtime_dotnet_process_memory_working_set{job="jellyfin"} > 3.5 * 1024 * 1024 * 1024
           for: 10m
           labels:
@@ -58,9 +48,8 @@ spec:
               {{ humanize1024 $value }}B. An OOMKill here
               takes down the only jellyfin instance - it has no fallback node.
         - alert: JellyfinThreadPoolQueueBacklog
-          # Work queuing up faster than the thread pool can drain it - an
-          # early, pre-crash signal of the process falling behind, usually
-          # visible as slow/stalled streams before anything else notices.
+          # Work queuing faster than it drains - an early, pre-crash signal,
+          # usually visible as slow/stalled streams before anything else notices.
           expr: system_runtime_threadpool_queue_length{job="jellyfin"} > 0
           for: 5m
           labels:
@@ -72,9 +61,8 @@ spec:
               minutes (currently {{ $value }}) - the process is falling
               behind on incoming work.
         - alert: JellyfinExceptionRateSpike
-          # Compares current exception rate to its own trailing 1h average
-          # rather than a fixed threshold, since some baseline exception
-          # noise from internal control flow is normal.
+          # Compares to its own trailing 1h average rather than a fixed
+          # threshold - some baseline exception noise is normal.
           expr: |
             rate(system_runtime_exception_count_total{job="jellyfin"}[5m]) > 0.05
             and
@@ -91,23 +79,16 @@ spec:
 
     - name: custom-container-memory
       rules:
-        # Cluster-wide OOM detection - kube-prometheus-stack's default rules
-        # only catch OOMs indirectly via KubePodCrashLooping, which needs
-        # several restarts in a short window. A single OOM+restart (like
-        # sabnzbd's on 2026-09-02, see services/downloads-standard/sabnzbd)
-        # doesn't trigger that. This fires on the restart itself, gated to
-        # only those actually caused by OOMKilled (not e.g. a crash or a
-        # manual `kubectl rollout restart`) by requiring the container's
-        # last-terminated reason to have been OOMKilled within the same
-        # window. `ignoring(reason)` is a no-op on the join (restarts_total
-        # doesn't carry a reason label) but is required for the `and` to
-        # match at all.
+        # Cluster-wide OOM detection - default rules only catch this via
+        # crash-looping (several restarts); this fires on a single OOM+restart.
         - alert: ContainerOOMKilled
           expr: |
             (
               kube_pod_container_status_restarts_total
               - (kube_pod_container_status_restarts_total offset 15m) >= 1
             )
+            # ignoring(reason) is a no-op here (restarts_total has no reason
+            # label) but is required for the `and` join to match at all.
             and ignoring(reason) (
               max_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[15m]) == 1
             )
@@ -121,15 +102,10 @@ spec:
               was restarted after being OOMKilled in the last 15 minutes.
               Check whether its memory limit needs raising.
         # Early warning ahead of ContainerOOMKilled - catches a container
-        # climbing toward its limit before it actually gets killed, same
-        # idea as JellyfinHighMemoryUsage above but generalized to every
-        # container with a memory limit set (pods with no limit are excluded
-        # by the join, not scored as 0%).
+        # climbing toward its limit before it's actually killed.
         - alert: ContainerMemoryNearLimit
-          # Scaled to a percentage in the expr itself (not the description
-          # template) - Prometheus's annotation templates don't have a "mul"
-          # function; see EtcdHighFsyncDuration's note below, which had the
-          # same bug.
+          # Scaled to % in the expr, not the description - Prometheus's
+          # templates have no "mul" func; see EtcdHighFsyncDuration below.
           expr: |
             100 * sum by (namespace, pod, container) (container_memory_working_set_bytes{container!="", container!="POD"})
             / on (namespace, pod, container) group_left
@@ -148,25 +124,11 @@ spec:
 
     - name: custom-etcd-latency
       rules:
-        # Scraped via the etcd job added alongside docs/adr/003-control-
-        # plane-metrics-exposure.md's etcd addendum - see etcd-overview
-        # Grafana dashboard for the panels these mirror. Thresholds (10ms
-        # fsync p99, 25ms backend commit p99) are etcd's own documented
-        # healthy-cluster guidance, not values tuned to this cluster.
+        # Scraped via the etcd job in ADR 003's etcd addendum - see
+        # etcd-overview dashboard. Thresholds are etcd's own healthy-cluster guidance.
         #
-        # Built investigating issue #125 (recurring etcd-overload/NotReady
-        # flapping, one recurrence causing a live Jellyfin stutter) - host-
-        # level proxies (disk busy%, CPU steal) stayed flat through that
-        # incident, so these are the metrics that would have actually shown
-        # whether it was real disk latency.
-        #
-        # Both thresholds are expressed in ms directly in the expr (not
-        # left as seconds and converted for display) - Prometheus's
-        # annotation templates don't have a "mul" function, so a `(mul
-        # $value 1000)` in the description silently fails PrometheusRule's
-        # admission webhook. That's exactly what had these two rules (and
-        # this whole file) failing Flux reconciliation since they were
-        # added - see git blame.
+        # Scaled to ms in the expr, not the description - a `mul $value 1000`
+        # there previously failed admission (no "mul" func) and Flux reconciliation.
         - alert: EtcdHighFsyncDuration
           expr: 1000 * histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="etcd"}[5m]))) > 10
           for: 10m
