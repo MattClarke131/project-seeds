@@ -5,13 +5,15 @@ Preparing the Talos Linux disk image for Kubernetes node deployment.
 ## Overview
 Talos is an immutable OS, meaning it is read-only and cannot be modified after deployment. Configuration is managed via a declarative YAML file that is applied at boot time.
 
-Every node runs the `qemu-guest-agent` and `i915` system extensions (see `infrastructure/proxmox/opentofu/cluster.tf` / `locals.tf`). `i915` (Intel GPU driver) is universal across all workers even though only one node (`k8s-livio-w1`) actually has a GPU passed through - see `services/jellyfin/README.md` and the GPU passthrough section below for why. The extension set has to be baked into the **template** image (see Step 1) - adding an extension to `install.extensions` in Terraform's machine config does **not** retroactively apply to an already-installed node or to a fresh clone of an existing template. It only takes effect via a genuine reinstall: either `talosctl upgrade` against an already-running node, or (what we do here) rebuilding the template and destroying/recreating the VM so it clones fresh.
+`infrastructure/proxmox/opentofu/cluster.tf` resolves each role's extension set (`qemu-guest-agent` for control planes, `qemu-guest-agent` + `i915` for workers - see `locals.tf`) into a Talos Image Factory schematic and feeds it into `machine.install.image`. Talos reinstalls itself to that image on first boot regardless of what the template already had, so `install.image` is the sole source of truth for which extensions actually end up running - `i915` (Intel GPU driver, universal across workers even though only `k8s-livio-w1` has a GPU passed through - see `services/jellyfin/README.md` and the GPU passthrough section below) never needs to be baked into the template itself.
+
+The **template** (see Step 1) only bakes in `qemu-guest-agent`, and only for one reason: Terraform's `agent { enabled = true }` block (`vms.tf`) waits for the QEMU guest agent to respond before considering a clone "up". Since the currently-booted image keeps running (and the agent with it) throughout Talos's background reinstall to `install.image`, having the agent present from the template means that wait never stalls, no matter what `install.image` ends up changing. If the extension set in `cluster.tf` ever changes, that takes effect for every fleet node the next time it goes through an install cycle (`talosctl upgrade`, or a destroy/recreate against a current template) - no template rebuild required.
 
 ## Steps
 ### Step 1: Get Talos Linux Image
 Run these steps on **each** proxmox host
 
-1. Get the schematic ID for the extension set we want (`qemu-guest-agent` + `i915`) from the Image Factory:
+1. Get the schematic ID for the template's extension set - just `qemu-guest-agent`, so Terraform's `agent { enabled = true }` wait has something to talk to immediately on first boot. Everything role-specific (like `i915`) is applied later via `cluster.tf`'s `install.image`, not baked in here:
 ```bash
 curl -s -X POST https://factory.talos.dev/schematics \
   -H "Content-Type: application/json" \
@@ -19,14 +21,13 @@ curl -s -X POST https://factory.talos.dev/schematics \
     "customization": {
       "systemExtensions": {
         "officialExtensions": [
-          "siderolabs/qemu-guest-agent",
-          "siderolabs/i915"
+          "siderolabs/qemu-guest-agent"
         ]
       }
     }
   }'
 ```
-This returns a schematic `id` (a stable hash of the extension list - independent of Talos version). As of the `livio` rebuild this was `d3dc673627e9b94c6cd4122289aa52c2484cddb31017ae21b75309846e257d30`. Re-run this if the extension list ever changes; the id will change too.
+This returns a schematic `id` (a stable hash of the extension list - independent of Talos version). Re-run this if the template's own extension set ever changes; the id will change too.
 
 2. Download the image (`nocloud`, not `bare-metal`, because it includes cloud-init support which Talos uses for initial configuration - `raw.xz` format):
 ```bash
