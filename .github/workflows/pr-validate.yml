@@ -148,14 +148,15 @@ jobs:
           exit "$exit_code"
 
       # Only posts on failure - the check's own pass/fail status is already
-      # visible in the merge panel. delete clears a stale failure comment
-      # from an earlier run once the PR is fixed.
+      # visible in the merge panel. No delete-on-pass: recreating a deleted
+      # comment on a later failure emails a "new comment" notification,
+      # where editing an existing one doesn't - a stale comment can outlive
+      # a fix, but it won't generate a repeat email.
       - name: Comment findings on PR
-        if: always() && steps.lint.outputs.files_changed == 'true'
+        if: always() && steps.lint.outputs.files_changed == 'true' && steps.lint.outputs.exit_code != '0'
         uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: kube-linter
-          delete: ${{ steps.lint.outputs.exit_code == '0' }}
           message: |
             ### kube-linter ❌ failed
 
