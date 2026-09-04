@@ -5,12 +5,6 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
-  # RollingUpdate would briefly run two pods against radarr-standard-config
-  # at once. nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so
-  # concurrent writers from two nodes can corrupt state on this PVC.
-  strategy:
-    type: Recreate
-    rollingUpdate: null
   selector:
     matchLabels:
       app: radarr-standard
@@ -94,7 +88,7 @@ spec:
       volumes:
       - name: config
         persistentVolumeClaim:
-          claimName: radarr-standard-config
+          claimName: radarr-standard-config-iscsi
       - name: media
         persistentVolumeClaim:
           claimName: media-standard
