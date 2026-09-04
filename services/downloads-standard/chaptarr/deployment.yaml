@@ -61,10 +61,11 @@ spec:
           mountPath: /config
         - name: media
           mountPath: /media
-        # Same mount path CWA uses for this PVC, so the root folder set in
-        # Chaptarr's UI reads as the same place across both apps' logs.
-        - name: ingest
-          mountPath: /cwa-book-ingest
+        # Custom Script Connect trigger uses this to hardlink imports into
+        # CWA's ingest folder - see chaptarr-hardlink-script ConfigMap and
+        # README.md for wiring instructions.
+        - name: hardlink-script
+          mountPath: /scripts
         resources:
           requests:
             memory: "256Mi"
@@ -79,6 +80,7 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: media-standard
-      - name: ingest
-        persistentVolumeClaim:
-          claimName: cwa-ingest
+      - name: hardlink-script
+        configMap:
+          name: chaptarr-hardlink-script
+          defaultMode: 0755
