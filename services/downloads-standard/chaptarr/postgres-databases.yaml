@@ -1,0 +1,32 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: chaptarr-main
+  namespace: database
+spec:
+  name: chaptarr-main
+  owner: app
+  cluster:
+    name: postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: chaptarr-log
+  namespace: database
+spec:
+  name: chaptarr-log
+  owner: app
+  cluster:
+    name: postgres
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: chaptarr-cache
+  namespace: database
+spec:
+  name: chaptarr-cache
+  owner: app
+  cluster:
+    name: postgres

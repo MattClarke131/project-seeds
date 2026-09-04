@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chaptarr
+  namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - chaptarr.labmatt.com
+      secretName: chaptarr-tls
+  rules:
+  - host: chaptarr.labmatt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: chaptarr
+            port:
+              number: 8789

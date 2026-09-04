@@ -61,3 +61,8 @@ resources:
   - calibre-web-automated/pvc-ingest.yaml
   - calibre-web-automated/pvc-library.yaml
   - calibre-web-automated/service.yaml
+  - chaptarr/deployment.yaml
+  - chaptarr/ingress.yaml
+  - chaptarr/postgres-databases.yaml
+  - chaptarr/pvc-config.yaml
+  - chaptarr/service.yaml
