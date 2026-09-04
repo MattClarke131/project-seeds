@@ -40,7 +40,6 @@ spec:
           datasetParentName: sleipnir/k8s-iscsi/v
           detachedSnapshotsDatasetParentName: sleipnir/k8s-iscsi/s
           zvolCompression: lz4
-          zvolDedup: "off"
           zvolEnableReservation: false
           zvolBlocksize: 16K
         iscsi:
