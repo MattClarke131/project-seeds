@@ -38,6 +38,7 @@ spec:
           mountPath: /calibre-library
         - name: ingest
           mountPath: /cwa-book-ingest
+          subPath: books-ingest
         resources:
           requests:
             memory: "512Mi"
@@ -52,6 +53,10 @@ spec:
       - name: library
         persistentVolumeClaim:
           claimName: cwa-library
+      # books-ingest is a subpath on the same PVC Chaptarr's root folder
+      # lives on (issue #18), not its own PVC - Chaptarr hardlinks newly
+      # imported books here on import, which only works within a single
+      # filesystem.
       - name: ingest
         persistentVolumeClaim:
-          claimName: cwa-ingest
+          claimName: media-standard

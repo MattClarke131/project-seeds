@@ -58,6 +58,11 @@ resources:
   - calibre-web-automated/ingress.yaml
   - calibre-web-automated/ingress-books-sync.yaml
   - calibre-web-automated/pvc-config.yaml
-  - calibre-web-automated/pvc-ingest.yaml
   - calibre-web-automated/pvc-library.yaml
   - calibre-web-automated/service.yaml
+  - chaptarr/configmap-hardlink-script.yaml
+  - chaptarr/deployment.yaml
+  - chaptarr/ingress.yaml
+  - chaptarr/postgres-databases.yaml
+  - chaptarr/pvc-config.yaml
+  - chaptarr/service.yaml

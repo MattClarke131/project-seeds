@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaptarr
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  # RollingUpdate would briefly run two pods against chaptarr-config at
+  # once. nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so
+  # concurrent writers from two nodes can corrupt state on this PVC.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chaptarr
+  template:
+    metadata:
+      labels:
+        app: chaptarr
+    spec:
+      containers:
+      - name: chaptarr
+        image: chaptarr/chaptarr:0.9.958
+        ports:
+        - containerPort: 8789
+          name: http
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "America/New_York"
+        # Chaptarr reads Postgres config from env vars directly (like
+        # Bazarr), unlike Radarr/Sonarr which only read config.xml.
+        - name: Chaptarr__Postgres__Host
+          value: "postgres-rw.database.svc.cluster.local"
+        - name: Chaptarr__Postgres__Port
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: port
+        - name: Chaptarr__Postgres__User
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: Chaptarr__Postgres__Password
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: Chaptarr__Postgres__MainDb
+          value: "chaptarr-main"
+        - name: Chaptarr__Postgres__LogDb
+          value: "chaptarr-log"
+        - name: Chaptarr__Postgres__CacheDb
+          value: "chaptarr-cache"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: media
+          mountPath: /media
+        # Custom Script Connect trigger uses this to hardlink imports into
+        # CWA's ingest folder - see chaptarr-hardlink-script ConfigMap and
+        # README.md for wiring instructions.
+        - name: hardlink-script
+          mountPath: /scripts
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: chaptarr-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-standard
+      - name: hardlink-script
+        configMap:
+          name: chaptarr-hardlink-script
+          defaultMode: 0755

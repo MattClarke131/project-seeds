@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaptarr
+  namespace: downloads-standard
+spec:
+  type: ClusterIP
+  selector:
+    app: chaptarr
+  ports:
+  - port: 8789
+    targetPort: 8789
+    protocol: TCP
+    name: http

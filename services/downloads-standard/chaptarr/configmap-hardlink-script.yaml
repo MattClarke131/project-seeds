@@ -1,0 +1,49 @@
+# Script for Chaptarr's Settings -> Connect -> Custom Script trigger (On
+# Release Import / On Upgrade). Hardlinks a just-imported book from
+# Chaptarr's root folder (/media/books) into CWA's ingest folder
+# (/media/books-ingest), same PVC, so CWA picks it up without a copy - same
+# shape as Radarr/Sonarr hardlinking a completed download into their own
+# library. See README.md for wiring instructions, including how to confirm
+# the exact env var name Chaptarr passes (unverified against a running
+# instance as of writing - modeled on Readarr's undocumented
+# readarr_addedbookpaths).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaptarr-hardlink-script
+  namespace: downloads-standard
+data:
+  hardlink-to-cwa-ingest.sh: |
+    #!/bin/sh
+    set -eu
+
+    ROOT_FOLDER=/media/books
+    INGEST_FOLDER=/media/books-ingest
+
+    # Chaptarr fires this on "Test" from the Connect settings page too -
+    # nothing to link yet, so succeed without touching the filesystem.
+    if [ "${chaptarr_eventtype:-}" = "Test" ]; then
+      echo "hardlink-to-cwa-ingest: Test event, nothing to do"
+      exit 0
+    fi
+
+    if [ -z "${chaptarr_addedbookpaths:-}" ]; then
+      echo "hardlink-to-cwa-ingest: chaptarr_addedbookpaths is unset - env var name may differ, run 'env | grep -i chaptarr' from a manual trigger to confirm" >&2
+      exit 1
+    fi
+
+    IFS='|'
+    for src in $chaptarr_addedbookpaths; do
+      case "$src" in
+        "$ROOT_FOLDER"/*) ;;
+        *)
+          echo "hardlink-to-cwa-ingest: skipping '$src', not under $ROOT_FOLDER" >&2
+          continue
+          ;;
+      esac
+      rel=${src#"$ROOT_FOLDER"/}
+      dest="$INGEST_FOLDER/$rel"
+      mkdir -p "$(dirname "$dest")"
+      ln -f "$src" "$dest"
+      echo "hardlink-to-cwa-ingest: linked $src -> $dest"
+    done
