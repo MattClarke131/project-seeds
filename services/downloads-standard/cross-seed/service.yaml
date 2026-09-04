@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cross-seed
+  namespace: downloads-standard
+spec:
+  type: ClusterIP
+  selector:
+    app: cross-seed
+  ports:
+  - port: 2468
+    targetPort: 2468
+    protocol: TCP
+    name: http
