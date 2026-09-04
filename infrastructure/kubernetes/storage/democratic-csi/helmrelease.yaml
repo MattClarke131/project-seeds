@@ -49,11 +49,11 @@ spec:
           interface: ""
           namePrefix: "csi-"
           nameSuffix: ""
-          # Fill in once the TrueNAS setup in README.md is done.
           targetGroups:
-            - targetGroupPortalGroup: "<PORTAL_GROUP_ID>"
-              targetGroupInitiatorGroup: "<INITIATOR_GROUP_ID>"
-              targetGroupAuthType: None
+            - targetGroupPortalGroup: 1
+              targetGroupInitiatorGroup: 1
+              targetGroupAuthType: CHAP
+              targetGroupAuthGroup: 1
           extentInsecureTpc: true
           extentXenCompat: false
           extentDisablePhysicalBlocksize: true
