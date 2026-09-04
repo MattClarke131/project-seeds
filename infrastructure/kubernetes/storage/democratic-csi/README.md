@@ -63,11 +63,9 @@ prunes them:
 ```bash
 kubectl create namespace democratic-csi
 
-# fill in secret.example.yaml's placeholders with real values from the
-# TrueNAS steps above, then:
-kubectl create secret generic democratic-csi-truenas \
-  --namespace democratic-csi \
-  --from-file=values.yaml=./secret.filled-in.yaml
+# copy secret.example.yaml, fill in its placeholders with real values from
+# the TrueNAS steps above, save as secret.filled-in.yaml (gitignored), then:
+kubectl apply -f secret.filled-in.yaml
 ```
 
 The HelmRelease won't reconcile successfully until this Secret exists.
