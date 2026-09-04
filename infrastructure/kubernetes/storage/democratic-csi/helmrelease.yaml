@@ -35,7 +35,7 @@ spec:
           protocol: https
           host: 10.0.10.20
           port: 443
-          allowInsecure: false
+          allowInsecure: true
         zfs:
           datasetParentName: sleipnir/k8s-iscsi/v
           detachedSnapshotsDatasetParentName: sleipnir/k8s-iscsi/s
