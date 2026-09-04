@@ -85,7 +85,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -103,7 +102,6 @@ jobs:
           sudo install kube-linter /usr/local/bin/kube-linter
 
       - name: kube-linter
-        id: lint
         run: |
           set -e
           # If the ruleset itself changed, a diff-scoped run wouldn't catch
@@ -125,7 +123,6 @@ jobs:
               ':(exclude)*values.yaml' ':(exclude)*values.yml')
           fi
 
-          echo "files_changed=$([ "${#files[@]}" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           if [ "${#files[@]}" -eq 0 ]; then
             echo "No Kubernetes manifests changed - skipping"
             exit 0
@@ -137,34 +134,11 @@ jobs:
           exit_code=$?
           set -e
 
+          # No PR comment - the check's own pass/fail status is already
+          # visible in the merge panel, and a comment on every run either
+          # emails on each failure or risks re-notifying on deletion once
+          # fixed. This log output is the record - see the failing check's
+          # details for findings.
           echo "$output"
-          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
-          {
-            echo "report<<KUBE_LINTER_EOF"
-            echo "$output"
-            echo "KUBE_LINTER_EOF"
-          } >> "$GITHUB_OUTPUT"
 
           exit "$exit_code"
-
-      - name: Comment findings on PR
-        if: always() && steps.lint.outputs.files_changed == 'true'
-        uses: marocchino/sticky-pull-request-comment@v3
-        with:
-          header: kube-linter
-          message: |
-            ### kube-linter ${{ steps.lint.outputs.exit_code == '0' && '✅ passed' || '❌ failed' }}
-
-            Checked against the Kubernetes manifests changed in this PR.
-            Required check - `.kube-linter.yaml` currently enables checks
-            one at a time as the fleet is brought into compliance with each
-            (see [#115](../../issues/115)); it can't yet fail on anything
-            that isn't listed there.
-
-            <details><summary>kube-linter output</summary>
-
-            ```
-            ${{ steps.lint.outputs.report }}
-            ```
-
-            </details>

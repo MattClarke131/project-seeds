@@ -1,7 +1,7 @@
-# ADR: Control-Plane Metrics Exposure (kube-scheduler / kube-controller-manager / kube-proxy)
+# ADR: Control-Plane Metrics Exposure (kube-scheduler / kube-controller-manager / kube-proxy / etcd)
 
 ## Date
-2026-08-21
+2026-08-21 (etcd added 2026-09-01)
 
 ## Status
 Accepted
@@ -96,3 +96,35 @@ conclusion.
 Rejected - these three components are important enough that losing real
 visibility into their health isn't worth avoiding a cheap, well-precedented
 fix. See Context above.
+
+## Addendum: etcd (2026-09-01)
+Same problem, same fix, one more component. Investigating a live Jellyfin
+playback stutter traced back to [[project_observability_rollout_safety]]
+(issue #125's etcd-overload cascade, recurring for the third time - see
+that issue for the incident history) - but with no `etcd_disk_wal_fsync_
+duration_seconds` / `etcd_disk_backend_commit_duration_seconds` data
+available, there was no way to tell whether the recurring timeouts trace to
+actual disk latency or to etcd's own request pattern, only host-level
+proxies (disk busy%, CPU steal) that stayed flat through the exact
+timeout window.
+
+Talos binds etcd's `--listen-metrics-urls` to loopback by default same as
+the other three, for the same reason. Extended `cluster.etcd.extraArgs` in
+`infrastructure/proxmox/opentofu/cluster.tf` alongside the existing three:
+
+```yaml
+cluster:
+  etcd:
+    extraArgs:
+      listen-metrics-urls: http://0.0.0.0:2381
+```
+
+Same risk acceptance as the rest of this ADR: LAN-reachable, unauthenticated,
+operational telemetry only (no secrets, no write access - this is
+`--listen-metrics-urls`, not `--listen-client-urls`). `docs/reconsider-if.md`'s
+existing trigger for this ADR now covers etcd too.
+
+Prometheus scrape config added to `kube-prometheus-stack`'s `helmrelease.yaml`
+as a new `etcd` job, reusing the existing `prometheus-targets.json` file_sd
+source (filtered to `role: control_plane`, address rewritten to port 2381)
+rather than adding a second target file.

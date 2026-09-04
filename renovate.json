@@ -59,6 +59,13 @@
       "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
+  "hostRules": [
+    {
+      "description": "lscr.io (linuxserver's registry, proxied through GitHub's infra) 429'd every *arr-stack lookup in a single run because Renovate fired them concurrently and burst past its short-window limit, even though the advertised rate (44000/minute) is generous. Capping concurrency here spaces the requests out instead.",
+      "matchHost": "lscr.io",
+      "concurrentRequestLimit": 1
+    }
+  ],
   "packageRules": [
     {
       "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",

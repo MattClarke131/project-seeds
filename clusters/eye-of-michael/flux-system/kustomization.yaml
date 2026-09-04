@@ -14,4 +14,3 @@ resources:
   - downloads-standard.yaml
   - immich.yaml
   - jellyfin.yaml
-  - code-for-boston.yaml

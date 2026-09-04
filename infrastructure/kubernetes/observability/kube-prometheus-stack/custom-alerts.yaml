@@ -10,13 +10,8 @@ spec:
     - name: custom-node-workload
       rules:
         - alert: NodeWorkloadMemoryHighUtilization
-          # Replaces the default NodeMemoryHighUtilization, which measures
-          # raw host MemAvailable - that tracks VM RAM *allocation* on this
-          # cluster (KVM reserves each VM's configured size whether or not
-          # it's actually used), not real memory pressure. This instead
-          # sums each host's VMs' actual guest-reported usage as a % of
-          # host capacity - same formula validated in proxmox-overview's
-          # "Workload RAM Used %" gauge.
+          # Replaces NodeMemoryHighUtilization, which measures raw MemAvailable
+          # (VM allocation, not real usage) - this sums actual guest RAM used.
           expr: |
             100 * sum by (host) (
               node_memory_MemTotal_bytes{job="node-exporter", role!="host"}
@@ -37,15 +32,10 @@ spec:
     - name: custom-jellyfin-process
       rules:
         # Jellyfin is hard-pinned to a single node (the only one with the
-        # passed-through iGPU) with no fallback - see services/jellyfin/
-        # values.yaml. These come from its own EnableMetrics endpoint
-        # (system_runtime_*/microsoft_aspnetcore_* series - .NET/ASP.NET
-        # Core process telemetry, not media-server activity), scraped via
-        # the `jellyfin` ServiceMonitor. See jellyfin-process-health
-        # Grafana dashboard for the panels these mirror.
+        # iGPU) with no fallback. Metrics come from its own EnableMetrics endpoint.
         - alert: JellyfinHighMemoryUsage
-          # Container limit is 4Gi (values.yaml resources.limits.memory).
-          # An OOMKill here takes down the only jellyfin instance outright.
+          # Container limit is 4Gi. An OOMKill here takes down the only
+          # jellyfin instance outright.
           expr: system_runtime_dotnet_process_memory_working_set{job="jellyfin"} > 3.5 * 1024 * 1024 * 1024
           for: 10m
           labels:
@@ -58,9 +48,8 @@ spec:
               {{ humanize1024 $value }}B. An OOMKill here
               takes down the only jellyfin instance - it has no fallback node.
         - alert: JellyfinThreadPoolQueueBacklog
-          # Work queuing up faster than the thread pool can drain it - an
-          # early, pre-crash signal of the process falling behind, usually
-          # visible as slow/stalled streams before anything else notices.
+          # Work queuing faster than it drains - an early, pre-crash signal,
+          # usually visible as slow/stalled streams before anything else notices.
           expr: system_runtime_threadpool_queue_length{job="jellyfin"} > 0
           for: 5m
           labels:
@@ -72,9 +61,8 @@ spec:
               minutes (currently {{ $value }}) - the process is falling
               behind on incoming work.
         - alert: JellyfinExceptionRateSpike
-          # Compares current exception rate to its own trailing 1h average
-          # rather than a fixed threshold, since some baseline exception
-          # noise from internal control flow is normal.
+          # Compares to its own trailing 1h average rather than a fixed
+          # threshold - some baseline exception noise is normal.
           expr: |
             rate(system_runtime_exception_count_total{job="jellyfin"}[5m]) > 0.05
             and
@@ -88,3 +76,83 @@ spec:
             description: >-
               Jellyfin is throwing exceptions at {{ printf "%.2f" $value }}/s,
               more than 3x its trailing 1-hour average, for 5 minutes.
+
+    - name: custom-container-memory
+      rules:
+        # Cluster-wide OOM detection - default rules only catch this via
+        # crash-looping (several restarts); this fires on a single OOM+restart.
+        - alert: ContainerOOMKilled
+          expr: |
+            (
+              kube_pod_container_status_restarts_total
+              - (kube_pod_container_status_restarts_total offset 15m) >= 1
+            )
+            # ignoring(reason) is a no-op here (restarts_total has no reason
+            # label) but is required for the `and` join to match at all.
+            and ignoring(reason) (
+              max_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[15m]) == 1
+            )
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A container was OOMKilled."
+            description: >-
+              {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})
+              was restarted after being OOMKilled in the last 15 minutes.
+              Check whether its memory limit needs raising.
+        # Early warning ahead of ContainerOOMKilled - catches a container
+        # climbing toward its limit before it's actually killed.
+        - alert: ContainerMemoryNearLimit
+          # Scaled to % in the expr, not the description - Prometheus's
+          # templates have no "mul" func; see EtcdHighFsyncDuration below.
+          expr: |
+            100 * sum by (namespace, pod, container) (container_memory_working_set_bytes{container!="", container!="POD"})
+            / on (namespace, pod, container) group_left
+            sum by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"})
+            > 85
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A container's memory usage is approaching its limit."
+            description: >-
+              {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }})
+              has used more than 85% of its memory limit for 15 minutes,
+              currently {{ printf "%.1f" $value }}%. Risks an OOMKill if it
+              keeps climbing.
+
+    - name: custom-etcd-latency
+      rules:
+        # Scraped via the etcd job in ADR 003's etcd addendum - see
+        # etcd-overview dashboard. Thresholds are etcd's own healthy-cluster guidance.
+        #
+        # Scaled to ms in the expr, not the description - a `mul $value 1000`
+        # there previously failed admission (no "mul" func) and Flux reconciliation.
+        - alert: EtcdHighFsyncDuration
+          expr: 1000 * histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="etcd"}[5m]))) > 10
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "etcd WAL fsync latency is above etcd's healthy-cluster guidance."
+            description: >-
+              {{ $labels.hostname }}'s etcd WAL fsync p99 has been above
+              10ms for 10 minutes, is currently
+              {{ printf "%.1f" $value }}ms. This is etcd's own
+              write path, not host CPU/memory - a sustained miss here means
+              the disk backing etcd can't keep up, which is what drives the
+              request-timeout/NodeNotReady cascade tracked in issue #125.
+        - alert: EtcdHighBackendCommitDuration
+          expr: 1000 * histogram_quantile(0.99, sum by (le, hostname) (rate(etcd_disk_backend_commit_duration_seconds_bucket{job="etcd"}[5m]))) > 25
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "etcd backend commit latency is above etcd's healthy-cluster guidance."
+            description: >-
+              {{ $labels.hostname }}'s etcd backend commit p99 has been
+              above 25ms for 10 minutes, is currently
+              {{ printf "%.1f" $value }}ms. Same underlying
+              concern as EtcdHighFsyncDuration - see that alert's
+              description.
