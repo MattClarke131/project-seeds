@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: radarr-standard-config
+  name: radarr-standard-config-iscsi
   namespace: downloads-standard
 spec:
   accessModes:
-    - ReadWriteOnce
-  storageClassName: nfs-provisioner
+    - ReadWriteOncePod
+  storageClassName: truenas-iscsi
   resources:
     requests:
       storage: 5Gi

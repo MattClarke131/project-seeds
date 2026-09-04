@@ -5,11 +5,6 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
-  # RollingUpdate would briefly run two pods against sabnzbd-standard-config
-  # at once. nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so
-  # concurrent writers from two nodes can corrupt state on this PVC.
-  strategy:
-    type: Recreate
   selector:
     matchLabels:
       app: sabnzbd-standard
@@ -46,7 +41,7 @@ spec:
       volumes:
       - name: config
         persistentVolumeClaim:
-          claimName: sabnzbd-standard-config
+          claimName: sabnzbd-standard-config-iscsi
       - name: media
         persistentVolumeClaim:
           claimName: media-standard
