@@ -46,10 +46,6 @@ Same pattern as cert-manager's `cloudflare-api-token`
 (`infrastructure/kubernetes/cert-manager/README.md`): created imperatively,
 never committed, kept out of `kustomization.yaml` so Flux never prunes it.
 
-Only the API key is secret - everything else about the driver (TrueNAS
-host, dataset names, portal/initiator group IDs, iSCSI settings) lives in
-`helmrelease.yaml`, committed and reviewable like normal:
-
 ```bash
 kubectl create namespace democratic-csi
 
