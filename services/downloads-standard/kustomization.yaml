@@ -8,6 +8,7 @@ resources:
   - seerr/helmrelease.yaml
   - prowlarr/deployment.yaml
   - prowlarr/ingress.yaml
+  - prowlarr/mam-dynamic-seedbox-cronjob.yaml
   - prowlarr/pvc.yaml
   - prowlarr/service.yaml
   - radarr/deployment.yaml
