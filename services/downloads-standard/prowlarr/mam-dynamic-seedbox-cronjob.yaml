@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: prowlarr-mam-dynamic-seedbox
+  namespace: downloads-standard
+spec:
+  # Re-authorizes Prowlarr's egress IP with MAM's tracker in case the
+  # underlying residential connection's IP ever changes (unconfirmed
+  # whether it actually does - see qbittorrent-vpn's mam-dynamic-seedbox
+  # sidecar for the AirVPN case this pattern is copied from). Unlike that
+  # sidecar, Prowlarr doesn't sit behind gluetun, so a plain CronJob is
+  # fine here - no shared network namespace needed to get the right
+  # source IP.
+  schedule: "0 */2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: mam-dynamic-seedbox
+            image: curlimages/curl:8.21.0
+            env:
+            - name: MAM_ID
+              valueFrom:
+                secretKeyRef:
+                  name: prowlarr-mam-dynamic-seedbox
+                  key: mam_id
+            command:
+            - sh
+            - -c
+            - |
+              curl -sS -w '\nHTTP:%{http_code}\n' -b "mam_id=${MAM_ID}" https://t.myanonamouse.net/json/dynamicSeedbox.php
+            resources:
+              requests:
+                memory: "16Mi"
+                cpu: "10m"
+              limits:
+                memory: "32Mi"
+                cpu: "50m"
