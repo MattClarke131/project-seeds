@@ -51,8 +51,8 @@ spec:
           targetGroups:
             - targetGroupPortalGroup: 1
               targetGroupInitiatorGroup: 1
-              targetGroupAuthType: CHAP
-              targetGroupAuthGroup: 1
+              # CHAP unsupported. See issue #172.
+              targetGroupAuthType: None
           extentInsecureTpc: true
           extentXenCompat: false
           extentDisablePhysicalBlocksize: true
