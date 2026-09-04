@@ -61,6 +61,13 @@ spec:
           extentRpm: "SSD"
           extentAvailThreshold: 0
 
+    node:
+      driver:
+        # Talos's iscsi-tools extension populates /etc/iscsi, but kubelet's
+        # hostPath "Directory" pre-check races it at boot - skip the check
+        # (empty type) rather than the path itself.
+        iscsiDirHostPathType: ""
+
     storageClasses:
       - name: truenas-iscsi
         defaultClass: false
