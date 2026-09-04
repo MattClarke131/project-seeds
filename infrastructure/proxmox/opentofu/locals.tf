@@ -17,12 +17,9 @@ locals {
   # Control planes only need qemu-guest-agent; i915 stays universal across workers even
   # though only k8s-livio-w1 has a GPU passed through - see gpu_passthrough_worker_key below.
   #
-  # iscsi-tools is on every node (both roles): it provides iscsiadm, which the
-  # democratic-csi node driver (#13) needs to stage iSCSI volumes - stock Talos has no
-  # iSCSI initiator tooling at all. This resolves to a new schematic vs. what's live on
-  # the fleet today; each already-running node needs `talosctl upgrade` to actually pick
-  # it up (see infrastructure/kubernetes/storage/democratic-csi/README.md) - editing this
-  # list alone doesn't touch already-installed nodes.
+  # iscsi-tools provides iscsiadm, required by the democratic-csi node driver (#13).
+  # On every node - editing this list doesn't apply to running nodes; needs
+  # `talosctl upgrade` per node after.
   control_plane_extensions = ["siderolabs/qemu-guest-agent", "siderolabs/iscsi-tools"]
   worker_extensions        = ["siderolabs/i915", "siderolabs/qemu-guest-agent", "siderolabs/iscsi-tools"]
 

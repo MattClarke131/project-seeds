@@ -15,7 +15,6 @@
 
 # Kubernetes
 kubeconfig
-**/secret.filled-in.yaml
 
 # Generated
 infrastructure/terraform/proxmox/generated

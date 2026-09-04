@@ -2,20 +2,8 @@
 
 Adds a second StorageClass, `truenas-iscsi`, backed by iSCSI zvols on the
 `sleipnir` TrueNAS pool. Provisioned via [democratic-csi](https://github.com/democratic-csi/democratic-csi)'s
-`freenas-api-iscsi` driver, talking to the TrueNAS SCALE REST API.
-
-Exists to close #13: `nfs-provisioner` doesn't enforce `ReadWriteOnce`
-exclusivity, which already corrupted Bazarr's SQLite config db. iSCSI zvols
-are real block devices - single-initiator by nature - so the driver can
-enforce `ReadWriteOncePod` and Kubernetes will reject a double-attach
-outright, instead of relying on every deployment remembering
-`strategy: Recreate`.
-
-`nfs-provisioner` stays as-is and stays default - bulk media storage and
-anything that wants RWX has no reason to move. Only the 9 single-replica
-config PVCs listed in #13 (plus any others found) are in scope for
-migration, and that migration is **not** part of this change - see
-"Migrating a PVC" below for why it's deliberately left as a separate step.
+`freenas-api-iscsi` driver, talking to the TrueNAS SCALE REST API. See #13
+for why. `nfs-provisioner` stays default; nothing about it changes here.
 
 ## Prerequisite: Talos needs the `iscsi-tools` system extension
 
@@ -54,37 +42,49 @@ before the Secret below can be filled in with real values:
 
 ## Creating the Secret
 
-`secret.example.yaml` shows the shape. This repo's Flux setup keeps
-API-key-bearing Secrets out of `kustomization.yaml` (see
-`infrastructure/kubernetes/cert-manager/README.md` for the same pattern
-with `cloudflare-api-token`) so they're created imperatively and Flux never
-prunes them:
+Same pattern as cert-manager's `cloudflare-api-token`
+(`infrastructure/kubernetes/cert-manager/README.md`): created imperatively,
+never committed, kept out of `kustomization.yaml` so Flux never prunes it.
 
 ```bash
 kubectl create namespace democratic-csi
 
-# copy secret.example.yaml, fill in its placeholders with real values from
-# the TrueNAS steps above, save as secret.filled-in.yaml (gitignored), then:
-kubectl apply -f secret.filled-in.yaml
+kubectl create secret generic democratic-csi-truenas \
+  --namespace democratic-csi \
+  --from-file=values.yaml=/dev/stdin <<'EOF'
+driver:
+  config:
+    driver: freenas-api-iscsi
+    httpConnection:
+      protocol: https
+      host: 10.0.10.20
+      port: 443
+      apiKey: "<TRUENAS_API_KEY>"
+      allowInsecure: false
+    zfs:
+      datasetParentName: sleipnir/k8s-iscsi/v
+      detachedSnapshotsDatasetParentName: sleipnir/k8s-iscsi/s
+      zvolCompression: lz4
+      zvolDedup: "off"
+      zvolEnableReservation: false
+      zvolBlocksize: 16K
+    iscsi:
+      targetPortal: "10.0.10.20:3260"
+      targetPortals: []
+      interface: ""
+      namePrefix: "csi-"
+      nameSuffix: ""
+      targetGroups:
+        - targetGroupPortalGroup: "<PORTAL_GROUP_ID>"
+          targetGroupInitiatorGroup: "<INITIATOR_GROUP_ID>"
+          targetGroupAuthType: None
+      extentInsecureTpc: true
+      extentXenCompat: false
+      extentDisablePhysicalBlocksize: true
+      extentBlocksize: 512
+      extentRpm: "SSD"
+      extentAvailThreshold: 0
+EOF
 ```
 
 The HelmRelease won't reconcile successfully until this Secret exists.
-
-## Migrating a PVC
-
-Deliberately out of scope for this change - each of the 9 PVCs in #13 holds
-live app state (several already migrated to Postgres, but config/state
-still lives on these), and getting the copy-cutover sequence wrong risks
-the exact corruption this is meant to fix. Once the above is validated (a
-throwaway PVC on `truenas-iscsi` actually gets rejected on double-mount),
-migrate one app at a time as a separate, reviewed change:
-
-1. Scale the deployment to 0.
-2. Create a new PVC on `truenas-iscsi`.
-3. Copy data across (e.g. a one-off `Job` mounting both PVCs, `rsync` or
-   `cp -a` between them).
-4. Repoint the deployment's `volumes` at the new PVC, drop
-   `strategy: Recreate` in favor of the default `RollingUpdate`.
-5. Scale back up, verify, then delete the old PVC (and its `nfs-provisioner`
-   backing directory) only after confirming the app is healthy on the new
-   volume.
