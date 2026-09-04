@@ -28,6 +28,39 @@ spec:
     csiDriver:
       name: "org.democratic-csi.iscsi"
 
+    driver:
+      config:
+        driver: freenas-api-iscsi
+        httpConnection:
+          protocol: https
+          host: 10.0.10.20
+          port: 443
+          allowInsecure: false
+        zfs:
+          datasetParentName: sleipnir/k8s-iscsi/v
+          detachedSnapshotsDatasetParentName: sleipnir/k8s-iscsi/s
+          zvolCompression: lz4
+          zvolDedup: "off"
+          zvolEnableReservation: false
+          zvolBlocksize: 16K
+        iscsi:
+          targetPortal: "10.0.10.20:3260"
+          targetPortals: []
+          interface: ""
+          namePrefix: "csi-"
+          nameSuffix: ""
+          # Fill in once the TrueNAS setup in README.md is done.
+          targetGroups:
+            - targetGroupPortalGroup: "<PORTAL_GROUP_ID>"
+              targetGroupInitiatorGroup: "<INITIATOR_GROUP_ID>"
+              targetGroupAuthType: None
+          extentInsecureTpc: true
+          extentXenCompat: false
+          extentDisablePhysicalBlocksize: true
+          extentBlocksize: 512
+          extentRpm: "SSD"
+          extentAvailThreshold: 0
+
     storageClasses:
       - name: truenas-iscsi
         defaultClass: false

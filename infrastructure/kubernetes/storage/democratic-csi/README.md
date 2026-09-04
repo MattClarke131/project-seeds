@@ -46,6 +46,10 @@ Same pattern as cert-manager's `cloudflare-api-token`
 (`infrastructure/kubernetes/cert-manager/README.md`): created imperatively,
 never committed, kept out of `kustomization.yaml` so Flux never prunes it.
 
+Only the API key is secret - everything else about the driver (TrueNAS
+host, dataset names, portal/initiator group IDs, iSCSI settings) lives in
+`helmrelease.yaml`, committed and reviewable like normal:
+
 ```bash
 kubectl create namespace democratic-csi
 
@@ -54,37 +58,11 @@ kubectl create secret generic democratic-csi-truenas \
   --from-file=values.yaml=/dev/stdin <<'EOF'
 driver:
   config:
-    driver: freenas-api-iscsi
     httpConnection:
-      protocol: https
-      host: 10.0.10.20
-      port: 443
       apiKey: "<TRUENAS_API_KEY>"
-      allowInsecure: false
-    zfs:
-      datasetParentName: sleipnir/k8s-iscsi/v
-      detachedSnapshotsDatasetParentName: sleipnir/k8s-iscsi/s
-      zvolCompression: lz4
-      zvolDedup: "off"
-      zvolEnableReservation: false
-      zvolBlocksize: 16K
-    iscsi:
-      targetPortal: "10.0.10.20:3260"
-      targetPortals: []
-      interface: ""
-      namePrefix: "csi-"
-      nameSuffix: ""
-      targetGroups:
-        - targetGroupPortalGroup: "<PORTAL_GROUP_ID>"
-          targetGroupInitiatorGroup: "<INITIATOR_GROUP_ID>"
-          targetGroupAuthType: None
-      extentInsecureTpc: true
-      extentXenCompat: false
-      extentDisablePhysicalBlocksize: true
-      extentBlocksize: 512
-      extentRpm: "SSD"
-      extentAvailThreshold: 0
 EOF
 ```
 
-The HelmRelease won't reconcile successfully until this Secret exists.
+The HelmRelease won't reconcile successfully until this Secret exists, and
+`helmrelease.yaml`'s `targetGroupPortalGroup`/`targetGroupInitiatorGroup`
+placeholders are filled in with real IDs from the TrueNAS setup above.
