@@ -5,9 +5,11 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
-  # RollingUpdate would briefly run two pods against cwa-config/cwa-library
-  # at once. nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so
-  # concurrent writers from two nodes can corrupt CWA's SQLite metadata db.
+  # RollingUpdate would briefly run two pods against cwa-library/cwa-ingest
+  # at once (cwa-config moved to democratic-csi's ReadWriteOncePod
+  # enforcement - see #13 - these two haven't). nfs-provisioner doesn't
+  # enforce ReadWriteOnce exclusivity, so concurrent writers from two nodes
+  # can corrupt the Calibre library's own metadata.db.
   strategy:
     type: Recreate
   selector:
@@ -49,7 +51,7 @@ spec:
       volumes:
       - name: config
         persistentVolumeClaim:
-          claimName: cwa-config
+          claimName: cwa-config-iscsi
       - name: library
         persistentVolumeClaim:
           claimName: cwa-library
