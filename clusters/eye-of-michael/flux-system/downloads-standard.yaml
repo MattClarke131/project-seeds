@@ -14,3 +14,10 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+  # Suspended during #13's config-PVC migration series: several apps here
+  # get scaled to 0 and repointed at new PVCs live, out of band, one at a
+  # time across several PRs. An imperative `flux suspend` alone doesn't
+  # stick - the flux-system meta-Kustomization that applies this file would
+  # just reapply `suspend: false` from git on its own next reconcile. Revert
+  # this once all 9 PVCs are migrated.
+  suspend: true
