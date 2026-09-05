@@ -38,6 +38,16 @@ data:
           continue
           ;;
       esac
+      # CWA is a Calibre/ebook tool - it can't process audiobook formats.
+      # Chaptarr's root folder is a Mixed-type one (ebooks and audiobooks
+      # both land under /media/books), so filter out audiobook files here
+      # rather than sending them into CWA's ingest to get stuck/ignored.
+      case "$src" in
+        *.mp3|*.m4a|*.m4b|*.flac|*.ogg|*.opus|*.wav|*.aac)
+          echo "hardlink-to-cwa-ingest: skipping '$src', audiobook format" >&2
+          continue
+          ;;
+      esac
       rel=${src#"$ROOT_FOLDER"/}
       dest="$INGEST_FOLDER/$rel"
       mkdir -p "$(dirname "$dest")"
