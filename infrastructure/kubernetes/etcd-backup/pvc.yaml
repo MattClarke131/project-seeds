@@ -1,0 +1,15 @@
+# Sized well above the actual snapshot footprint (etcd's own data is only a
+# few GB) since this backs 14 days of daily snapshots plus headroom for etcd
+# growth over time.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: etcd-snapshots
+  namespace: etcd-backup
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-provisioner
+  resources:
+    requests:
+      storage: 20Gi
