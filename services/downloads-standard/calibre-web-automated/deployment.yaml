@@ -26,6 +26,14 @@ spec:
           value: "1000"
         - name: TZ
           value: "America/New_York"
+        # The ingest folder is an NFS-backed subpath (media-standard), and
+        # Chaptarr's hardlinks into it are written from a different pod/NFS
+        # client than CWA's own. Plain inotify doesn't see filesystem
+        # changes made by another NFS client, so CWA's watcher would never
+        # notice a hardlinked import without this - switches CWA to a
+        # polling-based watcher instead (issue #18).
+        - name: NETWORK_SHARE_MODE
+          value: "true"
         volumeMounts:
         - name: config
           mountPath: /config
