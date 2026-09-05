@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-snapshot
+  namespace: etcd-backup
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: etcd-snapshot
+              image: ghcr.io/siderolabs/talosctl:v1.13.8
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  talosctl --talosconfig /talos/talosconfig -n "$CP_NODE" -e "$CP_NODE" \
+                    etcd snapshot "/backup/etcd-$(date +%F).db"
+                  find /backup -name 'etcd-*.db' -mtime +14 -delete
+              env:
+                # Any of the three control-plane nodes works - etcd data is
+                # replicated across all of them, so this is just a fixed,
+                # reachable snapshot source rather than "the" source of truth.
+                - name: CP_NODE
+                  value: "10.0.10.40"
+              volumeMounts:
+                - name: talosconfig
+                  mountPath: /talos
+                  readOnly: true
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: talosconfig
+              secret:
+                secretName: etcd-backup-talosconfig
+            - name: backup
+              persistentVolumeClaim:
+                claimName: etcd-snapshots
