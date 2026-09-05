@@ -26,10 +26,22 @@ data:
         custom_formats:
           - trash_ids:
               - dc98083864ea246d05a42df0d05f81cc  # x265 (HD)
-              - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
             assign_scores_to:
               - name: HD Bluray + WEB
                 score: 500
+          # Scored separately from (and lower than) "x265 (HD)" above: both
+          # used to be bundled at +500, but "x265 (no HDR/DV)" also matches
+          # every non-HDR x265 release that "x265 (HD)" matches, so the two
+          # stacked to 1000 and made a plain SDR release outrank an existing
+          # HDR10+/Dolby Vision file -- triggering an unwanted "upgrade" that
+          # downgraded picture quality (Supergirl (2026), 2026-09-05). Keeping
+          # this scored (rather than dropping it to 0) still lets an HDR
+          # release later outscore and replace an SDR file already on disk.
+          - trash_ids:
+              - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: -100
           - trash_ids:
               - 2899d84dc9372de3408e6d8cc18e9666  # x264
             assign_scores_to:
