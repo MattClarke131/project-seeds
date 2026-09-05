@@ -13,10 +13,7 @@ data:
       // at the time this was written - re-check there if this ever needs
       // updating, since IDs aren't stable across indexer add/remove).
       // Deliberately excludes id 1 (DrunkenSlug - Usenet, cross-seed can't
-      // act on NZBs). Id 2 (Portugas) is tagged "portuguese" in Prowlarr so
-      // it's only synced to the portuguese *arr apps, not the standard
-      // ones - included here anyway since cross-seed bypasses app-sync
-      // entirely and talks to each numbered endpoint directly.
+      // act on NZBs).
       torznab: [
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/2/api?apikey=${process.env.PROWLARR_API_KEY}`, // Portugas
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/3/api?apikey=${process.env.PROWLARR_API_KEY}`, // YUSCENE
