@@ -5,6 +5,11 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
+  # config/library PVCs are ReadWriteOncePod - RollingUpdate deadlocks
+  # trying to schedule a second pod while the first still holds the mount
+  # (#200) - hit repeatedly during #18 follow-up work.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: calibre-web-automated
