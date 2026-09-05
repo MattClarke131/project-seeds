@@ -124,12 +124,34 @@ spec:
         storageClassName: nfs-provisioner
         size: 10Gi
 
-      # nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so a
-      # RollingUpdate can briefly double-mount this PVC across old and new pods.
-      # Grafana stores its own state in SQLite, which doesn't tolerate two
-      # concurrent writers - same failure mode that hit Bazarr, see #13.
+      # Dashboards/users/alerting config live in the shared CNPG cluster
+      # (database/postgres-cluster.yaml), not local SQLite - see #35. That's
+      # what makes a real RollingUpdate safe here: the old pod keeps serving
+      # against the same Postgres-backed state until the new one is Ready,
+      # instead of the previous Recreate strategy's guaranteed zero-Grafana
+      # window on every deploy.
+      #
+      # Requires postgres-secret to already exist in this namespace
+      # (reflected from database/postgres-app - see docs/bootstrap/database.md).
+      env:
+        GF_DATABASE_TYPE: postgres
+        GF_DATABASE_HOST: postgres-rw.database.svc.cluster.local:5432
+        GF_DATABASE_NAME: grafana
+      envValueFrom:
+        GF_DATABASE_USER:
+          secretKeyRef:
+            name: postgres-secret
+            key: username
+        GF_DATABASE_PASSWORD:
+          secretKeyRef:
+            name: postgres-secret
+            key: password
+
       deploymentStrategy:
-        type: Recreate
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 1
+          maxUnavailable: 0
 
       sidecar:
         dashboards:

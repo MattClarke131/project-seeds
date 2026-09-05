@@ -20,6 +20,8 @@ resources:
   - graphite-exporter/servicemonitor.yaml
   - kube-prometheus-stack/custom-alerts.yaml
   - kube-prometheus-stack/prometheus-targets-configmap.yaml
+  - kube-prometheus-stack/postgres-databases.yaml
+  - kube-prometheus-stack/postgres-secret.yaml
   - kube-prometheus-stack/helmrepository.yaml
   - kube-prometheus-stack/helmrelease.yaml
   - metrics-server/helmrepository.yaml
