@@ -1,7 +1,7 @@
 locals {
   # Versions
   kubernetes_version = "v1.34.1"
-  talos_version      = "v1.13.8"
+  talos_version      = "v1.13.9"
   kube_vip_version   = "v1.0.1"
 
   # Pinned to whatever version the cluster was originally bootstrapped with - this is NOT
