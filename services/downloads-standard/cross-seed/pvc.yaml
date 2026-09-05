@@ -6,7 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: nfs-provisioner
+  storageClassName: truenas-iscsi
   resources:
     requests:
       storage: 2Gi

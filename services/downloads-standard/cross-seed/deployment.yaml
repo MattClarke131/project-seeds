@@ -5,9 +5,11 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
-  # RollingUpdate would briefly run two pods against cross-seed-config at
-  # once. nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so
-  # concurrent writers from two nodes can corrupt state on this PVC.
+  # cross-seed-config is on truenas-iscsi, a true single-attach RWO volume:
+  # RollingUpdate would try to bring up the new pod before tearing down the
+  # old one, and the new pod's attach would block on the old pod's node still
+  # holding the volume - a stuck rollout (Multi-Attach error), not silent
+  # corruption like on NFS, but still needs Recreate to avoid.
   strategy:
     type: Recreate
   selector:
