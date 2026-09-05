@@ -18,3 +18,11 @@ chmod +x /mnt/<pool>/scripts/*.sh
 - Command: `/mnt/<pool>/scripts/send_zpool_metrics.sh`
 - Schedule: Every Minute (or as desired)
 - User: root
+
+## Before rebooting/updating TrueNAS
+Scale every Deployment backed by an iSCSI PVC to 0 first. Scale back to 1 once TrueNAS is reachable again. A reboot with an iSCSI session still open can force the volume's filesystem read-only, and it doesn't self-heal on its own. NFS-backed pods don't need this.
+
+Find the current list:
+```bash
+kubectl get pvc -A -o json | jq -r '.items[] | select(.spec.storageClassName=="truenas-iscsi") | "\(.metadata.namespace)/\(.metadata.name)"'
+```
