@@ -9,12 +9,19 @@ failure, or losing quorum outright.
 ## Setup
 
 The `etcd-backup-talosconfig` secret is committed empty and must be populated
-manually after this namespace exists:
+manually after this namespace exists. Use a scoped `os:etcd:backup` role
+rather than the fleet's admin talosconfig - it grants only the etcd snapshot
+API call, nothing else:
 
 ```bash
+talosctl config new etcd-backup --roles os:etcd:backup --crt-ttl 87600h \
+  > /tmp/etcd-backup-talosconfig
+
 kubectl create secret generic etcd-backup-talosconfig -n etcd-backup \
-  --from-file=talosconfig=<path-to-talosconfig> \
+  --from-file=talosconfig=/tmp/etcd-backup-talosconfig \
   --dry-run=client -o yaml | kubectl apply -f -
+
+rm /tmp/etcd-backup-talosconfig
 ```
 
 ## Restore
