@@ -35,12 +35,12 @@ data:
       duplicateCategories: false,
       rssCadence: "30 minutes",
       searchCadence: "1 day",
-      // Rolling retry window, not torrent age: skip a torrent if cross-seed
-      // searched it within the last 7 days, and stop retrying it altogether
-      // once its last search is over 30 days old (assume it's exhausted).
-      excludeRecentSearch: "7 days",
-      excludeOlder: "30 days",
-      delay: 30,
+      // Retry window keyed on last search time, not torrent age. Wide to
+      // avoid re-querying every unmatched candidate on every daily sweep.
+      excludeRecentSearch: "30 days",
+      excludeOlder: "120 days",
+      // 90s avoids IPTorrents' burst limit (429s at 30s).
+      delay: 90,
       apiKey: process.env.CROSS_SEED_API_KEY,
       port: 2468,
       host: "0.0.0.0",
