@@ -6,8 +6,20 @@ metadata:
 data:
   config.js: |
     module.exports = {
+      // Prowlarr has no aggregate Torznab endpoint - each numbered path is
+      // one specific indexer, same as what it syncs into Sonarr/Radarr's own
+      // indexer lists. Listed here: every indexer in Prowlarr that's both
+      // protocol=torrent and enabled (checked via Prowlarr's /api/v1/indexer
+      // at the time this was written - re-check there if this ever needs
+      // updating, since IDs aren't stable across indexer add/remove).
+      // Deliberately excludes id 1 (DrunkenSlug - Usenet, cross-seed can't
+      // act on NZBs) and id 2 (Portugas - torrent but disabled in Prowlarr).
       torznab: [
-        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/1/api?apikey=${process.env.PROWLARR_API_KEY}`,
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/3/api?apikey=${process.env.PROWLARR_API_KEY}`, // YUSCENE
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/4/api?apikey=${process.env.PROWLARR_API_KEY}`, // IPTorrents
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/5/api?apikey=${process.env.PROWLARR_API_KEY}`, // FileList.io
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/6/api?apikey=${process.env.PROWLARR_API_KEY}`, // SpeedApp.io
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/7/api?apikey=${process.env.PROWLARR_API_KEY}`, // MyAnonamouse
       ],
       torrentClients: [
         `qbittorrent:http://${process.env.QBITTORRENT_USERNAME}:${process.env.QBITTORRENT_PASSWORD}@qbittorrent-vpn.downloads-standard.svc.cluster.local:8080/`,
