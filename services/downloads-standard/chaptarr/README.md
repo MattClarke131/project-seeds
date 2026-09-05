@@ -26,14 +26,13 @@ their library, one hop further:
 2. Path: `/scripts/hardlink-to-cwa-ingest.sh` (from the
    `chaptarr-hardlink-script` ConfigMap).
 3. Trigger on "On Release Import" and "On Upgrade".
-4. Click "Test" once wired up, then check the pod logs
-   (`kubectl logs -n downloads-standard deploy/chaptarr`) for the script's
-   `hardlink-to-cwa-ingest:` output.
+4. Click "Test" to confirm it's wired up correctly (exits 0 without
+   touching the filesystem - Chaptarr's own "Test" doesn't actually invoke
+   custom scripts, so this only confirms the notification is saved, not
+   that the script runs. Trigger a real import to confirm end-to-end.)
 
-The script reads `$chaptarr_addedbookpaths` (pipe-separated import paths),
-modeled on Readarr's undocumented `readarr_addedbookpaths` - **this env var
-name is unverified against a running Chaptarr instance.** If step 4 logs
-"chaptarr_addedbookpaths is unset", run `env | grep -i chaptarr` from the
-Custom Script instead (temporarily swap the script's Path in Chaptarr's UI,
-or exec into the container after a live import) to find the actual name(s)
-Chaptarr passes, then update `configmap-hardlink-script.yaml` to match.
+The script reads `$Chaptarr_AddedBookPaths` (pipe-separated import paths),
+confirmed against `CustomScript.cs` in the Chaptarr source
+(`Chaptarr/chaptarr@main`) - capitalized with a `Chaptarr_` prefix, unlike
+Readarr's lowercase `readarr_addedbookpaths` this was originally modeled
+on.
