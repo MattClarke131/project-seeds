@@ -22,7 +22,11 @@ data:
       duplicateCategories: false,
       rssCadence: "30 minutes",
       searchCadence: "1 day",
-      excludeRecentSearch: "3 days",
+      // Rolling retry window, not torrent age: skip a torrent if cross-seed
+      // searched it within the last 7 days, and stop retrying it altogether
+      // once its last search is over 30 days old (assume it's exhausted).
+      excludeRecentSearch: "7 days",
+      excludeOlder: "30 days",
       delay: 30,
       apiKey: process.env.CROSS_SEED_API_KEY,
       port: 2468,
