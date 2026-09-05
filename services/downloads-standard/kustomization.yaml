@@ -11,6 +11,11 @@ resources:
   - prowlarr/mam-dynamic-seedbox-cronjob.yaml
   - prowlarr/pvc.yaml
   - prowlarr/service.yaml
+  - cross-seed/configmap.yaml
+  - cross-seed/deployment.yaml
+  - cross-seed/pvc.yaml
+  - cross-seed/secret.yaml
+  - cross-seed/service.yaml
   - radarr/deployment.yaml
   - radarr/ingress.yaml
   - radarr/postgres-databases.yaml

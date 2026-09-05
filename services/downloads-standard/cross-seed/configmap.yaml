@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cross-seed-config
+  namespace: downloads-standard
+data:
+  config.js: |
+    module.exports = {
+      torznab: [
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/1/api?apikey=${process.env.PROWLARR_API_KEY}`,
+      ],
+      torrentClients: [
+        `qbittorrent:http://${process.env.QBITTORRENT_USERNAME}:${process.env.QBITTORRENT_PASSWORD}@qbittorrent-vpn.downloads-standard.svc.cluster.local:8080/`,
+      ],
+      // Matches qBittorrent's own /media mount, so a match's save path lines
+      // up with qBittorrent's and cross-seed can inject directly into the
+      // client instead of needing separate linkDirs.
+      dataDirs: ["/media"],
+      matchMode: "safe",
+      action: "inject",
+      linkCategory: "cross-seed",
+      duplicateCategories: false,
+      rssCadence: "30 minutes",
+      searchCadence: "1 day",
+      excludeRecentSearch: "3 days",
+      delay: 30,
+      apiKey: process.env.CROSS_SEED_API_KEY,
+      port: 2468,
+      host: "0.0.0.0",
+    };

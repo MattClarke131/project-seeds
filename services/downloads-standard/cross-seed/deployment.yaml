@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cross-seed
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  # cross-seed-config is on truenas-iscsi, a true single-attach RWO volume:
+  # RollingUpdate would try to bring up the new pod before tearing down the
+  # old one, and the new pod's attach would block on the old pod's node still
+  # holding the volume - a stuck rollout (Multi-Attach error), not silent
+  # corruption like on NFS, but still needs Recreate to avoid.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: cross-seed
+  template:
+    metadata:
+      labels:
+        app: cross-seed
+    spec:
+      # cross-seed has no PUID/PGID support - it runs as whatever UID the
+      # container is given, which must match qBittorrent's (1000) so files
+      # it links/injects against on the shared media PVC are writable.
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+      - name: cross-seed
+        image: ghcr.io/cross-seed/cross-seed:6.13.7
+        args: ["daemon"]
+        ports:
+        - containerPort: 2468
+          name: http
+        env:
+        - name: TZ
+          value: "America/New_York"
+        - name: PROWLARR_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: prowlarr-api-key
+        - name: QBITTORRENT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: qbittorrent-username
+        - name: QBITTORRENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: qbittorrent-password
+        - name: CROSS_SEED_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: cross-seed-api-key
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: config-js
+          mountPath: /config/config.js
+          subPath: config.js
+        - name: media
+          mountPath: /media
+          readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: cross-seed-config
+      - name: config-js
+        configMap:
+          name: cross-seed-config
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-standard
