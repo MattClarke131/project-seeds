@@ -14,7 +14,6 @@ resources:
   - cross-seed/configmap.yaml
   - cross-seed/deployment.yaml
   - cross-seed/pvc.yaml
-  - cross-seed/secret.yaml
   - cross-seed/service.yaml
   - radarr/deployment.yaml
   - radarr/ingress.yaml
