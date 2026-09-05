@@ -5,6 +5,10 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
+  # config PVC is ReadWriteOncePod - RollingUpdate deadlocks trying to
+  # schedule a second pod while the first still holds the mount (#200).
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: radarr-portuguese
