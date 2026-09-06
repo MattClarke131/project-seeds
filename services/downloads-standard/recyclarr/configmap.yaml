@@ -29,14 +29,8 @@ data:
             assign_scores_to:
               - name: HD Bluray + WEB
                 score: 500
-          # Scored separately from (and lower than) "x265 (HD)" above: both
-          # used to be bundled at +500, but "x265 (no HDR/DV)" also matches
-          # every non-HDR x265 release that "x265 (HD)" matches, so the two
-          # stacked to 1000 and made a plain SDR release outrank an existing
-          # HDR10+/Dolby Vision file -- triggering an unwanted "upgrade" that
-          # downgraded picture quality (Supergirl (2026), 2026-09-05). Keeping
-          # this scored (rather than dropping it to 0) still lets an HDR
-          # release later outscore and replace an SDR file already on disk.
+          # Scored separately from, and below, "x265 (HD)": both match SDR
+          # releases, so bundling them let SDR outrank HDR (Supergirl, 2026-09-05).
           - trash_ids:
               - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
             assign_scores_to:
@@ -69,10 +63,8 @@ data:
             assign_scores_to:
               - name: WEB-1080p
                 score: 500
-          # See radarr-standard above: scored separately from (and lower
-          # than) "x265 (HD)" because scores stack when both formats match
-          # the same release, and bundling them at the same score let a
-          # plain SDR release outrank an existing HDR/DV file.
+          # Same fix as radarr-standard above: scores stack, so bundling this
+          # with "x265 (HD)" let SDR outrank HDR.
           - trash_ids:
               - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
@@ -104,10 +96,8 @@ data:
             assign_scores_to:
               - name: "[Anime] Remux-1080p"
                 score: 500
-          # See radarr-standard above: scored separately from (and lower
-          # than) "x265 (HD)" because scores stack when both formats match
-          # the same release, and bundling them at the same score let a
-          # plain SDR release outrank an existing HDR/DV file.
+          # Same fix as radarr-standard above: scores stack, so bundling this
+          # with "x265 (HD)" let SDR outrank HDR.
           - trash_ids:
               - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
