@@ -122,6 +122,25 @@ spec:
               currently {{ printf "%.1f" $value }}%. Risks an OOMKill if it
               keeps climbing.
 
+    - name: custom-flux-health
+      rules:
+        # gotk_resource_info (customResourceState, see helmrelease.yaml)
+        # covers every Flux object's Ready condition - a failure here won't
+        # crash any pod, so nothing else alerts on it (#56).
+        - alert: FluxReconciliationFailing
+          expr: gotk_resource_info{ready="False"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Flux {{ $labels.customresource_kind }}/{{ $labels.name }} in {{ $labels.exported_namespace }} isn't Ready."
+            description: >-
+              {{ $labels.customresource_kind }}/{{ $labels.name }} in
+              {{ $labels.exported_namespace }} has failed to reconcile for
+              at least 15 minutes. Check `flux logs` or `kubectl describe`
+              for that object - the previously-applied version is still
+              live, so nothing else will have alerted on this.
+
     - name: custom-etcd-latency
       rules:
         # Scraped via the etcd job in ADR 003's etcd addendum - see
