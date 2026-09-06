@@ -143,7 +143,8 @@ spec:
             name: postgres-secret
             key: password
 
-      # Safe now that state isn't a local single-writer SQLite file - see #35.
+      # Safe now that state is in Postgres, not a local single-writer
+      # SQLite file - see #35.
       deploymentStrategy:
         type: RollingUpdate
         rollingUpdate:
