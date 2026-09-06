@@ -71,6 +71,7 @@ qm create 10000 \
   --name talos-template \
   --memory 4096 \
   --cores 4 \
+  --cpu host \
   --net0 virtio,bridge=vmbr0 \
   --scsi0 local-zfs:0,import-from=/var/lib/vz/template/iso/talos-<talos-version>-nocloud-amd64.raw \
   --boot order=scsi0 \
@@ -81,6 +82,15 @@ qm create 10000 \
   --agent enabled=1 \
   --template
 ```
+
+**`--cpu host` matters even though Terraform's `clone` resource sets it again on
+every real fleet VM** (`cpu.type = "host"` in `vms.tf`, so production nodes are
+unaffected either way): a VM cloned straight from this template with plain
+`qm clone` - e.g. for scratch testing - silently inherits the template's own
+CPU model instead, defaulting to `kvm64` if unset here. `kvm64` boots Talos
+1.13's kernel into an immediate panic (`This program can only be run on
+AMD64 processors`) with no indication why. Set it on the template so a
+manual clone behaves the same as a Terraform-managed one.
 
 **`--machine q35` is required**, not optional, even if you don't need GPU passthrough on this particular host: PCIe passthrough (`hostpci` with `pcie=1`) only works on `q35` machine type, and this is set at template-creation time - it's not something Terraform or a later `qm set` can cleanly retrofit onto VMs already cloned from a `pc`/`i440fx` template. Missing this flag was the cause of a real passthrough failure during the `livio-w1` GPU work (silent until the VM was actually rebooted with `hostpci0` attached).
 
