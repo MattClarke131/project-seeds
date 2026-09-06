@@ -124,15 +124,11 @@ spec:
         storageClassName: nfs-provisioner
         size: 10Gi
 
-      # Dashboards/users/alerting config live in the shared CNPG cluster
-      # (database/postgres-cluster.yaml), not local SQLite - see #35. That's
-      # what makes a real RollingUpdate safe here: the old pod keeps serving
-      # against the same Postgres-backed state until the new one is Ready,
-      # instead of the previous Recreate strategy's guaranteed zero-Grafana
-      # window on every deploy.
+      # Dashboards/users/alerting live in the shared CNPG cluster, not
+      # local SQLite - see #35.
       #
-      # Requires postgres-secret to already exist in this namespace
-      # (reflected from database/postgres-app - see docs/bootstrap/database.md).
+      # Requires postgres-secret in this namespace (reflected from
+      # database/postgres-app - see docs/bootstrap/database.md).
       env:
         GF_DATABASE_TYPE: postgres
         GF_DATABASE_HOST: postgres-rw.database.svc.cluster.local:5432
@@ -147,6 +143,7 @@ spec:
             name: postgres-secret
             key: password
 
+      # Safe now that state isn't a local single-writer SQLite file - see #35.
       deploymentStrategy:
         type: RollingUpdate
         rollingUpdate:
