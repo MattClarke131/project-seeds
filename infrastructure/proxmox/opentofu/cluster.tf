@@ -60,7 +60,6 @@ data "talos_machine_configuration" "controlplane" {
           image = local.control_plane_install_image
         }
         network = {
-          hostname = each.value.hostname
           interfaces = [{
             deviceSelector = {
               hardwareAddr = lower(each.value.mac_address)
@@ -107,6 +106,14 @@ data "talos_machine_configuration" "controlplane" {
           }
         }
       }
+    }),
+    # Talos 1.12+ deprecated machine.network.hostname in favor of this
+    # document - setting both makes config acquisition crash on a fresh
+    # install ("static hostname is already set"). See issue #159.
+    yamlencode({
+      apiVersion = "v1alpha1"
+      kind       = "HostnameConfig"
+      hostname   = each.value.hostname
     })
   ]
 }
@@ -133,8 +140,8 @@ resource "local_file" "meta_data" {
   for_each = local.control_plane_nodes
 
   content = yamlencode({
-    instance_id    = each.value.hostname
-    local_hostname = each.value.hostname
+    "instance-id"    = each.value.hostname
+    "local-hostname" = each.value.hostname
   })
   filename        = "${path.module}/iso-content/control-plane/${each.key}/meta-data"
   file_permission = "0600"
@@ -190,7 +197,6 @@ data "talos_machine_configuration" "worker" {
           image = local.worker_install_image
         }
         network = {
-          hostname = each.value.hostname
           interfaces = [{
             deviceSelector = {
               hardwareAddr = lower(each.value.mac_address)
@@ -208,6 +214,14 @@ data "talos_machine_configuration" "worker" {
           "topology.${var.cluster_name}/physical-host" = each.value.proxmox_node
         }
       }
+    }),
+    # Talos 1.12+ deprecated machine.network.hostname in favor of this
+    # document - setting both makes config acquisition crash on a fresh
+    # install ("static hostname is already set"). See issue #159.
+    yamlencode({
+      apiVersion = "v1alpha1"
+      kind       = "HostnameConfig"
+      hostname   = each.value.hostname
     })
   ]
 }
@@ -225,8 +239,8 @@ resource "local_file" "worker_meta_data" {
   for_each = local.worker_nodes
 
   content = yamlencode({
-    instance_id    = each.value.hostname
-    local_hostname = each.value.hostname
+    "instance-id"    = each.value.hostname
+    "local-hostname" = each.value.hostname
   })
   filename        = "${path.module}/iso-content/worker/${each.key}/meta-data"
   file_permission = "0600"
