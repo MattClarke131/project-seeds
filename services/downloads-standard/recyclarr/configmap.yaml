@@ -66,10 +66,18 @@ data:
         custom_formats:
           - trash_ids:
               - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
-              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
               - name: WEB-1080p
                 score: 500
+          # See radarr-standard above: scored separately from (and lower
+          # than) "x265 (HD)" because scores stack when both formats match
+          # the same release, and bundling them at the same score let a
+          # plain SDR release outrank an existing HDR/DV file.
+          - trash_ids:
+              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: WEB-1080p
+                score: -100
           - trash_ids:
               - cddfb4e32db826151d97352b8e37c648  # x264
             assign_scores_to:
@@ -93,10 +101,18 @@ data:
         custom_formats:
           - trash_ids:
               - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
-              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
               - name: "[Anime] Remux-1080p"
                 score: 500
+          # See radarr-standard above: scored separately from (and lower
+          # than) "x265 (HD)" because scores stack when both formats match
+          # the same release, and bundling them at the same score let a
+          # plain SDR release outrank an existing HDR/DV file.
+          - trash_ids:
+              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: "[Anime] Remux-1080p"
+                score: -100
           - trash_ids:
               - cddfb4e32db826151d97352b8e37c648  # x264
             assign_scores_to:
