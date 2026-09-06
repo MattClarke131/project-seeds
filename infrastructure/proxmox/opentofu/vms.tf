@@ -7,9 +7,11 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
-  agent {
-    enabled = true
-  }
+  # No `agent` block: this VM's IP is static and known up front (see
+  # locals.control_plane_nodes), so nothing needs the QEMU guest agent for
+  # readiness. Waiting on it would stall `tofu apply` against a generic
+  # template - Talos boots without qemu-guest-agent until it reinstalls to
+  # `install.image` (see cluster.tf), and clone-time is before that. See #16.
 
   clone {
     vm_id = each.value.template_vm_id
@@ -47,9 +49,7 @@ resource "proxmox_virtual_environment_vm" "worker" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
-  agent {
-    enabled = true
-  }
+  # No `agent` block - see the control_plane resource above.
 
   clone {
     vm_id = each.value.template_vm_id

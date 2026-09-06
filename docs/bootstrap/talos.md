@@ -8,16 +8,14 @@ Talos is an immutable OS, meaning it is read-only and cannot be modified after d
 ### Who owns which extensions
 
 `infrastructure/proxmox/opentofu/cluster.tf` resolves each role's extension set into a Talos Image Factory schematic and feeds it into `machine.install.image`:
-- Control planes: `qemu-guest-agent`
-- Workers: `qemu-guest-agent` + `i915` (see `locals.tf`)
+- Control planes: `qemu-guest-agent`, `iscsi-tools`
+- Workers: `qemu-guest-agent`, `iscsi-tools`, `i915` (see `locals.tf`)
 
 `i915` is the Intel GPU driver - it's universal across all workers even though only `k8s-livio-w1` actually has a GPU passed through (see `services/jellyfin/README.md` and the GPU passthrough section below).
 
-Talos reinstalls itself to `install.image` on first boot **regardless of what the template already had**, so `install.image`/`cluster.tf` is the sole source of truth for which extensions actually end up running. That means `i915` never needs to be baked into the template itself - only `cluster.tf` needs to know about it.
+Talos reinstalls itself to `install.image` on first boot **regardless of what the template already had**, so `install.image`/`cluster.tf` is the sole source of truth for which extensions actually end up running. That means no extension - not even `qemu-guest-agent` - needs to be baked into the template itself.
 
-The **template** (Step 1 below) bakes in only `qemu-guest-agent`, and for one specific reason:
-- Terraform's `agent { enabled = true }` block (`vms.tf`) waits for the QEMU guest agent to respond before it considers a clone "up".
-- The currently-booted image (and its agent) keeps running throughout Talos's background reinstall to `install.image` - so having the agent present from the template means that wait never stalls, whatever `install.image` changes to.
+The **template** (Step 1 below) is a fully generic, stock Talos image with no extensions baked in at all. It only needs to boot and start talking to Terraform/the Talos API; `install.image` fully owns what's actually installed. This means `vms.tf`'s VM resources can't rely on the QEMU guest agent responding quickly - it isn't present until *after* Talos's own reinstall completes - so they don't have an `agent` block at all. Nothing needs agent-discovered IPs anyway: every node's static IP is already known up front (`locals.control_plane_nodes`/`worker_nodes`). See #16.
 
 If the extension set in `cluster.tf` ever changes, that takes effect fleet-wide the next time each node goes through an install cycle (`talosctl upgrade`, or a destroy/recreate against the current template) - **no template rebuild required**.
 
@@ -25,21 +23,13 @@ If the extension set in `cluster.tf` ever changes, that takes effect fleet-wide 
 ### Step 1: Get Talos Linux Image
 Run these steps on **each** proxmox host
 
-1. Get the schematic ID for the template's extension set. The template only needs `qemu-guest-agent` (see "Who owns which extensions" above) - everything role-specific like `i915` is applied later via `cluster.tf`'s `install.image`, not baked in here:
+1. Get the schematic ID for a stock, no-extensions image. The Image Factory always needs a schematic id, even for a plain image, so resolve one with an empty extension list - the template is fully generic; `cluster.tf`'s `install.image` is the sole source of truth for which extensions actually end up running (see "Who owns which extensions" above):
 ```bash
 curl -s -X POST https://factory.talos.dev/schematics \
   -H "Content-Type: application/json" \
-  -d '{
-    "customization": {
-      "systemExtensions": {
-        "officialExtensions": [
-          "siderolabs/qemu-guest-agent"
-        ]
-      }
-    }
-  }'
+  -d '{"customization": {"systemExtensions": {"officialExtensions": []}}}'
 ```
-This returns a schematic `id` (a stable hash of the extension list - independent of Talos version). Re-run this if the template's own extension set ever changes; the id will change too.
+This returns a schematic `id`. It's stable across Talos versions as long as the (empty) extension list doesn't change, so you only need to do this once.
 
 2. Download the image (`nocloud`, not `bare-metal`, because it includes cloud-init support which Talos uses for initial configuration - `raw.xz` format):
 ```bash
