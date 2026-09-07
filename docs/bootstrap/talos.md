@@ -7,27 +7,41 @@ Talos is an immutable OS, meaning it is read-only and cannot be modified after d
 
 ### Who owns which extensions
 
-`infrastructure/proxmox/opentofu/cluster.tf` resolves each role's extension set into a Talos Image Factory schematic and feeds it into `machine.install.image`:
+**The template must have every extension baked in at build time.** A `qm clone` copies the template's disk as-is. Talos only runs its install-to-disk step - the one that would apply `machine.install.image` below - if it doesn't yet consider the disk "installed". A cloned disk already qualifies as installed, so Talos skips that step and just boots whatever the template already had. This bit the real fleet once - see #16.
+
+`infrastructure/proxmox/opentofu/cluster.tf` still resolves each role's extension set into a schematic and feeds it into `machine.install.image`:
 - Control planes: `qemu-guest-agent`, `iscsi-tools`
 - Workers: `qemu-guest-agent`, `iscsi-tools`, `i915` (see `locals.tf`)
 
-`i915` is the Intel GPU driver - it's universal across all workers even though only `k8s-livio-w1` actually has a GPU passed through (see `services/jellyfin/README.md` and the GPU passthrough section below).
+Treat that as documentation of intent, not as something that takes effect on its own. It only matters for a genuinely fresh (non-cloned) install, or if a node is manually re-upgraded via `talosctl upgrade --image=<install.image>` later. Plain clones - which is every real fleet node - never pick it up.
 
-The **template** (Step 1 below) is a fully generic, stock Talos image with no extensions baked in at all. It only needs to boot and start talking to Terraform/the Talos API; `install.image` fully owns what's actually installed. This means `vms.tf`'s VM resources can't rely on the QEMU guest agent responding quickly - it isn't present until *after* Talos's own reinstall completes - so they don't have an `agent` block at all. Nothing needs agent-discovered IPs anyway: every node's static IP is already known up front (`locals.control_plane_nodes`/`worker_nodes`). See #16.
+Every host has one template, shared by its control plane and all its workers (see `template_vm_id` in `terraform.tfvars`). So the template must be built with the **union** of every role's extensions: `qemu-guest-agent`, `iscsi-tools`, `i915`. `i915` ends up on every node this way, including control planes - that's fine, it's just an unused driver on any node without the GPU passed through (see the GPU passthrough section below).
 
-If the extension set in `cluster.tf` ever changes, that takes effect fleet-wide the next time each node goes through an install cycle (`talosctl upgrade`, or a destroy/recreate against the current template) - **no template rebuild required**.
+**If the extension set in `cluster.tf` ever changes, you must rebuild the template** (Steps 1-2 below) before cloning any new node from it. Nothing enforces this automatically - a stale template clones silently, with whatever extensions it happened to have. Remember to rebuild.
+
+`vms.tf`'s VM resources don't have an `agent` block. Nothing needs agent-discovered IPs - every node's static IP is already known up front (`locals.control_plane_nodes`/`worker_nodes`). See #16.
 
 ## Steps
 ### Step 1: Get Talos Linux Image
 Run these steps on **each** proxmox host
 
-1. Get the schematic ID for a stock, no-extensions image. The Image Factory always needs a schematic id, even for a plain image, so resolve one with an empty extension list - the template is fully generic; `cluster.tf`'s `install.image` is the sole source of truth for which extensions actually end up running (see "Who owns which extensions" above):
+1. Get the schematic ID for the template's extension set - the union from "Who owns which extensions" above:
 ```bash
 curl -s -X POST https://factory.talos.dev/schematics \
   -H "Content-Type: application/json" \
-  -d '{"customization": {"systemExtensions": {"officialExtensions": []}}}'
+  -d '{
+    "customization": {
+      "systemExtensions": {
+        "officialExtensions": [
+          "siderolabs/qemu-guest-agent",
+          "siderolabs/iscsi-tools",
+          "siderolabs/i915"
+        ]
+      }
+    }
+  }'
 ```
-This returns a schematic `id`. It's stable across Talos versions as long as the (empty) extension list doesn't change, so you only need to do this once.
+This returns a schematic `id`. It changes if you ever change the extension list above - re-run this and rebuild the template (Step 2) when that happens.
 
 2. Download the image (`nocloud`, not `bare-metal`, because it includes cloud-init support which Talos uses for initial configuration - `raw.xz` format):
 ```bash
