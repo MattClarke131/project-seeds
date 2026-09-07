@@ -20,7 +20,6 @@ data:
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/4/api?apikey=${process.env.PROWLARR_API_KEY}`, // IPTorrents
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/5/api?apikey=${process.env.PROWLARR_API_KEY}`, // FileList.io
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/6/api?apikey=${process.env.PROWLARR_API_KEY}`, // SpeedApp.io
-        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/7/api?apikey=${process.env.PROWLARR_API_KEY}`, // MyAnonamouse
       ],
       torrentClients: [
         `qbittorrent:http://${process.env.QBITTORRENT_USERNAME}:${process.env.QBITTORRENT_PASSWORD}@qbittorrent-vpn.downloads-standard.svc.cluster.local:8080/`,
