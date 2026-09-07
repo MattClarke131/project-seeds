@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "13ft"
+  namespace: "13ft"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: 13ft
+  template:
+    metadata:
+      labels:
+        app: 13ft
+    spec:
+      containers:
+        - name: 13ft
+          image: ghcr.io/wasi-master/13ft:latest
+          ports:
+            - containerPort: 5000
