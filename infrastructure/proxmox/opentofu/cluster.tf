@@ -110,9 +110,20 @@ data "talos_machine_configuration" "controlplane" {
     # Talos 1.12+ deprecated machine.network.hostname in favor of this
     # document - setting both makes config acquisition crash on a fresh
     # install ("static hostname is already set"). See issue #159.
+    #
+    # `auto = "off"` is required alongside `hostname` - the generated base
+    # config already carries a HostnameConfig with auto = "stable", and this
+    # patch merges into that same document rather than replacing it. Without
+    # explicitly turning auto off, the merged document has both fields set
+    # and fails validation on a genuinely fresh install ("'auto' and
+    # 'hostname' cannot be set at the same time") - found validating #16's
+    # generic-template approach on a scratch node. Talos's own
+    # WithStaticHostname() helper (stdpatches.go) always pairs the two this
+    # way; PR #209 missed it.
     yamlencode({
       apiVersion = "v1alpha1"
       kind       = "HostnameConfig"
+      auto       = "off"
       hostname   = each.value.hostname
     })
   ]
@@ -218,9 +229,13 @@ data "talos_machine_configuration" "worker" {
     # Talos 1.12+ deprecated machine.network.hostname in favor of this
     # document - setting both makes config acquisition crash on a fresh
     # install ("static hostname is already set"). See issue #159.
+    #
+    # `auto = "off"` is required alongside `hostname` - see the matching
+    # comment on the control-plane config above.
     yamlencode({
       apiVersion = "v1alpha1"
       kind       = "HostnameConfig"
+      auto       = "off"
       hostname   = each.value.hostname
     })
   ]
