@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ladder
+  namespace: ladder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ladder
+  template:
+    metadata:
+      labels:
+        app: ladder
+    spec:
+      containers:
+        - name: ladder
+          image: ghcr.io/everywall/ladder:latest
+          env:
+            - name: PORT
+              value: "8080"
+            - name: RULESET
+              value: /app/ruleset.yaml
+            - name: LOG_URLS
+              value: "true"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: ruleset
+              mountPath: /app/ruleset.yaml
+              subPath: ruleset.yaml
+      volumes:
+        - name: ruleset
+          configMap:
+            name: ladder-ruleset
