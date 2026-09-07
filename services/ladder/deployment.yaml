@@ -25,11 +25,23 @@ spec:
               value: "true"
           ports:
             - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - name: ruleset
               mountPath: /app/ruleset.yaml
               subPath: ruleset.yaml
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: ruleset
           configMap:
             name: ladder-ruleset
+        - name: tmp
+          emptyDir: {}
