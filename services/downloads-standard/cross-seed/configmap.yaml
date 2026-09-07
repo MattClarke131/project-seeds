@@ -25,10 +25,7 @@ data:
       torrentClients: [
         `qbittorrent:http://${process.env.QBITTORRENT_USERNAME}:${process.env.QBITTORRENT_PASSWORD}@qbittorrent-vpn.downloads-standard.svc.cluster.local:8080/`,
       ],
-      // Matches qBittorrent's own /media mount, so a match's save path lines
-      // up with qBittorrent's and cross-seed can inject directly into the
-      // client instead of needing separate linkDirs.
-      dataDirs: ["/media"],
+      dataDirs: ["/media/downloads/qbittorrent/completed"],
       matchMode: "safe",
       action: "inject",
       linkCategory: "cross-seed",
