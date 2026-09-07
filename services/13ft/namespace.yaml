@@ -2,3 +2,11 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: "13ft"
+  labels:
+    name: "13ft"
+    # Restricted, not the repo's usual default: this pod proxies arbitrary
+    # attacker/user-supplied URLs, so it gets less trust than the rest of
+    # the cluster.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
