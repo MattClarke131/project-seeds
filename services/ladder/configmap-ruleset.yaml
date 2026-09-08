@@ -1,5 +1,6 @@
 # Curated locally, not pointed at github.com/everywall/ladder-rules (stalled).
 # NYT rule sourced from that repo's rulesets/us/nytimes-com.yaml, typo-fixed.
+#
 # useFlareSolverr is on since NYT's DataDome challenge blocks a plain fetch;
 # ladder only borrows FlareSolverr's solved cookies for its own plain request
 # (doesn't proxy its rendered page), so the fake Googlebot UA was dropped -
