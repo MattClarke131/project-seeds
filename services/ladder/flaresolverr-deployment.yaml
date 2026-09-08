@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaresolverr
+  namespace: ladder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flaresolverr
+  template:
+    metadata:
+      labels:
+        app: flaresolverr
+    spec:
+      containers:
+        - name: flaresolverr
+          image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
+          env:
+            - name: LOG_LEVEL
+              value: info
+          ports:
+            - containerPort: 8191
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            # Image's USER is a name ("flaresolverr"), not a numeric UID, so
+            # kubelet can't verify runAsNonRoot without one. Confirmed 1000
+            # by running `id` in the image.
+            runAsUser: 1000
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: config
+              mountPath: /config
+            - name: chromium-config
+              mountPath: /app/.config
+            # Chromium's default container /dev/shm (64Mi) is too small and
+            # crashes the renderer under real page loads - give it real room.
+            - name: dshm
+              mountPath: /dev/shm
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: config
+          emptyDir: {}
+        - name: chromium-config
+          emptyDir: {}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi

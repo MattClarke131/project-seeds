@@ -23,6 +23,8 @@ spec:
               value: /app/ruleset.yaml
             - name: LOG_URLS
               value: "true"
+            - name: FLARESOLVERR_HOST
+              value: http://flaresolverr:8191
           ports:
             - containerPort: 8080
           securityContext:
