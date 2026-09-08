@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ladder
+  namespace: ladder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ladder
+  template:
+    metadata:
+      labels:
+        app: ladder
+    spec:
+      containers:
+        - name: ladder
+          image: ghcr.io/everywall/ladder:v0.0.23
+          env:
+            - name: PORT
+              value: "8080"
+            - name: RULESET
+              value: /app/ruleset.yaml
+            - name: LOG_URLS
+              value: "true"
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: ruleset
+              mountPath: /app/ruleset.yaml
+              subPath: ruleset.yaml
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: ruleset
+          configMap:
+            name: ladder-ruleset
+        - name: tmp
+          emptyDir: {}

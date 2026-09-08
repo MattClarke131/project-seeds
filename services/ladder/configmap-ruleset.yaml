@@ -1,0 +1,20 @@
+# Upstream's example ruleset, kept as a starting point. Ladder's real value
+# is the community rulesets at github.com/everywall/ladder/tree/main/rulesets -
+# merge the domains that matter into this file as they're needed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ladder-ruleset
+  namespace: ladder
+data:
+  ruleset.yaml: |
+    - domain: example.com
+      domains:
+        - www.beispiel.de
+      googleCache: true
+      useFlareSolverr: false
+      headers:
+        x-forwarded-for: none
+        referer: none
+        user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36
+        cookie: privacy=1
