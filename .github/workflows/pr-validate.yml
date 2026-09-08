@@ -118,9 +118,23 @@ jobs:
               files+=("$f")
             done < <(find services infrastructure/kubernetes \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
           else
-            mapfile -t files < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
+            mapfile -t changed < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
               'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
               ':(exclude)*values.yaml' ':(exclude)*values.yml')
+
+            # Cross-object checks (e.g. dangling-service) need every manifest
+            # in a changed file's directory, not just the file that changed -
+            # a Service edited without touching its sibling Deployment would
+            # otherwise look orphaned to a lint pass that can't see the
+            # Deployment at all. Still scoped to touched directories, so
+            # pre-existing findings elsewhere don't fail an unrelated PR.
+            files=()
+            if [ "${#changed[@]}" -gt 0 ]; then
+              mapfile -t dirs < <(printf '%s\n' "${changed[@]}" | xargs -n1 dirname | sort -u)
+              while IFS= read -r -d '' f; do
+                files+=("$f")
+              done < <(find "${dirs[@]}" -maxdepth 1 \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
+            fi
           fi
 
           if [ "${#files[@]}" -eq 0 ]; then
