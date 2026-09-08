@@ -1,6 +1,9 @@
-# Upstream's example ruleset, kept as a starting point. Ladder's real value
-# is the community rulesets at github.com/everywall/ladder/tree/main/rulesets -
-# merge the domains that matter into this file as they're needed.
+# Curated locally rather than pointed at github.com/everywall/ladder-rules -
+# that aggregator is stalled (real fixes sitting unmerged for months, only
+# dependabot PRs land), so rules live here where they go through this repo's
+# normal PR/CI flow instead. Sourced from that repo's rulesets/us/nytimes-com.yaml,
+# with its "ueser-agent" typo fixed (as shipped upstream, that line was a no-op -
+# the actual bypass rides on the nyt-gdpr/nyt-geo cookie trick, not the UA spoof).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,13 +11,20 @@ metadata:
   namespace: ladder
 data:
   ruleset.yaml: |
-    - domain: example.com
-      domains:
-        - www.beispiel.de
-      googleCache: true
-      useFlareSolverr: false
+    - domains:
+        - www.nytimes.com
       headers:
-        x-forwarded-for: none
-        referer: none
-        user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36
-        cookie: privacy=1
+        user-agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+        cookie: nyt-a=; nyt-gdpr=0; nyt-geo=DE; nyt-privacy=1
+        referer: https://www.google.com/
+        content-security-policy: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+      injections:
+        - position: head
+          append: |
+            <script>
+              window.localStorage.clear();
+              document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll('div[data-testid="inline-message"], div[id^="ad-"], div[id^="leaderboard-"], div.expanded-dock, div.pz-ad-box, div[id="top-wrapper"], div[id="bottom-wrapper"]');
+                banners.forEach(el => { el.remove(); });
+              });
+            </script>
