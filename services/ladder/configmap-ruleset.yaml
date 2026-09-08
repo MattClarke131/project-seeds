@@ -1,18 +1,9 @@
-# Curated locally rather than pointed at github.com/everywall/ladder-rules -
-# that aggregator is stalled (real fixes sitting unmerged for months, only
-# dependabot PRs land), so rules live here where they go through this repo's
-# normal PR/CI flow instead. Sourced from that repo's rulesets/us/nytimes-com.yaml,
-# with its "ueser-agent" typo fixed (as shipped upstream, that line was a no-op -
-# the actual bypass rides on the nyt-gdpr/nyt-geo cookie trick, not the UA spoof).
-#
-# NYT's DataDome challenge blocks a plain fetch outright (confirmed by testing
-# live), so useFlareSolverr is on: ladder asks FlareSolverr to solve the
-# challenge and hands the resulting cookies to its own plain HTTP request -
-# it does NOT proxy FlareSolverr's rendered page (see handlers/proxy.go). That
-# means the fake Googlebot UA below was dropped: a solved-by-real-Chrome
-# cookie paired with a UA claiming to be Googlebot is a mismatch that's more
-# likely to get flagged than a UA-less request that just passes the visiting
-# client's own.
+# Curated locally, not pointed at github.com/everywall/ladder-rules (stalled).
+# NYT rule sourced from that repo's rulesets/us/nytimes-com.yaml, typo-fixed.
+# useFlareSolverr is on since NYT's DataDome challenge blocks a plain fetch;
+# ladder only borrows FlareSolverr's solved cookies for its own plain request
+# (doesn't proxy its rendered page), so the fake Googlebot UA was dropped -
+# it'd clash with a cookie a real browser solved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
