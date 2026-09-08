@@ -22,6 +22,10 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             runAsNonRoot: true
+            # Image's USER is a name ("thirteener"), not a numeric UID, so
+            # kubelet can't verify runAsNonRoot without an explicit UID -
+            # matches the Dockerfile's default ARG UID=1000.
+            runAsUser: 1000
             capabilities:
               drop: ["ALL"]
             seccompProfile:
