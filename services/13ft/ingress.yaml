@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "13ft"
+  namespace: "13ft"
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - 13ft.labmatt.com
+      secretName: 13ft-tls
+  rules:
+    - host: 13ft.labmatt.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "13ft"
+                port:
+                  number: 5000

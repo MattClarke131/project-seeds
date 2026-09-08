@@ -15,3 +15,4 @@ resources:
   - immich.yaml
   - jellyfin.yaml
   - ladder.yaml
+  - 13ft.yaml
