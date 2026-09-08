@@ -6,3 +6,5 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - flaresolverr-deployment.yaml
+  - flaresolverr-service.yaml

@@ -1,9 +1,10 @@
-# Curated locally rather than pointed at github.com/everywall/ladder-rules -
-# that aggregator is stalled (real fixes sitting unmerged for months, only
-# dependabot PRs land), so rules live here where they go through this repo's
-# normal PR/CI flow instead. Sourced from that repo's rulesets/us/nytimes-com.yaml,
-# with its "ueser-agent" typo fixed (as shipped upstream, that line was a no-op -
-# the actual bypass rides on the nyt-gdpr/nyt-geo cookie trick, not the UA spoof).
+# Curated locally, not pointed at github.com/everywall/ladder-rules (stalled).
+# NYT rule sourced from that repo's rulesets/us/nytimes-com.yaml, typo-fixed.
+#
+# useFlareSolverr is on since NYT's DataDome challenge blocks a plain fetch;
+# ladder only borrows FlareSolverr's solved cookies for its own plain request
+# (doesn't proxy its rendered page), so the fake Googlebot UA was dropped -
+# it'd clash with a cookie a real browser solved.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,8 +14,8 @@ data:
   ruleset.yaml: |
     - domains:
         - www.nytimes.com
+      useFlareSolverr: true
       headers:
-        user-agent: Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
         cookie: nyt-a=; nyt-gdpr=0; nyt-geo=DE; nyt-privacy=1
         referer: https://www.google.com/
         content-security-policy: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
