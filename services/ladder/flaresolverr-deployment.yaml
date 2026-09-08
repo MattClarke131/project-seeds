@@ -25,8 +25,9 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-            # Image's USER is a name ("flaresolverr"), not a numeric UID - same
-            # situation as 13ft. Confirmed 1000 by running `id` in the image.
+            # Image's USER is a name ("flaresolverr"), not a numeric UID, so
+            # kubelet can't verify runAsNonRoot without one. Confirmed 1000
+            # by running `id` in the image.
             runAsUser: 1000
             capabilities:
               drop: ["ALL"]
