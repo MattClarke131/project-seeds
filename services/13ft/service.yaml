@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "13ft"
+  # DNS-1035, not RFC1123 like Namespace/Deployment - Service names must
+  # start with a letter, so this can't just be "13ft".
+  name: svc-13ft
   namespace: "13ft"
 spec:
   selector:

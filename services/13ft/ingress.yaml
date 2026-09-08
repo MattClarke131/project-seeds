@@ -20,6 +20,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: "13ft"
+                name: svc-13ft
                 port:
                   number: 5000
