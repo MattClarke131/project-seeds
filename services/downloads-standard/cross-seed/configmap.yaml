@@ -23,6 +23,8 @@ data:
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/8/api?apikey=${process.env.PROWLARR_API_KEY}`, // TorrentLeech
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/9/api?apikey=${process.env.PROWLARR_API_KEY}`, // CinemaZ
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/10/api?apikey=${process.env.PROWLARR_API_KEY}`, // Anthelion
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/11/api?apikey=${process.env.PROWLARR_API_KEY}`, // CrnaBerza
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/12/api?apikey=${process.env.PROWLARR_API_KEY}`, // DocsPedia
       ],
       torrentClients: [
         `qbittorrent:http://${process.env.QBITTORRENT_USERNAME}:${process.env.QBITTORRENT_PASSWORD}@qbittorrent-vpn.downloads-standard.svc.cluster.local:8080/`,
