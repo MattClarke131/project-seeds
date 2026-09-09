@@ -23,7 +23,9 @@ spec:
             - containerPort: 8191
           securityContext:
             allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
+            # undetected-chromedriver patches its own chromedriver binary in
+            # place under /app at startup, so the rootfs can't be read-only.
+            readOnlyRootFilesystem: false
             runAsNonRoot: true
             # Image's USER is a name ("flaresolverr"), not a numeric UID, so
             # kubelet can't verify runAsNonRoot without one. Confirmed 1000
@@ -34,22 +36,14 @@ spec:
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
-            - name: tmp
-              mountPath: /tmp
             - name: config
               mountPath: /config
-            - name: chromium-config
-              mountPath: /app/.config
             # Chromium's default container /dev/shm (64Mi) is too small and
             # crashes the renderer under real page loads - give it real room.
             - name: dshm
               mountPath: /dev/shm
       volumes:
-        - name: tmp
-          emptyDir: {}
         - name: config
-          emptyDir: {}
-        - name: chromium-config
           emptyDir: {}
         - name: dshm
           emptyDir:
