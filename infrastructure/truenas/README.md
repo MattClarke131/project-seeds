@@ -27,6 +27,19 @@ Protects against write mistakes (bad rollout, corrupted upgrade, wrong
 (see #111). Snapshots are copy-on-write, so cost is proportional to churn
 between snapshots, not dataset size - negligible at this pool's scale.
 
+**What's covered:** everything provisioned by the `nfs-provisioner`
+storage class lives under `sleipnir/k8s`, so recursive snapshots on that
+dataset catch it all - Postgres, Prometheus, Loki, Grafana, Immich's DB,
+Jellyfin's config/library-index PVC, and every other app's config PVC on
+that class.
+
+**What's NOT covered:** any volume outside `sleipnir/k8s`, most notably
+the bulk media library. `jellyfin-media` and the `*arr` apps' media PVCs
+bind to the statically-provisioned `media-standard` PV
+(`services/downloads-standard/pv-media-standard.yaml`), which points at
+NFS export `/mnt/sleipnir/media-standard` - a separate dataset entirely.
+Media files get no snapshot coverage from this policy.
+
 Data Protection > Periodic Snapshot Tasks > Add
 - Dataset: `sleipnir/k8s`
 - Recursive: yes
