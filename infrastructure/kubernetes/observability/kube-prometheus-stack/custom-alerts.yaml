@@ -141,6 +141,26 @@ spec:
               for that object - the previously-applied version is still
               live, so nothing else will have alerted on this.
 
+    - name: custom-truenas-metrics
+      rules:
+        # graphite-exporter has no scrape-target failure of its own to alert
+        # on (Prometheus sees it as `up` even when sleipnir's netdata has
+        # stopped pushing) - this is what actually caught issue #101, where
+        # the metric sat at a stale value for days with nothing noticing.
+        - alert: TrueNASMetricsStale
+          expr: time() - graphite_last_processed_timestamp_seconds{job="graphite-exporter"} > 1800
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "sleipnir's TrueNAS metrics haven't updated in over 30 minutes."
+            description: >-
+              graphite-exporter last processed a sample from sleipnir's
+              netdata {{ printf "%.0f" $value }}s ago. Check netdata's
+              exporting engine on sleipnir (`journalctl -u netdata`,
+              /etc/netdata/exporting.conf) and that graphite-exporter's pod
+              is reachable at 10.0.10.31:32003.
+
     - name: custom-etcd-latency
       rules:
         # Scraped via the etcd job in ADR 003's etcd addendum - see
