@@ -148,12 +148,12 @@ spec:
         # stopped pushing) - this is what actually caught issue #101, where
         # the metric sat at a stale value for days with nothing noticing.
         - alert: TrueNASMetricsStale
-          expr: time() - graphite_last_processed_timestamp_seconds{job="graphite-exporter"} > 300
-          for: 5m
+          expr: time() - graphite_last_processed_timestamp_seconds{job="graphite-exporter"} > 1800
+          for: 0m
           labels:
             severity: warning
           annotations:
-            summary: "sleipnir's TrueNAS metrics haven't updated in over 5 minutes."
+            summary: "sleipnir's TrueNAS metrics haven't updated in over 30 minutes."
             description: >-
               graphite-exporter last processed a sample from sleipnir's
               netdata {{ printf "%.0f" $value }}s ago. Check netdata's
