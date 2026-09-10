@@ -28,9 +28,6 @@ data:
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/13/api?apikey=${process.env.PROWLARR_API_KEY}`, // AvistaZ
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/14/api?apikey=${process.env.PROWLARR_API_KEY}`, // ABtorrents
         // Redacted: API key login caps at 10 req/10s (per-user, not IP).
-        // Prowlarr's own queryLimit is set to 150/day as a volume backstop -
-        // that's a separate, coarser control and doesn't itself prevent a
-        // burst, so don't assume this line alone is safe to hit harder.
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/15/api?apikey=${process.env.PROWLARR_API_KEY}`, // Redacted
       ],
       torrentClients: [
