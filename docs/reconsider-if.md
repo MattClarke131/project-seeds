@@ -29,6 +29,21 @@ so it isn't the right mitigation for that case.)
 
 ---
 
+**IF** cluster-wide RAM or CPU usage approaches 2/3 of total allocatable
+capacity (sustained, not a momentary spike) -
+
+**THEN** start assigning `PriorityClass` to workloads instead of leaving
+every pod at the scheduler's default priority. With 3 physical hosts each
+holding roughly a third of total capacity, losing any one host is only
+survivable - the other two can absorb its workload without exceeding their
+own capacity - while total usage stays at or below 2/3 of the cluster
+total. Past that line, a single host failure can no longer be absorbed
+cleanly, so which pods get evicted or fail to reschedule should be a
+deliberate choice (critical services like Jellyfin/Postgres protected
+first) rather than whatever the default scheduler happens to pick.
+
+---
+
 **IF** a GitOps controller (FluxCD/ArgoCD, see #15) gets deployed with
 broad standing permissions to reconcile this repo onto the cluster -
 
