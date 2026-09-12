@@ -21,9 +21,10 @@ spec:
       # This runs before every Sonarr start and always overwrites the
       # Postgres block in config.xml, so it stays a pure reflection of the
       # Deployment + Secret rather than a manual one-time edit.
-      # Requires postgres-secret to already exist in this namespace (reflected
-      # from database/postgres-app - see docs/bootstrap/database.md). If applied
-      # before the secret is reflected, this container blocks in
+      # Requires postgres-sonarr-anime-reflection to already exist in this
+      # namespace (reflected from database/postgres-sonarr-anime - see
+      # docs/bootstrap/database.md and issue #113). If applied before the
+      # secret is reflected, this container blocks in
       # CreateContainerConfigError until it appears, then proceeds on its own.
       initContainers:
       - name: postgres-config
@@ -43,19 +44,16 @@ spec:
         - name: POSTGRES_HOST
           value: "postgres-rw.database.svc.cluster.local"
         - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: port
+          value: "5432"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-sonarr-anime-reflection
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-sonarr-anime-reflection
               key: password
         - name: POSTGRES_MAIN_DB
           value: "sonarr-anime-main"
