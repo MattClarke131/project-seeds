@@ -34,6 +34,7 @@ resources:
   - sonarr-anime/deployment.yaml
   - sonarr-anime/ingress.yaml
   - sonarr-anime/postgres-databases.yaml
+  - sonarr-anime/postgres-secret.yaml
   - sonarr-anime/pvc-config.yaml
   - sonarr-anime/service.yaml
   - sonarr-portuguese/deployment.yaml
