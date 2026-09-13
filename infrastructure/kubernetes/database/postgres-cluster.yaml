@@ -24,11 +24,6 @@ spec:
       # so these take precedence (first match wins).
       - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
       - host sonarr-anime-main,sonarr-anime-log all all reject
-      # sonarr-anime is scoped to its own databases only - reject it from
-      # everywhere else too, rather than just protecting its own databases
-      # from others. Scoped to this one role, so it's safe to land before
-      # every app is migrated: it doesn't touch the default catch-all that
-      # not-yet-migrated apps' shared `app` role still relies on.
       - host all sonarr-anime all reject
   instances: 2
   affinity:
