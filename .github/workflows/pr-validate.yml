@@ -90,16 +90,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: sigstore/cosign-installer@v3
+
       - name: Install kube-linter
         env:
           KUBE_LINTER_VERSION: "0.8.3"
-          KUBE_LINTER_SHA256: "1a6d8419b11971372971fdbc22682b684ebfb7cf1c39591662d1b6ca736c41df"
+          # kube-linter signs releases with this static key (published at
+          # https://github.com/stackrox/kube-linter/blob/main/kubelinter-cosign.pub),
+          # not a per-release checksum - it doesn't change across versions,
+          # so unlike a checksum a Renovate version bump can't invalidate it.
+          KUBE_LINTER_COSIGN_PUBKEY: |
+            -----BEGIN PUBLIC KEY-----
+            MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEl0HCkCRzYv0qH5QiazoXeXe2qwFX
+            DmAszeH26g1s3OSsG/focPWkN88wEKQ5eiE95v+Z2snUQPl/mjPdvqpyjA==
+            -----END PUBLIC KEY-----
         run: |
           set -e
-          curl -sSLO "https://github.com/stackrox/kube-linter/releases/download/v${KUBE_LINTER_VERSION}/kube-linter-linux.tar.gz"
-          echo "${KUBE_LINTER_SHA256}  kube-linter-linux.tar.gz" | sha256sum -c -
-          tar xz -f kube-linter-linux.tar.gz kube-linter
-          sudo install kube-linter /usr/local/bin/kube-linter
+          curl -sSLO "https://github.com/stackrox/kube-linter/releases/download/v${KUBE_LINTER_VERSION}/kube-linter-linux"
+          curl -sSLO "https://github.com/stackrox/kube-linter/releases/download/v${KUBE_LINTER_VERSION}/kube-linter-linux.sigstore.json"
+          echo "${KUBE_LINTER_COSIGN_PUBKEY}" > kubelinter-cosign.pub
+          cosign verify-blob --key kubelinter-cosign.pub --bundle kube-linter-linux.sigstore.json kube-linter-linux
+          sudo install kube-linter-linux /usr/local/bin/kube-linter
 
       - name: kube-linter
         run: |

@@ -47,7 +47,7 @@
     },
     {
       "customType": "regex",
-      "description": "Track kube-linter releases (#115) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Renovate only bumps KUBE_LINTER_VERSION here; KUBE_LINTER_SHA256 right below it still needs updating by hand in the same PR, or the checksum step fails CI.",
+      "description": "Track kube-linter releases (#115, #132) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Verification uses cosign against kube-linter's static publisher key rather than a per-release checksum, so a version bump here needs no accompanying manual edit.",
       "managerFilePatterns": [
         "/^\\.github/workflows/pr-validate\\.yml$/"
       ],
@@ -55,6 +55,19 @@
         "KUBE_LINTER_VERSION: \"(?<currentValue>[0-9.]+)\""
       ],
       "depNameTemplate": "stackrox/kube-linter",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track kubeconform releases (#132) - it had no Renovate coverage at all, so it never surfaced as a PR. kubeconform doesn't publish cosign/sigstore signatures like kube-linter (#115) does, only a per-release CHECKSUMS file, so KUBECONFORM_SHA256 right below it still needs updating by hand in the same PR, or the checksum step fails CI.",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/pr-validate\\.yml$/"
+      ],
+      "matchStrings": [
+        "KUBECONFORM_VERSION: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "depNameTemplate": "yannh/kubeconform",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.*)$"
     }
