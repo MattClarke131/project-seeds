@@ -24,6 +24,7 @@ spec:
       # so these take precedence (first match wins).
       - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
       - host sonarr-anime-main,sonarr-anime-log all all reject
+      - host all sonarr-anime all reject
   instances: 2
   affinity:
     podAntiAffinityType: required
