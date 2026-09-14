@@ -57,6 +57,13 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       containers:
       - name: sonarr-standard
         image: ghcr.io/hotio/sonarr:release-4.0.17.2952

@@ -57,6 +57,13 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       containers:
       - name: radarr-portuguese
         image: lscr.io/linuxserver/radarr:6.3.0.10514-ls314
