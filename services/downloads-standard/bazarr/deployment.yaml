@@ -66,19 +66,16 @@ spec:
         - name: POSTGRES_HOST
           value: "postgres-rw.database.svc.cluster.local"
         - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: port
+          value: "5432"
         - name: POSTGRES_USERNAME
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-bazarr-reflection
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-bazarr-reflection
               key: password
         - name: POSTGRES_DATABASE
           value: "bazarr"
