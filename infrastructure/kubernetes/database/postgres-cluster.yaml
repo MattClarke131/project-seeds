@@ -15,16 +15,20 @@ spec:
         login: true
         passwordSecret:
           name: postgres-sonarr-anime
+      - name: radarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-radarr
   postgresql:
     pg_hba:
-      # Per-app connection isolation (issue #113): pair each app's database(s)
-      # with an explicit allow for its own role, then reject everyone else -
-      # including the shared `app` role - from those same databases. Placed
-      # ahead of CNPG's own default `host all all all scram-sha-256` catch-all,
-      # so these take precedence (first match wins).
       - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
       - host sonarr-anime-main,sonarr-anime-log all all reject
       - host all sonarr-anime all reject
+
+      - host radarr-main,radarr-log radarr all scram-sha-256
+      - host radarr-main,radarr-log all all reject
+      - host all radarr all reject
   instances: 2
   affinity:
     podAntiAffinityType: required
