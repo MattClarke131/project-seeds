@@ -20,6 +20,15 @@ Include a bulleted list of changes.
 3. (Optional) Decisions Header
 Include a bulleted list of decisions made.
 Each decision should have a title summary and a description underneath.
+Decisions will have a tag if necessary.
+  A Tag is of the format [Tag]
+  Some example tags:
+    [Chosen] - Evaluated options, picked one
+    [No Action] - Everything is fine. Nothing wrong
+    [Won't Fix] - A problem or Gap exists. We are choosing not to fix it.
+    [New Issue: #xxx] - Out of scope; includes link next to it
+    [Accepted Tradeoff] - A known limitation. Alternative isn't worth it.
+    [Blocked] - Decision postponed
 
 4. (Optional) Pre-Merge Verification Header
 Include steps ran before merging to verify.
