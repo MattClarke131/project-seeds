@@ -46,3 +46,10 @@ spec:
               name: metrics
           args:
             - "--graphite.listen-address=:2003"
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              cpu: 20m
+              memory: 64Mi
