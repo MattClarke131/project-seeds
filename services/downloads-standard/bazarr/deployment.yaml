@@ -61,24 +61,23 @@ spec:
               key: api-key
         # Bazarr reads Postgres config from env vars directly, unlike
         # Radarr/Sonarr which only read config.xml.
+        # Requires postgres-bazarr-reflection to exist first (reflected from
+        # database/postgres-bazarr - see docs/bootstrap/database.md).
         - name: POSTGRES_ENABLED
           value: "true"
         - name: POSTGRES_HOST
           value: "postgres-rw.database.svc.cluster.local"
         - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: port
+          value: "5432"
         - name: POSTGRES_USERNAME
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-bazarr-reflection
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-bazarr-reflection
               key: password
         - name: POSTGRES_DATABASE
           value: "bazarr"

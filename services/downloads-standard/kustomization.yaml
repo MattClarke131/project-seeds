@@ -48,6 +48,7 @@ resources:
   - bazarr/deployment.yaml
   - bazarr/ingress.yaml
   - bazarr/postgres-databases.yaml
+  - bazarr/postgres-secret.yaml
   - bazarr/pvc-config.yaml
   - bazarr/service.yaml
   - sabnzbd/deployment.yaml
