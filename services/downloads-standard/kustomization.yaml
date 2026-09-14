@@ -42,6 +42,7 @@ resources:
   - sonarr-portuguese/deployment.yaml
   - sonarr-portuguese/ingress.yaml
   - sonarr-portuguese/postgres-databases.yaml
+  - sonarr-portuguese/postgres-secret.yaml
   - sonarr-portuguese/pvc-config.yaml
   - sonarr-portuguese/service.yaml
   - bazarr/deployment.yaml
