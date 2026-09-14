@@ -24,6 +24,7 @@ resources:
   - radarr-portuguese/deployment.yaml
   - radarr-portuguese/ingress.yaml
   - radarr-portuguese/postgres-databases.yaml
+  - radarr-portuguese/postgres-secret.yaml
   - radarr-portuguese/pvc-config.yaml
   - radarr-portuguese/service.yaml
   - sonarr/deployment.yaml
