@@ -25,15 +25,24 @@ spec:
         login: true
         passwordSecret:
           name: postgres-radarr-portuguese
+      - name: sonarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-sonarr
   postgresql:
     pg_hba:
-      - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
-      - host sonarr-anime-main,sonarr-anime-log all all reject
-      - host all sonarr-anime all reject
+      - host sonarr-standard-main,sonarr-standard-log sonarr all scram-sha-256
+      - host sonarr-standard-main,sonarr-standard-log all all reject
+      - host all sonarr all reject
 
       - host radarr-main,radarr-log radarr all scram-sha-256
       - host radarr-main,radarr-log all all reject
       - host all radarr all reject
+
+      - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
+      - host sonarr-anime-main,sonarr-anime-log all all reject
+      - host all sonarr-anime all reject
 
       - host radarr-portuguese-main,radarr-portuguese-log radarr-portuguese all scram-sha-256
       - host radarr-portuguese-main,radarr-portuguese-log all all reject

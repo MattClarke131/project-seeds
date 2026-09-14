@@ -5,7 +5,7 @@ metadata:
   namespace: database
 spec:
   name: sonarr-standard-main
-  owner: app
+  owner: sonarr
   cluster:
     name: postgres
 ---
@@ -16,6 +16,6 @@ metadata:
   namespace: database
 spec:
   name: sonarr-standard-log
-  owner: app
+  owner: sonarr
   cluster:
     name: postgres
