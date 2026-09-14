@@ -20,6 +20,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-radarr
+      - name: radarr-portuguese
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-radarr-portuguese
   postgresql:
     pg_hba:
       - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
@@ -29,6 +34,10 @@ spec:
       - host radarr-main,radarr-log radarr all scram-sha-256
       - host radarr-main,radarr-log all all reject
       - host all radarr all reject
+
+      - host radarr-portuguese-main,radarr-portuguese-log radarr-portuguese all scram-sha-256
+      - host radarr-portuguese-main,radarr-portuguese-log all all reject
+      - host all radarr-portuguese all reject
   instances: 2
   affinity:
     podAntiAffinityType: required

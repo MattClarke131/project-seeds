@@ -5,7 +5,7 @@ metadata:
   namespace: database
 spec:
   name: radarr-portuguese-main
-  owner: app
+  owner: radarr-portuguese
   cluster:
     name: postgres
 ---
@@ -16,6 +16,6 @@ metadata:
   namespace: database
 spec:
   name: radarr-portuguese-log
-  owner: app
+  owner: radarr-portuguese
   cluster:
     name: postgres
