@@ -32,3 +32,10 @@ spec:
             secretKeyRef:
               name: newt-auth
               key: secret
+        resources:
+          requests:
+            cpu: 20m
+            memory: 64Mi
+          limits:
+            cpu: 300m
+            memory: 256Mi
