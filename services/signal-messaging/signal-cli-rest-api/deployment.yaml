@@ -24,6 +24,13 @@ spec:
           volumeMounts:
             - name: signal-cli-data
               mountPath: /home/.local/share/signal-cli
+          resources:
+            requests:
+              cpu: 5m
+              memory: 256Mi
+            limits:
+              cpu: 100m
+              memory: 512Mi
       volumes:
         - name: signal-cli-data
           persistentVolumeClaim:
