@@ -21,6 +21,13 @@ spec:
           env:
             - name: MODE
               value: json-rpc
+          resources:
+            requests:
+              cpu: 5m
+              memory: 256Mi
+            limits:
+              cpu: 100m
+              memory: 512Mi
           volumeMounts:
             - name: signal-cli-data
               mountPath: /home/.local/share/signal-cli
