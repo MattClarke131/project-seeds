@@ -39,6 +39,11 @@ spec:
       containers:
         - name: graphite-exporter
           image: prom/graphite-exporter:v0.17.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
           ports:
             - containerPort: 2003
               name: graphite
