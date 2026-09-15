@@ -44,7 +44,7 @@ locals {
 
   # Control Planes - one per Proxmox host
   control_plane_nodes = {
-    for idx, host in var.proxmox_hosts : host.name => {
+    for idx, host in local.proxmox_hosts : host.name => {
       proxmox_node   = host.name
       vm_id          = local.control_plane_vm_id_base + idx
       ip_address     = host.control_plane.ip_address
@@ -58,7 +58,7 @@ locals {
 
   # Workers - Many per Proxmox host
   worker_nodes = merge([
-    for host_idx, host in var.proxmox_hosts :
+    for host_idx, host in local.proxmox_hosts :
     { for worker_idx, worker in host.workers :
       "${host.name}-w${worker_idx + 1}" => {
         proxmox_node   = host.name
