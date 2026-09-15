@@ -10,3 +10,5 @@ checks:
     - job-ttl-seconds-after-finished
     - no-anti-affinity
     - dangling-service
+    - unset-cpu-requirements
+    - unset-memory-requirements

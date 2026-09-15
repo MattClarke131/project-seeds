@@ -35,6 +35,17 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 5m
+              memory: 192Mi
+            limits:
+              cpu: 50m
+              # Chromium-backed, so real headroom above observed max rather
+              # than tight-to-max like this namespace's other tier-5
+              # containers - a too-tight limit here already crash-looped
+              # this container once before (PR #227).
+              memory: 768Mi
           volumeMounts:
             - name: config
               mountPath: /config
