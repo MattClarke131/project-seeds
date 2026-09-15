@@ -19,7 +19,7 @@ spec:
           restartPolicy: Never
           containers:
           - name: mam-dynamic-seedbox
-            image: curlimages/curl:8.21.0
+            image: curlimages/curl:8.22.0
             env:
             - name: MAM_ID
               valueFrom:
