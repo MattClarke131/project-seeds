@@ -138,7 +138,8 @@ jobs:
           flux install --version "$version" --components="$components" --export > /tmp/gotk-regenerated.yaml
 
           if ! diff -u "$file" /tmp/gotk-regenerated.yaml; then
-            echo "::error file=$file::Committed manifest doesn't match what 'flux install --version $version' generates - the version header was bumped without regenerating the actual controller images (see step comment above)."
+            fix_cmd="flux install --version $version --components=$components --export > $file"
+            echo "::error file=$file::Committed manifest doesn't match its own header (version header bumped without the controller images actually changing - likely Renovate's flux manager failing to run flux install, see #223). Fix: $fix_cmd"
             exit 1
           fi
 
