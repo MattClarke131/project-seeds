@@ -80,6 +80,69 @@ jobs:
             -ignore-missing-schemas \
             "${files[@]}"
 
+  flux-manifest-drift:
+    name: Flux system manifest drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check whether the manifest changed
+        id: check
+        run: |
+          set -e
+          file=clusters/eye-of-michael/flux-system/gotk-components.yaml
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          changed=$(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- "$file")
+          if [ -z "$changed" ]; then
+            echo "$file unchanged - skipping"
+          fi
+          echo "changed=${changed:+true}" >> "$GITHUB_OUTPUT"
+
+      - name: Install flux CLI
+        if: steps.check.outputs.changed == 'true'
+        env:
+          FLUX_VERSION: "2.9.5"
+          # The installed CLI's own version doesn't need to match the target
+          # version below - `flux install --version` fetches that version's
+          # manifests from GitHub regardless. Pinning + checksumming this one
+          # lets Renovate bump it like any other tool (see kubeconform above)
+          # without trusting an unpinned install script in CI.
+          FLUX_SHA256: "b853df82adfd7736f580692f9f734473d571606307139f8fd20c2a80dd1ff473"
+        run: |
+          set -e
+          curl -sSLO "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_amd64.tar.gz"
+          echo "${FLUX_SHA256}  flux_${FLUX_VERSION}_linux_amd64.tar.gz" | sha256sum -c -
+          tar xz -f "flux_${FLUX_VERSION}_linux_amd64.tar.gz" flux
+          sudo install flux /usr/local/bin/flux
+
+      - name: Check for drift
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          set -e
+          # Renovate's flux manager bumps the "# Flux Version" comment in this
+          # file by regenerating it via `flux install` - but that step needs
+          # the flux CLI, which isn't available on the hosted Renovate app
+          # (see PR #223's "Artifact update problem" comment). When it fails,
+          # Renovate still commits the comment bump alone, leaving the header
+          # claiming a version the file's actual images never received. This
+          # regenerates the manifest from its own header and diffs it against
+          # what's committed, so that mismatch fails CI instead of merging
+          # unnoticed.
+          file="${{ steps.check.outputs.file }}"
+          version=$(grep -oP '^# Flux Version: \Kv[0-9.]+' "$file")
+          components=$(grep -oP '^# Components: \K.*' "$file")
+          echo "Checking $file against flux $version ($components)"
+
+          flux install --version "$version" --components="$components" --export > /tmp/gotk-regenerated.yaml
+
+          if ! diff -u "$file" /tmp/gotk-regenerated.yaml; then
+            fix_cmd="flux install --version $version --components=$components --export > $file"
+            echo "::error file=$file::Committed manifest doesn't match its own header (version header bumped without the controller images actually changing - likely Renovate's flux manager failing to run flux install, see #223). Fix: $fix_cmd"
+            exit 1
+          fi
+
   kube-linter:
     name: Kubernetes manifest lint (kube-linter)
     runs-on: ubuntu-latest
