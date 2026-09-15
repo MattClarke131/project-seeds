@@ -161,6 +161,59 @@ spec:
               /etc/netdata/exporting.conf) and that graphite-exporter's pod
               is reachable at 10.0.10.31:32003.
 
+    - name: custom-ingress-nginx
+      rules:
+        # DaemonSet runs one controller per control-plane node (see
+        # ../../ingress/helmrelease.yaml) - it fronts every externally
+        # reachable service, so a missing replica loses that node's share
+        # of traffic even though the other nodes keep serving.
+        - alert: IngressNginxControllerDown
+          expr: |
+            kube_daemonset_status_number_ready{namespace="ingress-nginx", daemonset="ingress-nginx-controller"}
+            < kube_daemonset_status_desired_number_scheduled{namespace="ingress-nginx", daemonset="ingress-nginx-controller"}
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "An ingress-nginx controller pod is down."
+            description: >-
+              {{ $value }} of the desired ingress-nginx controller replicas
+              have been unready for 10 minutes. Check `kubectl -n
+              ingress-nginx get pods` - each replica is pinned to one
+              control-plane node with no fallback for that node's traffic.
+        # Compares to the ingress's own trailing 1h baseline rather than a
+        # fixed threshold - request mix (and therefore normal 5xx rate)
+        # varies a lot across the services this controller fronts.
+        - alert: IngressNginx5xxRateSpike
+          expr: |
+            (
+              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+              /
+              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+            ) > 0.05
+            and
+            (
+              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+              /
+              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+            ) > 3 * avg_over_time(
+              (
+                sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+                /
+                sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+              )[1h:5m]
+            )
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ingress-nginx's 5xx rate has spiked above its own baseline."
+            description: >-
+              ingress-nginx's overall 5xx response rate has been above 5%
+              of requests and more than 3x its trailing 1-hour baseline for
+              10 minutes. Check the ingress-nginx dashboard's status-code
+              breakdown to find which backend is failing.
+
     - name: custom-etcd-latency
       rules:
         # Scraped via the etcd job in ADR 003's etcd addendum - see

@@ -42,3 +42,16 @@ spec:
         requests:
           cpu: 100m
           memory: 128Mi
+
+      metrics:
+        enabled: true
+        serviceMonitor:
+          enabled: true
+          # Required for Prometheus's serviceMonitorSelector (see
+          # kube-prometheus-stack/helmrelease.yaml) to pick this up.
+          additionalLabels:
+            release: kube-prometheus-stack
+          # Pinned rather than left at the chart default (the metrics
+          # Service's own name) so job="ingress-nginx", matching the
+          # community dashboard/alert queries below.
+          jobLabel: app.kubernetes.io/name
