@@ -7,9 +7,15 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
-  # No `agent` block: this VM's IP is static and known up front (see
-  # locals.control_plane_nodes). Nothing needs the QEMU guest agent for
-  # readiness. See #16.
+  # This VM's IP is static and known up front (see locals.control_plane_nodes),
+  # so Terraform doesn't need the agent for IP discovery. The agent block is
+  # still required: the bpg/proxmox provider only defaults agent.enabled=true
+  # up to v0.111; v0.112+ instead falls back to Proxmox's own default
+  # (disabled), so Talos's ext-qemu-guest-agent extension would otherwise
+  # never see a virtio-serial channel to attach to.
+  agent {
+    enabled = true
+  }
 
   clone {
     vm_id = each.value.template_vm_id
@@ -47,7 +53,10 @@ resource "proxmox_virtual_environment_vm" "worker" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
-  # No `agent` block - see the control_plane resource above.
+  # See the control_plane resource above.
+  agent {
+    enabled = true
+  }
 
   clone {
     vm_id = each.value.template_vm_id
