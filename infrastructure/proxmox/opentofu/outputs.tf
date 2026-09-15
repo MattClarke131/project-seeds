@@ -40,7 +40,7 @@ output "control_plane_nodes" {
 output "prometheus_scrape_targets" {
   description = "Prometheus scrape targets in file_sd format"
   value = flatten([
-    for host in var.proxmox_hosts : [
+    for host in local.proxmox_hosts : [
       {
         targets = ["${host.host_ip}:9100"]
         labels = {
