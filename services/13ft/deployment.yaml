@@ -30,6 +30,13 @@ spec:
               drop: ["ALL"]
             seccompProfile:
               type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 5m
+              memory: 48Mi
+            limits:
+              cpu: 10m
+              memory: 64Mi
           volumeMounts:
             - name: tmp
               mountPath: /tmp
