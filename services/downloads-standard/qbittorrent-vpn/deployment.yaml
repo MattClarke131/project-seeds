@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: qbittorrent-vpn
   namespace: downloads-standard
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: "gluetun needs root for iptables/tun setup (already has NET_ADMIN); qbittorrent is a linuxserver.io s6-overlay image whose root-required init chowns /config to PUID/PGID before dropping privileges. mam-dynamic-seedbox already runs non-root and is unaffected by this exception."
+    ignore-check.kube-linter.io/no-read-only-root-fs: "same reasons as run-as-non-root above"
 spec:
   replicas: 1
   # config PVC is ReadWriteOncePod - RollingUpdate deadlocks trying to

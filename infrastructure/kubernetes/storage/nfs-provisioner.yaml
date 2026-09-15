@@ -49,6 +49,9 @@ kind: Deployment
 metadata:
   name: nfs-provisioner
   namespace: nfs-provisioner
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: "nfs-subdir-external-provisioner needs root to chown provisioned directories to whatever UID/GID a PVC's requesting pod runs as - documented upstream behavior, not incidental"
+    ignore-check.kube-linter.io/no-read-only-root-fs: "same reason as run-as-non-root above"
 spec:
   replicas: 1
   selector:
