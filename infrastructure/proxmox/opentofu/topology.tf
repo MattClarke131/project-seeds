@@ -44,13 +44,13 @@ locals {
         disk_size_gb = 50
       }
       workers = [
-        # w1 runs Jellyfin's GPU-passthrough transcode workload (see gpu_passthrough_worker_key)
-        # and needs more local scratch space for /cache than a plain worker - see issue #253.
         {
-          ip_address   = "10.0.10.41"
-          mac_address  = "BC:24:11:0B:6D:B4"
-          cores        = 4
-          memory_mb    = 12288
+          ip_address  = "10.0.10.41"
+          mac_address = "BC:24:11:0B:6D:B4"
+          cores       = 4
+          memory_mb   = 12288
+          # Jellyfin's GPU-passthrough transcode workload (see gpu_passthrough_worker_key)
+          # needs more local scratch space for /cache than a plain worker - see issue #253.
           datastore_id = "local-zfs"
           disk_size_gb = 100
         },
