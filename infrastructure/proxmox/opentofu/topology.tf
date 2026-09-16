@@ -99,3 +99,16 @@ locals {
     }
   ]
 }
+
+# Ensures enough memory for proxmox host
+resource "terraform_data" "sufficient_memory_validation" {
+  lifecycle {
+    precondition {
+      condition = alltrue([
+        for host in local.proxmox_hosts :
+        (host.control_plane.memory_mb + sum([for w in host.workers : w.memory_mb]) + host.host_reserved_mb) <= host.memory_mb
+      ])
+      error_message = "Total VM memory allocation + host_reserved_mb exceeds total host memory on one or more hosts."
+    }
+  }
+}
