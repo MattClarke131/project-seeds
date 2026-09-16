@@ -163,10 +163,10 @@ spec:
 
     - name: custom-ingress-nginx
       rules:
-        # DaemonSet runs one controller per control-plane node (see
-        # ../../ingress/helmrelease.yaml) - it fronts every externally
-        # reachable service, so a missing replica loses that node's share
-        # of traffic even though the other nodes keep serving.
+        # The ingress HelmRelease runs one controller replica per
+        # control-plane node, each handling only that node's slice of
+        # traffic with no failover to another node - so a single unready
+        # replica is a real loss of capacity, not just redundancy noise.
         - alert: IngressNginxControllerDown
           expr: |
             kube_daemonset_status_number_ready{namespace="ingress-nginx", daemonset="ingress-nginx-controller"}
@@ -181,9 +181,11 @@ spec:
               have been unready for 10 minutes. Check `kubectl -n
               ingress-nginx get pods` - each replica is pinned to one
               control-plane node with no fallback for that node's traffic.
-        # Compares to the ingress's own trailing 1h baseline rather than a
-        # fixed threshold - request mix (and therefore normal 5xx rate)
-        # varies a lot across the services this controller fronts.
+        # Compares against this controller's own trailing 1h average
+        # instead of a fixed percentage - one backend service might
+        # normally run a higher 5xx rate than another (health checks,
+        # expected 404s, etc.), so a single fixed threshold would be too
+        # strict for some services and too loose for others.
         - alert: IngressNginx5xxRateSpike
           expr: |
             (
