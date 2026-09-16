@@ -74,5 +74,6 @@ resources:
   - chaptarr/deployment.yaml
   - chaptarr/ingress.yaml
   - chaptarr/postgres-databases.yaml
+  - chaptarr/postgres-secret.yaml
   - chaptarr/pvc-config.yaml
   - chaptarr/service.yaml
