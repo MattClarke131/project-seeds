@@ -30,6 +30,15 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
     dedicated = each.value.memory_mb
   }
 
+  # Overrides the clone's inherited disk pool/size - see topology.tf's
+  # datastore_id/disk_size_gb for why any given host or VM deviates from the
+  # template default.
+  disk {
+    datastore_id = each.value.datastore_id
+    interface    = "scsi0"
+    size         = each.value.disk_size_gb
+  }
+
   network_device {
     bridge      = var.proxmox_bridge
     model       = "virtio"
@@ -69,6 +78,13 @@ resource "proxmox_virtual_environment_vm" "worker" {
 
   memory {
     dedicated = each.value.memory_mb
+  }
+
+  # See the control_plane resource above.
+  disk {
+    datastore_id = each.value.datastore_id
+    interface    = "scsi0"
+    size         = each.value.disk_size_gb
   }
 
   network_device {

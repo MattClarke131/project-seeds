@@ -53,6 +53,8 @@ locals {
       cores          = host.control_plane.cores
       memory_mb      = host.control_plane.memory_mb
       template_vm_id = host.template_vm_id
+      datastore_id   = host.control_plane.datastore_id
+      disk_size_gb   = host.control_plane.disk_size_gb
     }
   }
 
@@ -69,6 +71,8 @@ locals {
         cores          = worker.cores
         memory_mb      = worker.memory_mb
         template_vm_id = host.template_vm_id
+        datastore_id   = worker.datastore_id
+        disk_size_gb   = worker.disk_size_gb
       }
     }
   ]...)
