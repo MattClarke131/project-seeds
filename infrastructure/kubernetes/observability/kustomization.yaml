@@ -10,7 +10,6 @@ resources:
   - namespace.yaml
   - dashboards/etcd-overview.yaml
   - dashboards/flux-cluster.yaml
-  - dashboards/ingress-nginx-overview.yaml
   - dashboards/jellyfin-process-health.yaml
   - dashboards/kubernetes-overview.yaml
   - dashboards/live-logs.yaml
