@@ -168,6 +168,10 @@ spec:
         # checks, expected 404s), and a shared baseline would let a noisy
         # backend mask a spike in a clean one.
         #
+        # Excludes ingress="" - requests that matched no Ingress object.
+        # That bucket has no real backend behind it, so it isn't
+        # actionable, and shouldn't share a baseline with real services.
+        #
         # Fires only when three conditions hold together: the 5xx rate
         # clears a 5% floor, exceeds 3x that ingress's own trailing 1h
         # average, and the window has at least 20 requests. The volume
@@ -176,22 +180,22 @@ spec:
         - alert: IngressNginx5xxRateSpike
           expr: |
             (
-              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!="", status=~"5.."}[5m]))
               /
-              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m]))
             ) > 0.05
             and
-            sum by (ingress) (increase(nginx_ingress_controller_requests{job="ingress-nginx"}[5m])) > 20
+            sum by (ingress) (increase(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m])) > 20
             and
             (
-              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!="", status=~"5.."}[5m]))
               /
-              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m]))
             ) > 3 * avg_over_time(
               (
-                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!="", status=~"5.."}[5m]))
                 /
-                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m]))
               )[1h:5m]
             )
           for: 10m
