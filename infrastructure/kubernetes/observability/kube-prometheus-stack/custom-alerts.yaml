@@ -163,21 +163,18 @@ spec:
 
     - name: custom-ingress-nginx
       rules:
-        # No controller-down alert here - kube-prometheus-stack's default
-        # KubePodNotReady and KubeDaemonSetRolloutStuck rules already
-        # cover an unready ingress-nginx-controller replica cluster-wide,
-        # just ~5 minutes slower and with a generic description.
+        # KubePodNotReady and KubeDaemonSetRolloutStuck (default
+        # kube-prometheus-stack rules) already catch an unready controller
+        # replica, ~5 minutes slower. Skip a duplicate alert here.
         #
-        # Compares against this controller's own trailing 1h average
-        # instead of a fixed percentage - one backend service might
-        # normally run a higher 5xx rate than another (health checks,
-        # expected 404s, etc.), so a single fixed threshold would be too
-        # strict for some services and too loose for others.
+        # Compares against the controller's own trailing 1h average, not
+        # a fixed percentage. Baseline 5xx rates vary by backend (health
+        # checks, expected 404s), so one fixed threshold fits none of
+        # them well.
         #
-        # Also requires a minimum request volume in the window - without
-        # it, a service getting only a handful of requests in 5 minutes
-        # can swing the ratio to 100% on a single failed request, well
-        # past both the floor and the baseline multiplier below.
+        # Also requires a minimum request volume. Without it, a handful
+        # of requests can push the ratio to 100% on a single failure,
+        # past both thresholds below.
         - alert: IngressNginx5xxRateSpike
           expr: |
             (
@@ -205,11 +202,10 @@ spec:
           annotations:
             summary: "ingress-nginx's 5xx rate has spiked above its own baseline."
             description: >-
-              ingress-nginx's overall 5xx response rate has been above 5%
-              of requests and more than 3x its trailing 1-hour baseline for
-              10 minutes, on at least 20 requests in the last 5 minutes.
-              Check the ingress-nginx dashboard's status-code breakdown to
-              find which backend is failing.
+              ingress-nginx's 5xx rate has stayed above 5% and 3x its
+              trailing 1-hour baseline for 10 minutes, on at least 20
+              requests in 5 minutes. Check the dashboard's status-code
+              breakdown for the failing backend.
 
     - name: custom-etcd-latency
       rules:
