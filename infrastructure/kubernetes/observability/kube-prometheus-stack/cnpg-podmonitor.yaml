@@ -1,0 +1,37 @@
+# CNPG exposes a metrics endpoint on every instance pod regardless of the
+# Cluster spec's monitoring.enablePodMonitor field - that field only
+# controls whether the operator creates its own PodMonitor. Neither
+# postgres nor immich-db set it (issue #162), so nothing was scraping a
+# metrics endpoint that was already live and populated. This PodMonitor
+# covers both clusters at once instead of enabling the operator's
+# per-cluster default, so they share one job/dashboard/alert set.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cnpg-postgres
+  namespace: observability
+  labels:
+    app: cnpg-postgres
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - database
+      - immich
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: cloudnative-pg
+      cnpg.io/podRole: instance
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      relabelings:
+        # cnpg.io/cluster and cnpg.io/instanceRole aren't valid Prometheus
+        # label names as-is (dot/slash), and some cnpg_* metrics already
+        # carry their own "cluster" label - use distinct names here so
+        # relabeling never collides with a metric's own label.
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
+          targetLabel: cnpg_cluster
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
+          targetLabel: cnpg_instance_role
