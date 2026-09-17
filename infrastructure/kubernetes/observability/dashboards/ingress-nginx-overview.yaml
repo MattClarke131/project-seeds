@@ -1,6 +1,6 @@
 # NGINX Ingress controller dashboard from the ingress-nginx project's
-# own repo (deploy/grafana/dashboards/nginx.json). Trimmed of its
-# datasource-input prompt. Pinned to the "prometheus" datasource, like
+# own repo (deploy/grafana/dashboards/nginx.json), trimmed of its
+# datasource-input prompt and pinned to the "prometheus" datasource like
 # the rest of this directory. Adds a "Request Rate by Status Code" panel
 # (id 200); upstream only has an aggregate success-rate stat.
 apiVersion: v1
