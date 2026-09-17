@@ -163,45 +163,47 @@ spec:
 
     - name: custom-ingress-nginx
       rules:
-        # Compares against the controller's own trailing 1h average, not
-        # a fixed percentage. Baseline 5xx rates vary by backend (health
-        # checks, expected 404s), so one fixed threshold fits none of
-        # them well.
+        # Grouped by ingress rather than one shared ratio across every
+        # backend. Baseline 5xx rates vary a lot per service (health
+        # checks, expected 404s), and a shared baseline would let a noisy
+        # backend mask a spike in a clean one.
         #
-        # Also requires a minimum request volume. Without it, a handful
-        # of requests could push the ratio to 100% on a single failure,
-        # clearing both thresholds below.
+        # Fires only when three conditions hold together: the 5xx rate
+        # clears a 5% floor, exceeds 3x that ingress's own trailing 1h
+        # average, and the window has at least 20 requests. The volume
+        # check matters because a handful of requests can push the ratio
+        # to 100% on a single failure, clearing both other thresholds.
         - alert: IngressNginx5xxRateSpike
           expr: |
             (
-              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
               /
-              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
             ) > 0.05
             and
-            sum(increase(nginx_ingress_controller_requests{job="ingress-nginx"}[5m])) > 20
+            sum by (ingress) (increase(nginx_ingress_controller_requests{job="ingress-nginx"}[5m])) > 20
             and
             (
-              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
               /
-              sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
             ) > 3 * avg_over_time(
               (
-                sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
+                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
                 /
-                sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
+                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
               )[1h:5m]
             )
           for: 10m
           labels:
             severity: warning
           annotations:
-            summary: "ingress-nginx's 5xx rate has spiked above its own baseline."
+            summary: "An ingress's 5xx rate has spiked above its own baseline."
             description: >-
-              ingress-nginx's 5xx rate has stayed above 5% and 3x its
-              trailing 1-hour baseline for 10 minutes, on at least 20
+              {{ $labels.ingress }}'s 5xx rate has stayed above 5% and 3x
+              its trailing 1-hour baseline for 10 minutes, on at least 20
               requests in 5 minutes. Check the dashboard's status-code
-              breakdown for the failing backend.
+              breakdown for this ingress.
 
     - name: custom-etcd-latency
       rules:
