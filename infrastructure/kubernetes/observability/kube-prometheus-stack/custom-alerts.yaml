@@ -163,31 +163,21 @@ spec:
 
     - name: custom-ingress-nginx
       rules:
-        # The ingress HelmRelease runs one controller replica per
-        # control-plane node. Traffic reaches it via the ClusterIP Service
-        # (see the tunnel blueprints), which load-balances around an
-        # unready replica same as any Deployment - so this isn't a hard
-        # outage. It's an early signal of reduced capacity/redundancy,
-        # worth catching before a second replica goes down too.
-        - alert: IngressNginxControllerDown
-          expr: |
-            kube_daemonset_status_number_ready{namespace="ingress-nginx", daemonset="ingress-nginx-controller"}
-            < kube_daemonset_status_desired_number_scheduled{namespace="ingress-nginx", daemonset="ingress-nginx-controller"}
-          for: 10m
-          labels:
-            severity: warning
-          annotations:
-            summary: "An ingress-nginx controller pod is down."
-            description: >-
-              {{ $value }} of the desired ingress-nginx controller replicas
-              have been unready for 10 minutes. Check `kubectl -n
-              ingress-nginx get pods` - traffic keeps flowing through the
-              remaining replicas, but capacity/redundancy is reduced.
+        # No controller-down alert here - kube-prometheus-stack's default
+        # KubePodNotReady and KubeDaemonSetRolloutStuck rules already
+        # cover an unready ingress-nginx-controller replica cluster-wide,
+        # just ~5 minutes slower and with a generic description.
+        #
         # Compares against this controller's own trailing 1h average
         # instead of a fixed percentage - one backend service might
         # normally run a higher 5xx rate than another (health checks,
         # expected 404s, etc.), so a single fixed threshold would be too
         # strict for some services and too loose for others.
+        #
+        # Also requires a minimum request volume in the window - without
+        # it, a service getting only a handful of requests in 5 minutes
+        # can swing the ratio to 100% on a single failed request, well
+        # past both the floor and the baseline multiplier below.
         - alert: IngressNginx5xxRateSpike
           expr: |
             (
@@ -195,6 +185,8 @@ spec:
               /
               sum(rate(nginx_ingress_controller_requests{job="ingress-nginx"}[5m]))
             ) > 0.05
+            and
+            sum(increase(nginx_ingress_controller_requests{job="ingress-nginx"}[5m])) > 20
             and
             (
               sum(rate(nginx_ingress_controller_requests{job="ingress-nginx", status=~"5.."}[5m]))
@@ -215,8 +207,9 @@ spec:
             description: >-
               ingress-nginx's overall 5xx response rate has been above 5%
               of requests and more than 3x its trailing 1-hour baseline for
-              10 minutes. Check the ingress-nginx dashboard's status-code
-              breakdown to find which backend is failing.
+              10 minutes, on at least 20 requests in the last 5 minutes.
+              Check the ingress-nginx dashboard's status-code breakdown to
+              find which backend is failing.
 
     - name: custom-etcd-latency
       rules:
