@@ -3,6 +3,9 @@ kind: Deployment
 metadata:
   name: prowlarr-standard
   namespace: downloads-standard
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: "linuxserver.io s6-overlay base image runs its init as root to chown /config etc. to PUID/PGID before dropping to that user; forcing runAsNonRoot at the k8s level would skip that step entirely"
+    ignore-check.kube-linter.io/no-read-only-root-fs: "same s6-overlay init writes outside the mounted volumes during startup"
 spec:
   replicas: 1
   # RollingUpdate would briefly run two pods against prowlarr-standard-config
