@@ -5,23 +5,24 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      # cp is pinned to a dedicated thread to prevent worker CPU steal (issue #140); nicholas has
-      # no hyperthreading, so unlike razlo below, one thread is already a whole physical core.
-      # cores matches the single pinned thread - more vCPUs than pinned threads is wasted.
+      # cp is left unpinned (full run of the host's threads) but thread 0 is reserved for it by
+      # excluding workers from that thread instead - a lone reserved thread is real isolation
+      # here since nicholas has no hyperthreading, unlike razlo below. Worker cores match the 3
+      # threads they're actually allowed on (issue #140).
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
-        cores        = 1
+        cores        = 4
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
-        affinity     = "0"
+        affinity     = null
       }
       workers = [
         {
           ip_address   = "10.0.10.31"
           mac_address  = "BC:24:11:64:EF:4D"
-          cores        = 4
+          cores        = 3
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
@@ -30,7 +31,7 @@ locals {
         {
           ip_address   = "10.0.10.32"
           mac_address  = "BC:24:11:06:3E:03"
-          cores        = 4
+          cores        = 3
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
@@ -80,18 +81,17 @@ locals {
       # not the shared local-zfs pool workers use - isolates etcd's write latency from
       # contention with worker VM disk I/O (see issue #125).
       #
-      # cp is also pinned to a dedicated physical core (both HT siblings - a lone thread
-      # isn't real isolation since siblings share execution resources) to prevent worker
-      # CPU steal from etcd/apiserver (issue #140). cores matches the 2 pinned threads -
-      # more vCPUs than pinned threads is wasted.
+      # cp is left unpinned, but both threads of one physical core (0 and 4, its HT sibling)
+      # are reserved for it by excluding workers from both - a lone reserved thread isn't real
+      # isolation since HT siblings share execution resources (issue #140).
       control_plane = {
         ip_address   = "10.0.10.50"
         mac_address  = "BC:24:11:86:41:0C"
-        cores        = 2
+        cores        = 8
         memory_mb    = 4096
         datastore_id = "razlo-etcd"
         disk_size_gb = 50
-        affinity     = "0,4"
+        affinity     = null
       }
       workers = [
         {
