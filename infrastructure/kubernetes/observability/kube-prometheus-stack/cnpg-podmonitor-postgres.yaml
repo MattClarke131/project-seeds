@@ -23,14 +23,17 @@ spec:
       cnpg.io/podRole: instance
   podMetricsEndpoints:
     - port: metrics
-      path: /metrics
-      interval: 30s
+      # path defaults to /metrics, interval to Prometheus's own
+      # scrapeInterval (already 30s here) - no need to restate either.
       relabelings:
-        # cnpg.io/cluster and cnpg.io/instanceRole aren't valid Prometheus
-        # label names as-is (dot/slash), and some cnpg_* metrics already
-        # carry their own "cluster" label - use distinct names here so
-        # relabeling never collides with a metric's own label.
-        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
-          targetLabel: cnpg_cluster
+        # This file only ever selects the "postgres" cluster, so
+        # cnpg_cluster is a constant here rather than derived from the
+        # pod's cnpg.io/cluster label - contrast with #283's combined
+        # PodMonitor, which covers both clusters and needs the derived
+        # version. cnpg.io/instanceRole still varies per pod (primary vs.
+        # replica), so that one still has to come from the pod label -
+        # and isn't a valid Prometheus label name as-is (dot/slash).
+        - targetLabel: cnpg_cluster
+          replacement: postgres
         - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
           targetLabel: cnpg_instance_role

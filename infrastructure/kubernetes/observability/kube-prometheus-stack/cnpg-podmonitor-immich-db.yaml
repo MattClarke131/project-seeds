@@ -18,10 +18,10 @@ spec:
       cnpg.io/podRole: instance
   podMetricsEndpoints:
     - port: metrics
-      path: /metrics
-      interval: 30s
+      # See cnpg-podmonitor-postgres.yaml for why path/interval are
+      # omitted and cnpg_cluster is a constant here.
       relabelings:
-        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
-          targetLabel: cnpg_cluster
+        - targetLabel: cnpg_cluster
+          replacement: immich-db
         - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
           targetLabel: cnpg_instance_role
