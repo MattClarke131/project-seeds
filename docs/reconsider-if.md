@@ -29,25 +29,6 @@ so it isn't the right mitigation for that case.)
 
 ---
 
-**IF** manual physical changes to Proxmox host storage (new zpool, disk
-resize, moving a VM's disk to a different datastore) become frequent, or
-more than one person can make them -
-
-**THEN** stop relying on someone remembering to update
-`infrastructure/proxmox/opentofu/topology.tf` to match by hand, and add
-automated drift detection instead - e.g. a scheduled `tofu plan` across all
-three hosts with an ntfy alert on any diff, or a remote OpenTofu state
-backend (Garage was the leading candidate over SeaweedFS, see #139) if
-state needs to be shared rather than just checked.
-
-Today's assumption is that manual changes are rare enough, and made by one
-person, that the procedure in `docs/bootstrap/proxmox-cluster.md` plus
-`tofu plan` review before commit is enough to catch drift - as it did for
-the `razlo-etcd` datastore, which had been moved manually and gone
-undocumented until an audit surfaced it while working #139.
-
----
-
 **IF** a GitOps controller (FluxCD/ArgoCD, see #15) gets deployed with
 broad standing permissions to reconcile this repo onto the cluster -
 
