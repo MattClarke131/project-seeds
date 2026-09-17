@@ -24,8 +24,8 @@ spec:
       cnpg.io/podRole: instance
   podMetricsEndpoints:
     - port: metrics
-      path: /metrics
-      interval: 30s
+      # path defaults to /metrics, interval to Prometheus's own
+      # scrapeInterval (already 30s here) - no need to restate either.
       relabelings:
         # cnpg.io/cluster and cnpg.io/instanceRole aren't valid Prometheus
         # label names as-is (dot/slash), and some cnpg_* metrics already
