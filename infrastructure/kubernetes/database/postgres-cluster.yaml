@@ -40,6 +40,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-bazarr
+      - name: chaptarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-chaptarr
   postgresql:
     pg_hba:
       - host sonarr-standard-main,sonarr-standard-log sonarr all scram-sha-256
@@ -65,6 +70,10 @@ spec:
       - host bazarr bazarr all scram-sha-256
       - host bazarr all all reject
       - host all bazarr all reject
+
+      - host chaptarr-main,chaptarr-log,chaptarr-cache chaptarr all scram-sha-256
+      - host chaptarr-main,chaptarr-log,chaptarr-cache all all reject
+      - host all chaptarr all reject
   instances: 2
   affinity:
     podAntiAffinityType: required

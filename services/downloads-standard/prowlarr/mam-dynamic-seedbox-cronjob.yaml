@@ -20,6 +20,11 @@ spec:
           containers:
           - name: mam-dynamic-seedbox
             image: curlimages/curl:8.21.0
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 100
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
             env:
             - name: MAM_ID
               valueFrom:

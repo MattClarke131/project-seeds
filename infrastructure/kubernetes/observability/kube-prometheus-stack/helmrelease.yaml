@@ -209,8 +209,15 @@ spec:
           repeat_interval: 12h
           receiver: "null"
           routes:
+            # Dead-man's-switch (#160): kube-prometheus-stack's defaultRules
+            # ship a Watchdog rule that always fires. Routing it to ntfy
+            # rather than discarding it means its *absence* in ntfy is
+            # itself a signal that Alertmanager or the ntfy delivery path
+            # has broken - this component's own failure is otherwise
+            # invisible by design.
             - matchers: [alertname = "Watchdog"]
-              receiver: "null"
+              receiver: ntfy-bridge
+              repeat_interval: 1h
             - matchers: [severity =~ "critical|warning"]
               receiver: ntfy-bridge
         templates:
