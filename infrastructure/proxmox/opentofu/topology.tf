@@ -7,10 +7,11 @@ locals {
 
       # cp is pinned to a dedicated thread to prevent worker CPU steal (issue #140); nicholas has
       # no hyperthreading, so unlike razlo below, one thread is already a whole physical core.
+      # cores matches the single pinned thread - more vCPUs than pinned threads is wasted.
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
-        cores        = 4
+        cores        = 1
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
@@ -81,11 +82,12 @@ locals {
       #
       # cp is also pinned to a dedicated physical core (both HT siblings - a lone thread
       # isn't real isolation since siblings share execution resources) to prevent worker
-      # CPU steal from etcd/apiserver (issue #140).
+      # CPU steal from etcd/apiserver (issue #140). cores matches the 2 pinned threads -
+      # more vCPUs than pinned threads is wasted.
       control_plane = {
         ip_address   = "10.0.10.50"
         mac_address  = "BC:24:11:86:41:0C"
-        cores        = 8
+        cores        = 2
         memory_mb    = 4096
         datastore_id = "razlo-etcd"
         disk_size_gb = 50
