@@ -24,12 +24,12 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: postgres-app
+                  name: postgres-jellystat
                   key: username
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-app
+                  name: postgres-jellystat
                   key: password
             - name: POSTGRES_IP
               value: postgres-rw.database
