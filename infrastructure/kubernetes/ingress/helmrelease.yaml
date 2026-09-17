@@ -48,9 +48,11 @@ spec:
         serviceMonitor:
           enabled: true
           # Prometheus's serviceMonitorSelector (kube-prometheus-stack/helmrelease.yaml)
-          # requires this label to scrape the ServiceMonitor.
+          # requires this label. Without it, Prometheus won't scrape the
+          # ServiceMonitor.
           additionalLabels:
             release: kube-prometheus-stack
-          # Sets job="ingress-nginx" instead of the chart default (the
-          # metrics Service's name), matching custom-alerts.yaml's queries.
+          # The chart default is the metrics Service's name. This sets
+          # job="ingress-nginx" instead, matching custom-alerts.yaml's
+          # queries.
           jobLabel: app.kubernetes.io/name
