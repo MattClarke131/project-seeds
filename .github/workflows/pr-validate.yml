@@ -18,7 +18,7 @@ jobs:
 
       - uses: opentofu/setup-opentofu@v2
         with:
-          tofu_version: "1.11.2"
+          tofu_version: "v1.12.6"
 
       - name: tofu fmt -check (changed files only)
         run: |
