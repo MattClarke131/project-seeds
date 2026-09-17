@@ -22,8 +22,9 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   cpu {
-    cores = each.value.cores
-    type  = "host"
+    cores    = each.value.cores
+    type     = "host"
+    affinity = each.value.affinity
   }
 
   memory {
@@ -72,8 +73,9 @@ resource "proxmox_virtual_environment_vm" "worker" {
   }
 
   cpu {
-    cores = each.value.cores
-    type  = "host"
+    cores    = each.value.cores
+    type     = "host"
+    affinity = each.value.affinity
   }
 
   memory {

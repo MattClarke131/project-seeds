@@ -5,6 +5,13 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
+      # nicholas has no hyperthreading (lscpu: 4 threads, each its own physical core), so a
+      # single pinned thread already gives cp a whole physical core - no sibling to co-isolate,
+      # unlike razlo below. Workers keep full vCPU counts on the remaining threads, still
+      # overprovisioned by design - contention among them only ever costs them, never cp.
+      # See issue #140. If this VM is ever migrated to different hardware, these thread
+      # numbers must be re-derived from that host's own `lscpu -p=CPU,Core,Socket` output,
+      # not carried over blind.
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
@@ -12,6 +19,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
+        affinity     = "0"
       }
       workers = [
         {
@@ -21,6 +29,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          affinity     = "1,2,3"
         },
         {
           ip_address   = "10.0.10.32"
@@ -29,6 +38,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          affinity     = "1,2,3"
         },
       ]
     },
@@ -42,6 +52,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
+        affinity     = null
       }
       workers = [
         {
@@ -53,6 +64,7 @@ locals {
           # needs more local scratch space for /cache than a plain worker - see issue #253.
           datastore_id = "local-zfs"
           disk_size_gb = 100
+          affinity     = null
         },
         {
           ip_address   = "10.0.10.42"
@@ -61,6 +73,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          affinity     = null
         },
       ]
     },
@@ -70,6 +83,14 @@ locals {
       # Control plane's disk lives on razlo-etcd, a dedicated zpool on its own physical drive,
       # not the shared local-zfs pool workers use - isolates etcd's write latency from
       # contention with worker VM disk I/O (see issue #125).
+      #
+      # cp is also pinned to a dedicated physical core (both HT siblings, since siblings
+      # share execution resources - pinning one thread while its sibling stays open to other
+      # VMs isn't real isolation) so worker VMs can never steal CPU from etcd/apiserver
+      # regardless of how overprovisioned they are. See issue #140 for the CPU-steal incident
+      # that motivated this. razlo's HT sibling pairs (from `lscpu -p=CPU,Core,Socket`) are
+      # (0,4), (1,5), (2,6), (3,7); if this VM is ever migrated to different hardware, these
+      # thread numbers must be re-derived from that host's own topology, not carried over blind.
       control_plane = {
         ip_address   = "10.0.10.50"
         mac_address  = "BC:24:11:86:41:0C"
@@ -77,6 +98,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "razlo-etcd"
         disk_size_gb = 50
+        affinity     = "0,4"
       }
       workers = [
         {
@@ -86,6 +108,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          affinity     = "1,2,3,5,6,7"
         },
         {
           ip_address   = "10.0.10.52"
@@ -94,6 +117,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          affinity     = "1,2,3,5,6,7"
         },
       ]
     }
