@@ -16,6 +16,9 @@ spec:
       containers:
         - name: immich-power-tools
           image: ghcr.io/immich-power-tools/immich-power-tools:v0.22.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
           env:
             - name: IMMICH_URL
               value: "http://immich-server.immich.svc.cluster.local:2283"
