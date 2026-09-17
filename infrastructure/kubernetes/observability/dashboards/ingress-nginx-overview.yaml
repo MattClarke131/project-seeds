@@ -1,13 +1,8 @@
-# Community "NGINX Ingress controller" dashboard from the ingress-nginx
-# project itself (deploy/grafana/dashboards/nginx.json upstream), trimmed
-# of its datasource-input prompt and pinned to the "prometheus" datasource
-# like the rest of this directory's dashboards - see #161. Added a
-# "Request Rate by Status Code" panel (id 200) since the upstream version
-# only has an aggregate success-rate stat, not a status-code breakdown.
-#
-# Split from #161's metrics/alerting PR (#268) - its panels can't be
-# validated against real data until that PR's metrics are live, see this
-# PR's description.
+# NGINX Ingress controller dashboard from the ingress-nginx project's
+# own repo (deploy/grafana/dashboards/nginx.json), trimmed of its
+# datasource-input prompt and pinned to the "prometheus" datasource like
+# the rest of this directory. Adds a "Request Rate by Status Code" panel
+# (id 200) - upstream has only an aggregate success-rate stat.
 apiVersion: v1
 kind: ConfigMap
 metadata:
