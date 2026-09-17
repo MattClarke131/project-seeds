@@ -29,6 +29,11 @@ spec:
       initContainers:
       - name: postgres-config
         image: busybox:1.38
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
         command:
         - sh
         - -c
