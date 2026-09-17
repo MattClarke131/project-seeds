@@ -5,6 +5,6 @@ metadata:
   namespace: database
 spec:
   name: grafana
-  owner: app
+  owner: grafana
   cluster:
     name: postgres
