@@ -163,11 +163,6 @@ spec:
 
     - name: custom-ingress-nginx
       rules:
-        # KubePodNotReady and KubeDaemonSetRolloutStuck are default
-        # kube-prometheus-stack rules, and both already catch an unready
-        # controller replica, just ~5 minutes slower. Skip a duplicate
-        # alert here.
-        #
         # Compares against the controller's own trailing 1h average, not
         # a fixed percentage - baseline 5xx rates vary by backend (health
         # checks, expected 404s), so one fixed threshold fits none of
