@@ -5,13 +5,8 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      # nicholas has no hyperthreading (lscpu: 4 threads, each its own physical core), so a
-      # single pinned thread already gives cp a whole physical core - no sibling to co-isolate,
-      # unlike razlo below. Workers keep full vCPU counts on the remaining threads, still
-      # overprovisioned by design - contention among them only ever costs them, never cp.
-      # See issue #140. If this VM is ever migrated to different hardware, these thread
-      # numbers must be re-derived from that host's own `lscpu -p=CPU,Core,Socket` output,
-      # not carried over blind.
+      # cp is pinned to a dedicated thread to prevent worker CPU steal (issue #140); nicholas has
+      # no hyperthreading, so unlike razlo below, one thread is already a whole physical core.
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
@@ -84,13 +79,9 @@ locals {
       # not the shared local-zfs pool workers use - isolates etcd's write latency from
       # contention with worker VM disk I/O (see issue #125).
       #
-      # cp is also pinned to a dedicated physical core (both HT siblings, since siblings
-      # share execution resources - pinning one thread while its sibling stays open to other
-      # VMs isn't real isolation) so worker VMs can never steal CPU from etcd/apiserver
-      # regardless of how overprovisioned they are. See issue #140 for the CPU-steal incident
-      # that motivated this. razlo's HT sibling pairs (from `lscpu -p=CPU,Core,Socket`) are
-      # (0,4), (1,5), (2,6), (3,7); if this VM is ever migrated to different hardware, these
-      # thread numbers must be re-derived from that host's own topology, not carried over blind.
+      # cp is also pinned to a dedicated physical core (both HT siblings - a lone thread
+      # isn't real isolation since siblings share execution resources) to prevent worker
+      # CPU steal from etcd/apiserver (issue #140).
       control_plane = {
         ip_address   = "10.0.10.50"
         mac_address  = "BC:24:11:86:41:0C"
