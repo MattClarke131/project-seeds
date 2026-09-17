@@ -243,3 +243,68 @@ spec:
               {{ printf "%.1f" $value }}ms. Same underlying
               concern as EtcdHighFsyncDuration - see that alert's
               description.
+
+    - name: custom-cnpg-postgres
+      rules:
+        # Scraped via the cnpg-postgres/cnpg-immich-db PodMonitors (issue
+        # #162). Both Clusters run instances: 2, so a healthy primary
+        # always shows exactly one connected streaming replica - a fixed
+        # threshold, since "any replica down" is bad regardless of workload.
+        - alert: CNPGReplicaDown
+          expr: cnpg_pg_replication_streaming_replicas{cnpg_instance_role="primary"} < 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG cluster's primary has no connected replica."
+            description: >-
+              {{ $labels.cnpg_cluster }}'s primary has had no streaming
+              replica connected for 5 minutes. The cluster is running on a
+              single instance with no failover target.
+        # Covers both failure modes: the pod/exporter is unreachable at all
+        # (Prometheus's own `up`), and the pod is up but postgres itself
+        # isn't (cnpg_collector_up, CNPG's own liveness signal).
+        - alert: CNPGInstanceDown
+          expr: up{job=~"observability/cnpg-postgres|observability/cnpg-immich-db"} == 0 or cnpg_collector_up == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG instance is down or unreachable."
+            description: >-
+              {{ $labels.cnpg_cluster }} instance {{ $labels.pod }} has
+              been down or unreachable for 5 minutes. Check
+              `kubectl get cluster -n {{ $labels.namespace }} {{ $labels.cnpg_cluster }}`.
+        # Seconds have real physical meaning here regardless of workload -
+        # any sustained lag risks stale reads off -ro/-r and a stale
+        # failover target.
+        - alert: CNPGReplicationLagHigh
+          expr: cnpg_pg_replication_lag > 30
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG replica is falling behind its primary."
+            description: >-
+              {{ $labels.cnpg_cluster }} instance {{ $labels.pod }} has been
+              more than 30s behind its primary for 5 minutes, is currently
+              {{ printf "%.1f" $value }}s.
+        # "Normal" connection count is workload-dependent (arr apps vs.
+        # immich vs. jellystat), so this alerts on percentage of each
+        # cluster's own max_connections rather than a fixed count.
+        - alert: CNPGConnectionPoolNearExhaustion
+          expr: |
+            100 * sum by (cnpg_cluster) (cnpg_backends_total)
+            / on (cnpg_cluster) group_left()
+            max by (cnpg_cluster) (cnpg_pg_settings_setting{name="max_connections"})
+            > 80
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG cluster is approaching max_connections."
+            description: >-
+              {{ $labels.cnpg_cluster }} has used more than 80% of its
+              max_connections for 10 minutes, currently
+              {{ printf "%.1f" $value }}%. New connections (e.g. a deploy
+              or backfill) may start failing.

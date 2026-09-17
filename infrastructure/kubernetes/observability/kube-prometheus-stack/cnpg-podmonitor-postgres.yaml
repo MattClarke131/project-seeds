@@ -1,0 +1,36 @@
+# Alternative to #283's combined PodMonitor: one PodMonitor per CNPG
+# cluster instead of a single shared one. See this PR's body for why
+# CNPG's own Cluster.spec.monitoring.enablePodMonitor field isn't used
+# for this - the operator-generated PodMonitor never carries the
+# "release: kube-prometheus-stack" label this Prometheus requires
+# (confirmed live via `kubectl get prometheus -o jsonpath='{.spec.podMonitorSelector}'`),
+# so it would silently never get scraped.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cnpg-postgres
+  namespace: observability
+  labels:
+    app: cnpg-postgres
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - database
+  selector:
+    matchLabels:
+      cnpg.io/cluster: postgres
+      cnpg.io/podRole: instance
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      relabelings:
+        # cnpg.io/cluster and cnpg.io/instanceRole aren't valid Prometheus
+        # label names as-is (dot/slash), and some cnpg_* metrics already
+        # carry their own "cluster" label - use distinct names here so
+        # relabeling never collides with a metric's own label.
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
+          targetLabel: cnpg_cluster
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_instanceRole]
+          targetLabel: cnpg_instance_role
