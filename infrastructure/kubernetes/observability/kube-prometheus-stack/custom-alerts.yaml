@@ -164,7 +164,7 @@ spec:
     - name: custom-ingress-nginx
       rules:
         # Compares against the controller's own trailing 1h average, not
-        # a fixed percentage - baseline 5xx rates vary by backend (health
+        # a fixed percentage. Baseline 5xx rates vary by backend (health
         # checks, expected 404s), so one fixed threshold fits none of
         # them well.
         #
