@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: 13ft
-          image: ghcr.io/wasi-master/13ft:0.4.1
+          image: ghcr.io/wasi-master/13ft:1.3.0
           ports:
             - containerPort: 5000
           securityContext:
