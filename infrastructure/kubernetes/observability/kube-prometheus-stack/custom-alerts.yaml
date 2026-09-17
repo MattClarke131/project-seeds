@@ -164,9 +164,11 @@ spec:
     - name: custom-ingress-nginx
       rules:
         # The ingress HelmRelease runs one controller replica per
-        # control-plane node, each handling only that node's slice of
-        # traffic with no failover to another node - so a single unready
-        # replica is a real loss of capacity, not just redundancy noise.
+        # control-plane node. Traffic reaches it via the ClusterIP Service
+        # (see the tunnel blueprints), which load-balances around an
+        # unready replica same as any Deployment - so this isn't a hard
+        # outage. It's an early signal of reduced capacity/redundancy,
+        # worth catching before a second replica goes down too.
         - alert: IngressNginxControllerDown
           expr: |
             kube_daemonset_status_number_ready{namespace="ingress-nginx", daemonset="ingress-nginx-controller"}
@@ -179,8 +181,8 @@ spec:
             description: >-
               {{ $value }} of the desired ingress-nginx controller replicas
               have been unready for 10 minutes. Check `kubectl -n
-              ingress-nginx get pods` - each replica is pinned to one
-              control-plane node with no fallback for that node's traffic.
+              ingress-nginx get pods` - traffic keeps flowing through the
+              remaining replicas, but capacity/redundancy is reduced.
         # Compares against this controller's own trailing 1h average
         # instead of a fixed percentage - one backend service might
         # normally run a higher 5xx rate than another (health checks,
