@@ -5,10 +5,8 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      # cp is left unpinned (full run of the host's threads) but thread 0 is reserved for it by
-      # excluding workers from that thread instead - a lone reserved thread is real isolation
-      # here since nicholas has no hyperthreading, unlike razlo below. Worker cores match the 3
-      # threads they're actually allowed on (issue #140).
+      # cp is unpinned; thread 0 is reserved for it by excluding workers from it instead -
+      # real isolation here since nicholas has no hyperthreading (issue #140).
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
@@ -81,9 +79,8 @@ locals {
       # not the shared local-zfs pool workers use - isolates etcd's write latency from
       # contention with worker VM disk I/O (see issue #125).
       #
-      # cp is left unpinned, but both threads of one physical core (0 and 4, its HT sibling)
-      # are reserved for it by excluding workers from both - a lone reserved thread isn't real
-      # isolation since HT siblings share execution resources (issue #140).
+      # cp is unpinned; both HT sibling threads of one core (0,4) are reserved for it by
+      # excluding workers from both - a lone thread isn't real isolation (issue #140).
       control_plane = {
         ip_address   = "10.0.10.50"
         mac_address  = "BC:24:11:86:41:0C"
