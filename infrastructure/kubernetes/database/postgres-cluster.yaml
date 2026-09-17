@@ -57,6 +57,11 @@ spec:
           name: postgres-grafana
   postgresql:
     pg_hba:
+      # Must come first. Each per-app block's `all all reject` line
+      # below would otherwise catch postgres too, blocking superuser
+      # access to that app's database by name.
+      - host all postgres all scram-sha-256
+
       - host sonarr-standard-main,sonarr-standard-log sonarr all scram-sha-256
       - host sonarr-standard-main,sonarr-standard-log all all reject
       - host all sonarr all reject
@@ -92,6 +97,9 @@ spec:
       - host grafana grafana all scram-sha-256
       - host grafana all all reject
       - host all grafana all reject
+
+      # Deny-by-default: blocks any role not already allowed above.
+      - host all all all reject
   instances: 2
   affinity:
     podAntiAffinityType: required
