@@ -27,5 +27,6 @@ Navigate to https://jellystat.labmatt.com and complete the setup wizard using:
 - **API Key:** from Step 3
 
 ## Dependencies
-- PostgreSQL (`jfstat` database in the `database` namespace via CloudNativePG)
-- `postgres-app` secret mirrored to `jellyfin` namespace via Reflector
+- PostgreSQL (`jfstat` database in the `database` namespace via CloudNativePG,
+  owned by the dedicated `jellystat` role - see issue #113)
+- `postgres-jellystat` secret mirrored to `jellyfin` namespace via Reflector

@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: jfstat
+  namespace: database
+spec:
+  name: jfstat
+  owner: jellystat
+  cluster:
+    name: postgres

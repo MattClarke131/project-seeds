@@ -45,6 +45,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-chaptarr
+      - name: jellystat
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-jellystat
   postgresql:
     pg_hba:
       - host sonarr-standard-main,sonarr-standard-log sonarr all scram-sha-256
@@ -74,6 +79,10 @@ spec:
       - host chaptarr-main,chaptarr-log,chaptarr-cache chaptarr all scram-sha-256
       - host chaptarr-main,chaptarr-log,chaptarr-cache all all reject
       - host all chaptarr all reject
+
+      - host jfstat jellystat all scram-sha-256
+      - host jfstat all all reject
+      - host all jellystat all reject
   instances: 2
   affinity:
     podAntiAffinityType: required
