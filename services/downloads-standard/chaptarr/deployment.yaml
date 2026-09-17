@@ -33,22 +33,22 @@ spec:
           value: "America/New_York"
         # Chaptarr reads Postgres config from env vars directly (like
         # Bazarr), unlike Radarr/Sonarr which only read config.xml.
+        # Requires postgres-chaptarr-reflection to exist first (reflected
+        # from database/postgres-chaptarr - see docs/bootstrap/database.md
+        # and issue #113).
         - name: Chaptarr__Postgres__Host
           value: "postgres-rw.database.svc.cluster.local"
         - name: Chaptarr__Postgres__Port
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: port
+          value: "5432"
         - name: Chaptarr__Postgres__User
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-chaptarr-reflection
               key: username
         - name: Chaptarr__Postgres__Password
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-chaptarr-reflection
               key: password
         - name: Chaptarr__Postgres__MainDb
           value: "chaptarr-main"
