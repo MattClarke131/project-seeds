@@ -50,6 +50,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-jellystat
+      - name: signal-messages
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-signal-messages
   postgresql:
     pg_hba:
       - host sonarr-standard-main,sonarr-standard-log sonarr all scram-sha-256
@@ -83,6 +88,10 @@ spec:
       - host jfstat jellystat all scram-sha-256
       - host jfstat all all reject
       - host all jellystat all reject
+
+      - host signal_messages signal-messages all scram-sha-256
+      - host signal_messages all all reject
+      - host all signal-messages all reject
   instances: 2
   affinity:
     podAntiAffinityType: required
