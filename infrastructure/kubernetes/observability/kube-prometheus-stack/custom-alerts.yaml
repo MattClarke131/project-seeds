@@ -164,18 +164,18 @@ spec:
     - name: custom-ingress-nginx
       rules:
         # KubePodNotReady and KubeDaemonSetRolloutStuck are default
-        # kube-prometheus-stack rules. Both already catch an unready
+        # kube-prometheus-stack rules, and both already catch an unready
         # controller replica, just ~5 minutes slower. Skip a duplicate
         # alert here.
         #
         # Compares against the controller's own trailing 1h average, not
-        # a fixed percentage. Baseline 5xx rates vary by backend. Health
-        # checks and expected 404s are two reasons why. One fixed
-        # threshold fits none of them well.
+        # a fixed percentage - baseline 5xx rates vary by backend (health
+        # checks, expected 404s), so one fixed threshold fits none of
+        # them well.
         #
         # Also requires a minimum request volume. Without it, a handful
-        # of requests could push the ratio to 100% on a single failure.
-        # That would clear both thresholds below.
+        # of requests could push the ratio to 100% on a single failure,
+        # clearing both thresholds below.
         - alert: IngressNginx5xxRateSpike
           expr: |
             (
@@ -204,9 +204,9 @@ spec:
             summary: "ingress-nginx's 5xx rate has spiked above its own baseline."
             description: >-
               ingress-nginx's 5xx rate has stayed above 5% and 3x its
-              trailing 1-hour baseline for 10 minutes. This held on at
-              least 20 requests in 5 minutes. Check the dashboard's
-              status-code breakdown for the failing backend.
+              trailing 1-hour baseline for 10 minutes, on at least 20
+              requests in 5 minutes. Check the dashboard's status-code
+              breakdown for the failing backend.
 
     - name: custom-etcd-latency
       rules:
