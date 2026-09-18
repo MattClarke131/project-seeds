@@ -5,9 +5,8 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      # cp gets priority CPU shares over workers under contention (issue #140) - cpuunits is
-      # a normal per-VM QoS field the API token can set, unlike cpu.affinity (root@pam-only,
-      # confirmed live: Proxmox rejects it with "only root can set 'affinity' config").
+      # cp gets priority CPU shares over workers under contention (issue #140), via
+      # cpuunits - a normal per-VM QoS field the API token can set.
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
