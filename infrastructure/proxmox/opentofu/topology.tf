@@ -75,17 +75,14 @@ locals {
     {
       name = "razlo", host_ip = "10.0.10.11", cores = 8, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 30000,
 
-      # Control plane's disk lives on razlo-etcd, a dedicated zpool on its own physical drive,
-      # not the shared local-zfs pool workers use - isolates etcd's write latency from
-      # contention with worker VM disk I/O (see issue #125).
-      #
       # cp is unpinned; both HT sibling threads of one core (0,4) are reserved for it by
       # excluding workers from both - a lone thread isn't real isolation (issue #140).
       control_plane = {
-        ip_address   = "10.0.10.50"
-        mac_address  = "BC:24:11:86:41:0C"
-        cores        = 8
-        memory_mb    = 4096
+        ip_address  = "10.0.10.50"
+        mac_address = "BC:24:11:86:41:0C"
+        cores       = 8
+        memory_mb   = 4096
+        # Dedicated zpool on its own drive, isolated from worker disk I/O (issue #125).
         datastore_id = "razlo-etcd"
         disk_size_gb = 50
         affinity     = null
