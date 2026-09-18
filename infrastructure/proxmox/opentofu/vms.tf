@@ -22,9 +22,8 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   }
 
   cpu {
-    cores    = each.value.cores
-    type     = "host"
-    affinity = each.value.affinity
+    cores = each.value.cores
+    type  = "host"
   }
 
   memory {
@@ -73,9 +72,8 @@ resource "proxmox_virtual_environment_vm" "worker" {
   }
 
   cpu {
-    cores    = each.value.cores
-    type     = "host"
-    affinity = each.value.affinity
+    cores = each.value.cores
+    type  = "host"
   }
 
   memory {
@@ -121,6 +119,38 @@ resource "null_resource" "gpu_passthrough" {
   # same across a destroy+recreate, so a plain `triggers` map keyed on it or on `.id` would
   # never change and this provisioner would silently skip re-running after a VM replacement.
   # replace_triggered_by ties directly into the VM resource's replace lifecycle instead.
+  lifecycle {
+    replace_triggered_by = [proxmox_virtual_environment_vm.worker[each.key]]
+  }
+
+  depends_on = [proxmox_virtual_environment_vm.worker]
+}
+
+# CPU affinity for cp/worker VMs (issue #140), applied via SSH/qm rather than the provider's
+# native cpu.affinity attribute: Proxmox rejects setting 'affinity' for non-root tokens
+# ("only root can set 'affinity' config"), confirmed live against this repo's token-based
+# provider auth, same restriction class as gpu_passthrough above.
+resource "null_resource" "control_plane_affinity" {
+  for_each = { for k, v in local.control_plane_nodes : k => v if v.affinity != null }
+
+  provisioner "local-exec" {
+    command = "ssh root@${each.value.proxmox_node} 'qm set ${proxmox_virtual_environment_vm.control_plane[each.key].vm_id} -affinity ${each.value.affinity}'"
+  }
+
+  lifecycle {
+    replace_triggered_by = [proxmox_virtual_environment_vm.control_plane[each.key]]
+  }
+
+  depends_on = [proxmox_virtual_environment_vm.control_plane]
+}
+
+resource "null_resource" "worker_affinity" {
+  for_each = { for k, v in local.worker_nodes : k => v if v.affinity != null }
+
+  provisioner "local-exec" {
+    command = "ssh root@${each.value.proxmox_node} 'qm set ${proxmox_virtual_environment_vm.worker[each.key].vm_id} -affinity ${each.value.affinity}'"
+  }
+
   lifecycle {
     replace_triggered_by = [proxmox_virtual_environment_vm.worker[each.key]]
   }
