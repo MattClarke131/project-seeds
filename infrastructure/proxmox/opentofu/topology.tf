@@ -5,7 +5,9 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      # cp is unpinned; thread 0 is reserved for it by excluding workers from it (issue #140).
+      # cp gets priority CPU shares over workers under contention (issue #140) - cpuunits is
+      # a normal per-VM QoS field the API token can set, unlike cpu.affinity (root@pam-only,
+      # confirmed live: Proxmox rejects it with "only root can set 'affinity' config").
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
@@ -13,26 +15,26 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
-        affinity     = null
+        cpu_units    = 4096
       }
       workers = [
         {
           ip_address   = "10.0.10.31"
           mac_address  = "BC:24:11:64:EF:4D"
-          cores        = 3
+          cores        = 4
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          affinity     = "1,2,3"
+          cpu_units    = null
         },
         {
           ip_address   = "10.0.10.32"
           mac_address  = "BC:24:11:06:3E:03"
-          cores        = 3
+          cores        = 4
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          affinity     = "1,2,3"
+          cpu_units    = null
         },
       ]
     },
@@ -46,7 +48,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
-        affinity     = null
+        cpu_units    = null
       }
       workers = [
         {
@@ -58,7 +60,7 @@ locals {
           # needs more local scratch space for /cache than a plain worker - see issue #253.
           datastore_id = "local-zfs"
           disk_size_gb = 100
-          affinity     = null
+          cpu_units    = null
         },
         {
           ip_address   = "10.0.10.42"
@@ -67,14 +69,14 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          affinity     = null
+          cpu_units    = null
         },
       ]
     },
     {
       name = "razlo", host_ip = "10.0.10.11", cores = 8, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 30000,
 
-      # cp is unpinned; both HT sibling threads of one core (0,4) are reserved for it (issue #140).
+      # cp gets priority CPU shares over workers under contention - see nicholas above (issue #140).
       control_plane = {
         ip_address  = "10.0.10.50"
         mac_address = "BC:24:11:86:41:0C"
@@ -83,7 +85,7 @@ locals {
         # Dedicated zpool on its own drive, isolated from worker disk I/O (issue #125).
         datastore_id = "razlo-etcd"
         disk_size_gb = 50
-        affinity     = null
+        cpu_units    = 4096
       }
       workers = [
         {
@@ -93,7 +95,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          affinity     = "1,2,3,5,6,7"
+          cpu_units    = null
         },
         {
           ip_address   = "10.0.10.52"
@@ -102,7 +104,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          affinity     = "1,2,3,5,6,7"
+          cpu_units    = null
         },
       ]
     }
