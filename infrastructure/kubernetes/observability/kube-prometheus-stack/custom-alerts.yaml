@@ -244,6 +244,42 @@ spec:
               concern as EtcdHighFsyncDuration - see that alert's
               description.
 
+    - name: custom-zfs-health
+      rules:
+        # Textfile-collector script writes this per Proxmox host - see
+        # infrastructure/proxmox/scripts/zpool_health_textfile.sh and
+        # docs/bootstrap/host-monitoring.md.
+        - alert: ZpoolNotOnline
+          # info, not warning: the incident that prompted this (razlo's
+          # rpool, 26 write errors) turned out to be a benign firmware
+          # quirk that self-corrected with no data loss (issue #125). This
+          # is about closing a visibility gap, not implying every
+          # non-ONLINE event is an emergency.
+          expr: zpool_health_ok == 0
+          for: 5m
+          labels:
+            severity: info
+          annotations:
+            summary: "A ZFS pool on {{ $labels.host }} has left the ONLINE state."
+            description: >-
+              Pool {{ $labels.pool }} on {{ $labels.host }} has reported a
+              non-ONLINE state for 5 minutes. Run
+              `zpool status {{ $labels.pool }}` on that host for the
+              vdev-level cause.
+        # Mirrors TrueNASMetricsStale (custom-truenas-metrics) - the timer
+        # itself failing would otherwise look identical to a healthy pool.
+        - alert: ZpoolHealthMetricsStale
+          expr: time() - zpool_health_textfile_timestamp_seconds > 1800
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.host }}'s zpool health textfile hasn't updated in over 30 minutes."
+            description: >-
+              The zpool-health systemd timer on {{ $labels.host }} hasn't
+              refreshed its textfile-collector output in over 30 minutes.
+              Check `systemctl status zpool-health.timer` on that host.
+
     - name: custom-cnpg-postgres
       rules:
         # Scraped via the cnpg-postgres PodMonitor (issue #162), which covers
