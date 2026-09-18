@@ -24,6 +24,7 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   cpu {
     cores = each.value.cores
     type  = "host"
+    units = each.value.cpu_units
   }
 
   memory {
@@ -74,6 +75,7 @@ resource "proxmox_virtual_environment_vm" "worker" {
   cpu {
     cores = each.value.cores
     type  = "host"
+    units = each.value.cpu_units
   }
 
   memory {

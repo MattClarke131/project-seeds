@@ -5,6 +5,8 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
+      # cp gets priority CPU shares over workers under contention (issue #140), via
+      # cpuunits - a normal per-VM QoS field the API token can set.
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
@@ -12,6 +14,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
+        cpu_units    = 4096
       }
       workers = [
         {
@@ -21,6 +24,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          cpu_units    = null
         },
         {
           ip_address   = "10.0.10.32"
@@ -29,6 +33,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          cpu_units    = null
         },
       ]
     },
@@ -42,6 +47,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
+        cpu_units    = null
       }
       workers = [
         {
@@ -53,6 +59,7 @@ locals {
           # needs more local scratch space for /cache than a plain worker - see issue #253.
           datastore_id = "local-zfs"
           disk_size_gb = 100
+          cpu_units    = null
         },
         {
           ip_address   = "10.0.10.42"
@@ -61,22 +68,23 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          cpu_units    = null
         },
       ]
     },
     {
       name = "razlo", host_ip = "10.0.10.11", cores = 8, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 30000,
 
-      # Control plane's disk lives on razlo-etcd, a dedicated zpool on its own physical drive,
-      # not the shared local-zfs pool workers use - isolates etcd's write latency from
-      # contention with worker VM disk I/O (see issue #125).
+      # cp gets priority CPU shares over workers under contention - see nicholas above (issue #140).
       control_plane = {
-        ip_address   = "10.0.10.50"
-        mac_address  = "BC:24:11:86:41:0C"
-        cores        = 8
-        memory_mb    = 4096
+        ip_address  = "10.0.10.50"
+        mac_address = "BC:24:11:86:41:0C"
+        cores       = 8
+        memory_mb   = 4096
+        # Dedicated zpool on its own drive, isolated from worker disk I/O (issue #125).
         datastore_id = "razlo-etcd"
         disk_size_gb = 50
+        cpu_units    = 4096
       }
       workers = [
         {
@@ -86,6 +94,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          cpu_units    = null
         },
         {
           ip_address   = "10.0.10.52"
@@ -94,6 +103,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
+          cpu_units    = null
         },
       ]
     }

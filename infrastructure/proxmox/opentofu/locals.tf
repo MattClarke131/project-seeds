@@ -55,6 +55,7 @@ locals {
       template_vm_id = host.template_vm_id
       datastore_id   = host.control_plane.datastore_id
       disk_size_gb   = host.control_plane.disk_size_gb
+      cpu_units      = host.control_plane.cpu_units
     }
   }
 
@@ -73,6 +74,7 @@ locals {
         template_vm_id = host.template_vm_id
         datastore_id   = worker.datastore_id
         disk_size_gb   = worker.disk_size_gb
+        cpu_units      = worker.cpu_units
       }
     }
   ]...)
