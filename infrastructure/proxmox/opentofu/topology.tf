@@ -24,7 +24,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          cpu_units    = null
+          cpu_units    = 1024
         },
         {
           ip_address   = "10.0.10.32"
@@ -33,7 +33,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          cpu_units    = null
+          cpu_units    = 1024
         },
       ]
     },
@@ -94,7 +94,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          cpu_units    = null
+          cpu_units    = 1024
         },
         {
           ip_address   = "10.0.10.52"
@@ -103,7 +103,7 @@ locals {
           memory_mb    = 12288
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          cpu_units    = null
+          cpu_units    = 1024
         },
       ]
     }
