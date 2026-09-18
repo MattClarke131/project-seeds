@@ -5,8 +5,7 @@ locals {
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
 
-      # cp is unpinned; thread 0 is reserved for it by excluding workers from it instead -
-      # real isolation here since nicholas has no hyperthreading (issue #140).
+      # cp is unpinned; thread 0 is reserved for it by excluding workers from it (issue #140).
       control_plane = {
         ip_address   = "10.0.10.30"
         mac_address  = "BC:24:11:5A:34:D5"
@@ -75,8 +74,7 @@ locals {
     {
       name = "razlo", host_ip = "10.0.10.11", cores = 8, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 30000,
 
-      # cp is unpinned; both HT sibling threads of one core (0,4) are reserved for it by
-      # excluding workers from both - a lone thread isn't real isolation (issue #140).
+      # cp is unpinned; both HT sibling threads of one core (0,4) are reserved for it (issue #140).
       control_plane = {
         ip_address  = "10.0.10.50"
         mac_address = "BC:24:11:86:41:0C"
