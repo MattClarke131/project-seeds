@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autobrr
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  # autobrr-config is on truenas-iscsi, a true single-attach RWO volume - see
+  # cross-seed/deployment.yaml for why RollingUpdate is unsafe here.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: autobrr
+  template:
+    metadata:
+      labels:
+        app: autobrr
+    spec:
+      # autobrr's image runs fine as an arbitrary non-root UID - it only
+      # writes to /config, never to the shared media/qBittorrent PVCs.
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+      containers:
+      - name: autobrr
+        image: ghcr.io/autobrr/autobrr:v1.60.0
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 7474
+          name: http
+        env:
+        - name: TZ
+          value: "America/New_York"
+        # Default config.toml binds 127.0.0.1, unreachable from the Service -
+        # override to listen on all interfaces inside the pod.
+        - name: AUTOBRR__HOST
+          value: "0.0.0.0"
+        - name: AUTOBRR__PORT
+          value: "7474"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: autobrr-config
