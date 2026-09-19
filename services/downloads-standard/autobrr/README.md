@@ -12,11 +12,31 @@ WebUI per tracker (issue #182), not via manifest, since IRC connection
 details and filter rules are one-time interactive setup, not something
 that benefits from being in git.
 
+## Database
+
+State lives in the shared CNPG `postgres` cluster (database and role
+`autobrr`), so trackers, filters, and IRC config are covered by its backups.
+The role's password is a live-only Secret, created before merging:
+
+```sh
+kubectl create secret generic postgres-autobrr \
+  --namespace database \
+  --type kubernetes.io/basic-auth \
+  --from-literal=username=autobrr \
+  --from-literal=password="$(openssl rand -base64 32 | tr -d '\n')"
+kubectl annotate secret postgres-autobrr -n database \
+  reflector.v1.k8s.emberstack.com/reflection-allowed=true \
+  reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces=downloads-standard
+```
+
+`pg_hba` in `infrastructure/kubernetes/database/postgres-cluster.yaml`
+allows the `autobrr` role only into its own database and rejects it
+everywhere else.
+
 ## First-time setup
 
 1. Reach the WebUI at https://autobrr.labmatt.com and complete the
-   onboarding wizard (creates the admin account, generates `config.toml`
-   with a random session secret, persisted on `autobrr-config`).
+   onboarding wizard (creates the admin account in Postgres).
 2. Settings > Clients: add qBittorrent
    (`http://qbittorrent-vpn.downloads-standard.svc.cluster.local:8080`).
 3. Settings > Indexers: add one tracker at a time, only for trackers whose

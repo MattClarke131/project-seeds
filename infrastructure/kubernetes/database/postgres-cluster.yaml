@@ -55,6 +55,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-grafana
+      - name: autobrr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-autobrr
   postgresql:
     pg_hba:
       # Must come first. Each per-app block's `all all reject` line
@@ -97,6 +102,10 @@ spec:
       - host grafana grafana all scram-sha-256
       - host grafana all all reject
       - host all grafana all reject
+
+      - host autobrr autobrr all scram-sha-256
+      - host autobrr all all reject
+      - host all autobrr all reject
 
       # Deny-by-default: blocks any role not already allowed above.
       - host all all all reject

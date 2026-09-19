@@ -5,8 +5,9 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
-  # autobrr-config is on truenas-iscsi, a true single-attach RWO volume - see
-  # cross-seed/deployment.yaml for why RollingUpdate is unsafe here.
+  # Recreate keeps a single autobrr running at a time. A second pod during a
+  # rollout would open a duplicate IRC connection per tracker, which trackers
+  # can treat as abuse.
   strategy:
     type: Recreate
   selector:
@@ -17,8 +18,8 @@ spec:
       labels:
         app: autobrr
     spec:
-      # autobrr's image runs fine as an arbitrary non-root UID - it only
-      # writes to /config, never to the shared media/qBittorrent PVCs.
+      # autobrr's image runs fine as an arbitrary non-root UID. It never
+      # touches the shared media/qBittorrent PVCs.
       securityContext:
         runAsUser: 1000
         runAsGroup: 1000
@@ -36,13 +37,34 @@ spec:
         env:
         - name: TZ
           value: "America/New_York"
-        # Default config.toml binds 127.0.0.1, unreachable from the Service -
-        # override to listen on all interfaces inside the pod.
+        # Default config.toml binds 127.0.0.1, unreachable from the Service.
         - name: AUTOBRR__HOST
           value: "0.0.0.0"
         - name: AUTOBRR__PORT
           value: "7474"
+        # Requires postgres-autobrr-reflection to exist in this namespace
+        # (reflected from database/postgres-autobrr). Until it does, the pod
+        # blocks in CreateContainerConfigError, then proceeds on its own.
+        - name: AUTOBRR__DATABASE_TYPE
+          value: "postgres"
+        - name: AUTOBRR__POSTGRES_HOST
+          value: "postgres-rw.database.svc.cluster.local"
+        - name: AUTOBRR__POSTGRES_PORT
+          value: "5432"
+        - name: AUTOBRR__POSTGRES_DATABASE
+          value: "autobrr"
+        - name: AUTOBRR__POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-autobrr-reflection
+              key: username
+        - name: AUTOBRR__POSTGRES_PASS
+          valueFrom:
+            secretKeyRef:
+              name: postgres-autobrr-reflection
+              key: password
         volumeMounts:
+        # Holds only the generated config.toml. All state lives in Postgres.
         - name: config
           mountPath: /config
         resources:
@@ -54,5 +76,4 @@ spec:
             cpu: "500m"
       volumes:
       - name: config
-        persistentVolumeClaim:
-          claimName: autobrr-config
+        emptyDir: {}

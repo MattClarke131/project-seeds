@@ -17,7 +17,8 @@ resources:
   - cross-seed/service.yaml
   - autobrr/deployment.yaml
   - autobrr/ingress.yaml
-  - autobrr/pvc.yaml
+  - autobrr/postgres-databases.yaml
+  - autobrr/postgres-secret.yaml
   - autobrr/service.yaml
   - radarr/deployment.yaml
   - radarr/ingress.yaml
