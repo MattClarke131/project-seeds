@@ -11,6 +11,7 @@ resources:
   - ci-cd.yaml
   - intel-gpu-plugin.yaml
   - tunnel.yaml
+  - vpn-egress.yaml
   - downloads-standard.yaml
   - immich.yaml
   - jellyfin.yaml

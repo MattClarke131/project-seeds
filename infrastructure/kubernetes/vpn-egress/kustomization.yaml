@@ -1,0 +1,12 @@
+# Flux-managed. See clusters/eye-of-michael/flux-system/vpn-egress.yaml for
+# the Kustomization CR that reconciles this path.
+#
+# The vpn-egress-airvpn-wireguard Secret is created imperatively (see
+# README.md) and intentionally not listed here - it stays untouched by prune.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  - networkpolicy.yaml

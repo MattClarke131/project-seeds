@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vpn-egress
+  namespace: vpn-egress
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: "gluetun needs root for iptables/tun setup (already has NET_ADMIN)."
+    ignore-check.kube-linter.io/no-read-only-root-fs: "same reason as run-as-non-root above"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vpn-egress
+  template:
+    metadata:
+      labels:
+        app: vpn-egress
+    spec:
+      containers:
+      - name: gluetun
+        image: ghcr.io/qdm12/gluetun:v3.41.3
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+        env:
+        - name: VPN_SERVICE_PROVIDER
+          value: "airvpn"
+        - name: VPN_TYPE
+          value: "wireguard"
+        - name: SERVER_COUNTRIES
+          value: "Netherlands"
+        - name: WIREGUARD_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: vpn-egress-airvpn-wireguard
+              key: WIREGUARD_PRIVATE_KEY
+        - name: WIREGUARD_PRESHARED_KEY
+          valueFrom:
+            secretKeyRef:
+              name: vpn-egress-airvpn-wireguard
+              key: WIREGUARD_PRESHARED_KEY
+        - name: WIREGUARD_ADDRESSES
+          valueFrom:
+            secretKeyRef:
+              name: vpn-egress-airvpn-wireguard
+              key: WIREGUARD_ADDRESSES
+        - name: TZ
+          value: "America/New_York"
+        - name: HTTPPROXY
+          value: "on"
+        - name: SHADOWSOCKS
+          value: "off"
+        # Fixes a fatal "ip rule 101 ... file exists" on container restart.
+        - name: IP6_TABLE_DISABLE
+          value: "1"
+        # Lets in-cluster clients reach the pod.
+        - name: FIREWALL_OUTBOUND_SUBNETS
+          value: "172.16.0.0/12,10.0.0.0/8,192.168.0.0/16"
+        # Gluetun's firewall drops inbound traffic on non-VPN interfaces
+        # unless the port is listed; 8888 is the HTTP proxy.
+        - name: FIREWALL_INPUT_PORTS
+          value: "8888"
+        ports:
+        - containerPort: 8888
+          name: http-proxy
+        readinessProbe:
+          tcpSocket:
+            port: 8888
+          periodSeconds: 10
+          failureThreshold: 3
+        volumeMounts:
+        - name: dev-net-tun
+          mountPath: /dev/net/tun
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      volumes:
+      - name: dev-net-tun
+        hostPath:
+          path: /dev/net/tun
+          type: CharDevice
