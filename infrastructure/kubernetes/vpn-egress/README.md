@@ -5,7 +5,7 @@ workloads can egress from a VPN IP without their own gluetun sidecar.
 
 - Proxy URL (in-cluster): `http://vpn-egress.vpn-egress.svc.cluster.local:8888`
 - autobrr: Settings > IRC > network > Proxy, type HTTP, URL above.
-- Allowed clients: see `networkpolicy.yaml` (`downloads-standard` only).
+- Allowed clients: `networkpolicy.yaml` denies all ingress. Add a rule per client before enforcement is enabled.
 
 ## Secret
 

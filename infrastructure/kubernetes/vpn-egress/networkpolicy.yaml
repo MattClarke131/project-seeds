@@ -1,5 +1,6 @@
-# Restricts who may use the proxy. Enforcement needs a CNI with policy
-# support; plain flannel (current cluster CNI) ignores NetworkPolicy.
+# Default-deny ingress. Add allow rules per client (namespace/pod) as they
+# adopt the proxy. Enforcement needs a CNI with policy support; plain
+# flannel (current cluster CNI) ignores NetworkPolicy.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -11,11 +12,4 @@ spec:
       app: vpn-egress
   policyTypes:
   - Ingress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: downloads-standard
-    ports:
-    - port: 8888
-      protocol: TCP
+  ingress: []
