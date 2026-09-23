@@ -9,16 +9,21 @@ workloads can egress from a VPN IP without their own gluetun sidecar.
 
 ## Secret
 
-Generate a new WireGuard device in AirVPN (one connection per device; do not
-reuse another pod's keys), then:
+This pod cannibalizes ZNC's AirVPN device (`znc-vpn/znc-vpn-airvpn-wireguard`),
+which is idle - ZNC's gluetun Deployment is scaled to 0 - instead of creating
+a new one, so it doesn't consume another of AirVPN's 5 connection slots.
+Rename the device `gluetun-egress` in the AirVPN dashboard, then copy the
+secret into this namespace:
 
 ```sh
-kubectl create secret generic vpn-egress-airvpn-wireguard \
-  --namespace vpn-egress \
-  --from-literal=WIREGUARD_PRIVATE_KEY='<PrivateKey from [Interface]>' \
-  --from-literal=WIREGUARD_PRESHARED_KEY='<PresharedKey from [Peer]>' \
-  --from-literal=WIREGUARD_ADDRESSES='<Address from [Interface]>'
+kubectl get secret znc-vpn-airvpn-wireguard -n znc-vpn -o json \
+  | jq '.metadata = {name:"vpn-egress-airvpn-wireguard", namespace:"vpn-egress"}' \
+  | kubectl apply -f -
 ```
+
+Once vpn-egress is confirmed working, retire ZNC's gluetun sidecar: delete
+its Deployment, Service and the `znc-vpn-airvpn-wireguard` secret (leave the
+`znc-vpn-config` PVC - that's app data, unrelated to the VPN key).
 
 ## Check
 
