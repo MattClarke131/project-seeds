@@ -1,4 +1,5 @@
 #!/bin/sh
+# Hardlinks a just-imported ebook from Chaptarr's library into CWA's ingest folder.
 set -eu
 
 ROOT_FOLDER=/media/books
