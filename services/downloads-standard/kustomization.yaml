@@ -70,10 +70,18 @@ resources:
   - calibre-web-automated/pvc-config.yaml
   - calibre-web-automated/pvc-library.yaml
   - calibre-web-automated/service.yaml
-  - chaptarr/configmap-hardlink-script.yaml
   - chaptarr/deployment.yaml
   - chaptarr/ingress.yaml
   - chaptarr/postgres-databases.yaml
   - chaptarr/postgres-secret.yaml
   - chaptarr/pvc-config.yaml
   - chaptarr/service.yaml
+
+configMapGenerator:
+  - name: chaptarr-hardlink-script
+    namespace: downloads-standard
+    files:
+      - hardlink-to-cwa-ingest.sh=chaptarr/hardlink-to-cwa-ingest.sh
+
+generatorOptions:
+  disableNameSuffixHash: true
