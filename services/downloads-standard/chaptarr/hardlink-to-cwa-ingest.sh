@@ -6,19 +6,14 @@ set -eu
 ROOT_FOLDER=/media/books
 INGEST_FOLDER=/media/books-ingest
 
-# Chaptarr fires this on "Test" from the Connect settings page too -
-# nothing to link yet, so succeed without touching the filesystem.
-if [ "${Chaptarr_EventType:-}" = "Test" ]; then
-  echo "hardlink-to-cwa-ingest: Test event, nothing to do"
-  exit 0
-fi
-
+# Chaptarr fires this on "Test" from the Connect settings page too, without
+# Chaptarr_AddedBookPaths (confirmed live: Chaptarr_EventType isn't even set
+# on Test, despite what CustomScript.cs's naming implies) - succeed without
+# touching the filesystem whenever there's nothing to link, rather than
+# trying to detect "Test" specifically.
 if [ -z "${Chaptarr_AddedBookPaths:-}" ]; then
-  # Debug aid: this branch fired on a real Test click even though
-  # Chaptarr's CustomScript.cs sets Chaptarr_EventType=Test unconditionally -
-  # logging the raw value received to find out why the check above missed it.
-  echo "hardlink-to-cwa-ingest: Chaptarr_AddedBookPaths is unset - nothing to link (Chaptarr_EventType='${Chaptarr_EventType:-<unset>}')" >&2
-  exit 1
+  echo "hardlink-to-cwa-ingest: nothing to link (Chaptarr_EventType='${Chaptarr_EventType:-<unset>}')"
+  exit 0
 fi
 
 IFS='|'
