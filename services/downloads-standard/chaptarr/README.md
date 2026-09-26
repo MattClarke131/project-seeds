@@ -26,11 +26,8 @@ their library, one hop further:
 2. Path: `/scripts/hardlink-to-cwa-ingest.sh` (from the
    `chaptarr-hardlink-script` ConfigMap).
 3. Trigger on "On Release Import" and "On Upgrade".
-4. Click "Test" to confirm it's wired up correctly - Chaptarr does invoke
-   the script on Test (contrary to an earlier assumption here), but without
-   `Chaptarr_AddedBookPaths` or a reliable `Chaptarr_EventType` set, so the
-   script just exits 0 without touching the filesystem. Trigger a real
-   import to confirm end-to-end.
+4. Click "Test" to confirm it's wired up correctly (exits 0, no
+   filesystem changes). Trigger a real import to confirm end-to-end.
 
 The script reads `$Chaptarr_AddedBookPaths` (pipe-separated import paths),
 confirmed against `CustomScript.cs` in the Chaptarr source
