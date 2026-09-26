@@ -32,12 +32,6 @@ data:
             tags "warning"
             topic homelab-warning
         }
-
-        severity "info" {
-            priority 1
-            tags "information_source"
-            topic homelab-info
-        }
     }
 
     resolved {

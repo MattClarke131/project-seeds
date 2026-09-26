@@ -219,7 +219,7 @@ spec:
             - matchers: [alertname = "Watchdog"]
               receiver: ntfy-bridge
               repeat_interval: 1h
-            - matchers: [severity =~ "critical|warning|info"]
+            - matchers: [severity =~ "critical|warning"]
               receiver: ntfy-bridge
         templates:
           - /etc/alertmanager/config/*.tmpl
