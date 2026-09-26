@@ -1,0 +1,6 @@
+[Unit]
+Description=Write ZFS pool health to node-exporter's textfile collector
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/zpool_health_textfile.sh
