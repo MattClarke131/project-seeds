@@ -250,15 +250,13 @@ spec:
         # infrastructure/proxmox/scripts/zpool_health_textfile.sh and
         # docs/bootstrap/host-monitoring.md.
         - alert: ZpoolNotOnline
-          # info, not warning: the incident that prompted this (razlo's
-          # rpool, 26 write errors) turned out to be a benign firmware
-          # quirk that self-corrected with no data loss (issue #125). This
-          # is about closing a visibility gap, not implying every
-          # non-ONLINE event is an emergency.
+          # warning: a non-ONLINE pool can mean an active drive failure
+          # needing physical replacement, not just a benign, self-correcting
+          # event - see #125/#231.
           expr: zpool_health_ok == 0
           for: 5m
           labels:
-            severity: info
+            severity: warning
           annotations:
             summary: "A ZFS pool on {{ $labels.host }} has left the ONLINE state."
             description: >-
