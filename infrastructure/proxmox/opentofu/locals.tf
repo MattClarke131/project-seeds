@@ -38,6 +38,9 @@ locals {
   cluster_vip    = "10.0.10.2"
   nameservers    = ["9.9.9.9", "1.1.1.1"]
 
+  # Range Cilium's CiliumLoadBalancerIPPool draws LoadBalancer IPs from.
+  cilium_lb_ip_range = "10.0.10.60-10.0.10.69"
+
   # VM ID allocation
   control_plane_vm_id_base = 100
   worker_vm_id_base        = 200
