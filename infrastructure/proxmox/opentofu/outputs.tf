@@ -36,6 +36,16 @@ output "control_plane_nodes" {
   }
 }
 
+# Rendered per-node config, for pushing changes to already-running nodes via
+# talosctl apply-config (tofu apply alone only regenerates fresh-install ISOs).
+output "control_plane_machine_configs" {
+  description = "Rendered Talos machine configuration per control plane node"
+  value = {
+    for key, cfg in data.talos_machine_configuration.controlplane : key => cfg.machine_configuration
+  }
+  sensitive = true
+}
+
 # Variables for Prometheus scrape targets
 output "prometheus_scrape_targets" {
   description = "Prometheus scrape targets in file_sd format"
