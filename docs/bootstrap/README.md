@@ -22,15 +22,19 @@
   - Configure Terraform variables
   - Deploy Kubernetes cluster VMs
 
-6. **[Storage Setup](./kubernetes-storage.md)**
+6. **[Cilium CNI](./cilium.md)**
+  - Install Cilium after the Talos nodes bootstrap
+  - Apply the LoadBalancer IP pool and L2 announcement policy
+
+7. **[Storage Setup](./kubernetes-storage.md)**
   - Configure TrueNAS NFS storage for Kubernetes
   - Enable persistent storage for applications
 
-7. **[Host Monitoring Setup](./host-monitoring.md)**
+8. **[Host Monitoring Setup](./host-monitoring.md)**
   - Install node-exporter on physical hosts
   - Enable metrics collection for observability*
 
-8. **[Database Setup](./database.md)**
+9. **[Database Setup](./database.md)**
   - Deploy PostgreSQL database on Kubernetes
   - Configure Reflector for database access
 

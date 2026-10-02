@@ -6,6 +6,7 @@ resources:
   - observability.yaml
   - database.yaml
   - storage.yaml
+  - cilium.yaml
   - cert-manager.yaml
   - ingress.yaml
   - ci-cd.yaml

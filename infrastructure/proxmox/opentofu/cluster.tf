@@ -95,8 +95,16 @@ data "talos_machine_configuration" "controlplane" {
           }
         }
         proxy = {
+          disabled = true
           extraArgs = {
             "metrics-bind-address" = "0.0.0.0:10249"
+          }
+        }
+        # Flannel -> Cilium (#6). Cilium is installed manually, outside Flux,
+        # the first time this takes effect - see infrastructure/kubernetes/cilium/.
+        network = {
+          cni = {
+            name = "none"
           }
         }
         # A full node reboot is required to apply changes to etcd.

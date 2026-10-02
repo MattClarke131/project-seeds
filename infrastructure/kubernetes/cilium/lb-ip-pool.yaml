@@ -1,0 +1,10 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: default-pool
+spec:
+  # Range reserved in infrastructure/proxmox/opentofu/locals.tf (cilium_lb_ip_range).
+  # start/stop, not a CIDR block - .60-.69 doesn't fall on a power-of-two boundary.
+  blocks:
+    - start: 10.0.10.60
+      stop: 10.0.10.69
