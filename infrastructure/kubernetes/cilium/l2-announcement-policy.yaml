@@ -6,5 +6,5 @@ spec:
   loadBalancerIPs: true
   externalIPs: true
   interfaces:
-    - ^eth[0-9]+
+    - ^ens[0-9]+
   nodeSelector: {}
