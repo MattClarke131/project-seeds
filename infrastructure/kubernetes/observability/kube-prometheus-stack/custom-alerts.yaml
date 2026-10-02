@@ -159,7 +159,8 @@ spec:
               netdata {{ printf "%.0f" $value }}s ago. Check netdata's
               exporting engine on sleipnir (`journalctl -u netdata`,
               /etc/netdata/exporting.conf) and that graphite-exporter's pod
-              is reachable at 10.0.10.31:32003.
+              is reachable at its LoadBalancer IP (`kubectl get svc -n
+              observability graphite-exporter`).
 
     - name: custom-ingress-nginx
       rules:

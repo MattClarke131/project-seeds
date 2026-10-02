@@ -6,18 +6,16 @@ metadata:
   labels:
     app: graphite-exporter
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - name: graphite
       port: 2003
       protocol: TCP
       targetPort: 2003
-      nodePort: 32003
     - name: metrics
       port: 9108
       protocol: TCP
       targetPort: 9108
-      nodePort: 32108
   selector:
     app: graphite-exporter
 ---
