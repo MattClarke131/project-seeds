@@ -1,3 +1,24 @@
+# Media Folder Layout
+All apps mount the `media-standard` PVC at `/media` (NFS: `sleipnir/media-standard`), so hardlinks work between downloads and libraries.
+
+```
+/media
+├── downloads
+│   ├── qbittorrent/{completed,incomplete}
+│   └── sabnzbd/{complete,incomplete}
+├── tv, tv-portuguese      # Sonarr libraries
+├── anime                  # Sonarr anime library
+├── movies, movies-portuguese  # Radarr libraries
+└── books, books-ingest, audiobooks  # Chaptarr / CWA
+```
+
+- **Root folders:** Servarr apps only accept paths registered in their UI (Settings -> Media Management -> Root Folders). The registration lives in each app's database, not in git.
+- **sonarr-standard:** `/media/tv` and `/media/anime`. Seerr routes anime requests to `/media/anime` on this instance, so requests fail with "Root folder does not exist" without it.
+- **radarr-standard:** `/media/movies`.
+- **Portuguese instances:** `/media/tv-portuguese` (sonarr-portuguese) and `/media/movies-portuguese` (radarr-portuguese).
+- **qBittorrent:** saves to `/media/downloads/qbittorrent/completed`, with temp files in `incomplete`.
+- **sabnzbd:** uses `/media/downloads/sabnzbd/{complete,incomplete}`.
+
 # Usenet Providers
 https://www.uzantoreto.com/en/retention/alt.binaries.boneless/
 
