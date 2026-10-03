@@ -108,6 +108,24 @@
       "matchUpdateTypes": ["major"]
     },
     {
+      "description": "Cilium is the CNI, so a bad upgrade takes down cluster networking. It does not support skipping minors, so each minor gets its own PR. Minor and major bumps link the upgrade guide and carry a label for live testing (pre-pull images, check ingress, run the connectivity test).",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["cilium"],
+      "separateMultipleMinor": true
+    },
+    {
+      "description": "Cilium minor/major upgrade notes. See docs/bootstrap/cilium.md for the rollout checks.",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["cilium"],
+      "matchUpdateTypes": ["minor", "major"],
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "Read the [Cilium {{{newMajor}}}.{{{newMinor}}} upgrade guide](https://docs.cilium.io/en/v{{{newMajor}}}.{{{newMinor}}}/operations/upgrade/) before merging.",
+        "Pre-pull the new image on every node first: `talosctl -n <node-ip> image pull quay.io/cilium/cilium:v{{{newVersion}}}`.",
+        "After rollout: `cilium status`, check ingress at 10.0.10.60, and run `cilium connectivity test --test '^no-policies'`."
+      ]
+    },
+    {
       "description": "jellyfin/jellyfin's Docker image has no source-repo metadata, so Renovate can't auto-discover changelog/release notes for it - point it at the source explicitly",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["jellyfin/jellyfin"],
