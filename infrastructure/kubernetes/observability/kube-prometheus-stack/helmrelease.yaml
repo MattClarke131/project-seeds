@@ -162,6 +162,10 @@ spec:
           isDefault: false
           editable: true
 
+    # Cilium replaces kube-proxy, so there is nothing to scrape or alert on.
+    kubeProxy:
+      enabled: false
+
     defaultRules:
       disabled:
         # Measures raw host MemAvailable, which on this cluster tracks VM RAM
