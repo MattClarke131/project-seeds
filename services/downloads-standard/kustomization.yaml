@@ -6,6 +6,7 @@ resources:
   - namespace.yaml
   - seerr/helmrepository.yaml
   - seerr/helmrelease.yaml
+  - seerr/pvc-config.yaml
   - prowlarr/deployment.yaml
   - prowlarr/ingress.yaml
   - prowlarr/mam-dynamic-seedbox-cronjob.yaml

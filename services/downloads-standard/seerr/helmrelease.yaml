@@ -26,9 +26,10 @@ spec:
     image:
       tag: v3.4.1
 
+    # SQLite lives on this volume; block storage avoids NFS locking stalls.
     config:
       persistence:
-        size: 20Gi
+        existingClaim: seerr-config-iscsi
 
     ingress:
       enabled: true
