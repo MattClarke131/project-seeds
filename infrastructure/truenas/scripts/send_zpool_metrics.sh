@@ -1,4 +1,6 @@
 #!/bin/bash
+# Pushes ZFS pool/dataset usage that netdata's exporter doesn't send, via graphite plaintext.
+# Target is graphite-exporter's LoadBalancer IP (observability ns), on the Service port.
 
 POOL_USED=$(zpool list -Hp -o allocated sleipnir)
 POOL_TOTAL=$(zpool list -Hp -o size sleipnir)
