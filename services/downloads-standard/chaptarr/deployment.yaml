@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: chaptarr
-        image: chaptarr/chaptarr:0.9.958
+        image: chaptarr/chaptarr:0.9.965
         ports:
         - containerPort: 8789
           name: http
