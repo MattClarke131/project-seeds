@@ -27,7 +27,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: autobrr
-        image: ghcr.io/autobrr/autobrr:v1.60.0
+        image: ghcr.io/autobrr/autobrr:v1.88.0
         securityContext:
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
