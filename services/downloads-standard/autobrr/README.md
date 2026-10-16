@@ -16,14 +16,16 @@ that benefits from being in git.
 
 State lives in the shared CNPG `postgres` cluster (database and role
 `autobrr`), so trackers, filters, and IRC config are covered by its backups.
-The role's password is a live-only Secret, created before merging:
+The role's password is a live-only Secret, created before merging. Use a
+hex password: autobrr builds a `postgres://` URL without escaping, so the
+`/` and `=` in base64 break it.
 
 ```sh
 kubectl create secret generic postgres-autobrr \
   --namespace database \
   --type kubernetes.io/basic-auth \
   --from-literal=username=autobrr \
-  --from-literal=password="$(openssl rand -base64 32 | tr -d '\n')"
+  --from-literal=password="$(openssl rand -hex 32)"
 kubectl annotate secret postgres-autobrr -n database \
   reflector.v1.k8s.emberstack.com/reflection-allowed=true \
   reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces=downloads-standard
