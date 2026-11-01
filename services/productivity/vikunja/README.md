@@ -3,6 +3,7 @@
 Task and project manager, reachable on the tailnet at https://vikunja.labmatt.com.
 It also serves CalDAV for Tasks.org on Android and Wear OS.
 
+- **Shortcut:** https://todo.labmatt.com redirects browsers to the URL above. Point CalDAV and API clients at `vikunja.labmatt.com` directly, since they may not follow redirects.
 - **Exposure:** tailnet only. `*.labmatt.com` resolves to the internal ingress, and there is no Pangolin blueprint.
 - **State:** tasks and projects live in the shared CNPG `postgres` cluster (database and role `vikunja`). Attachments, avatars and backgrounds live on the `vikunja-files` PVC.
 
