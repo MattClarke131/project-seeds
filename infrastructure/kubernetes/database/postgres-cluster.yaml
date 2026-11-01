@@ -60,6 +60,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-autobrr
+      - name: vikunja
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-vikunja
   postgresql:
     pg_hba:
       # Must come first. Each per-app block's `all all reject` line
@@ -106,6 +111,10 @@ spec:
       - host autobrr autobrr all scram-sha-256
       - host autobrr all all reject
       - host all autobrr all reject
+
+      - host vikunja vikunja all scram-sha-256
+      - host vikunja all all reject
+      - host all vikunja all reject
 
       # Deny-by-default: blocks any role not already allowed above.
       - host all all all reject
