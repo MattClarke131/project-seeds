@@ -12,3 +12,15 @@ resources:
   - helmrepository.yaml
   - helmrelease.yaml
   - ../jellystat
+
+components:
+  - ../../infrastructure/kubernetes/storage/shared-volumes/media-standard
+
+patches:
+  - target:
+      kind: PersistentVolume
+      name: media-standard-RENAME-ME
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: media-standard
