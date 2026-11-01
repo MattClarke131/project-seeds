@@ -17,3 +17,4 @@ resources:
   - jellyfin.yaml
   - ladder.yaml
   - 13ft.yaml
+  - vikunja.yaml
