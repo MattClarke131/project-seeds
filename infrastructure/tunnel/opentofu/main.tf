@@ -27,8 +27,17 @@ resource "hcloud_server" "edge_proxy" {
             eth0:
               addresses:
                 - ${hcloud_floating_ip.edge_proxy.ip_address}/32
+    # BBR keeps stream throughput up on long, lossy client paths where CUBIC collapses
+    - path: /etc/modules-load.d/bbr.conf
+      content: |
+        tcp_bbr
+    - path: /etc/sysctl.d/90-bbr.conf
+      content: |
+        net.ipv4.tcp_congestion_control = bbr
   runcmd:
     - netplan apply
+    - modprobe tcp_bbr
+    - sysctl --system
 EOF
 }
 
