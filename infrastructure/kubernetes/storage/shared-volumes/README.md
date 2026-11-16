@@ -28,10 +28,3 @@ Then point the consumer's PVC at it with `volumeName: media-standard-<consumer>`
 The placeholder name contains uppercase letters, so a consumer that forgets the rename fails to apply. It can't silently collide with another consumer's PV.
 
 PVs are cluster-scoped and owned by the consumer's Flux Kustomization. Removing a consumer prunes its PV. The `Retain` policy and static NFS backing leave the data on the export untouched.
-
-## Current consumers
-
-| Component | PV | Consumer |
-|---|---|---|
-| `media-standard` | `media-standard` | `services/jellyfin` |
-| `media-standard` | `media-standard-downloads` | `services/downloads-standard` |
