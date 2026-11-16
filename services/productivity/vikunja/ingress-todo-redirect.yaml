@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vikunja-todo-redirect
+  namespace: vikunja
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Browser shortcut only. Vikunja serves from its single public URL, so this redirects instead of proxying.
+    nginx.ingress.kubernetes.io/permanent-redirect: "https://vikunja.labmatt.com/"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - todo.labmatt.com
+      secretName: vikunja-todo-redirect-tls
+  rules:
+  - host: todo.labmatt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vikunja
+            port:
+              number: 3456
