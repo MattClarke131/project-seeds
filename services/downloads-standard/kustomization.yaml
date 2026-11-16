@@ -4,6 +4,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
+  - pvc-media-standard.yaml
   - seerr/helmrepository.yaml
   - seerr/helmrelease.yaml
   - prowlarr/deployment.yaml
@@ -24,7 +25,6 @@ resources:
   - radarr/ingress.yaml
   - radarr/postgres-databases.yaml
   - radarr/pvc-config.yaml
-  - radarr/pvc-media.yaml
   - radarr/service.yaml
   - radarr-portuguese/deployment.yaml
   - radarr-portuguese/ingress.yaml
@@ -81,6 +81,18 @@ resources:
   - chaptarr/postgres-secret.yaml
   - chaptarr/pvc-config.yaml
   - chaptarr/service.yaml
+
+components:
+  - ../../infrastructure/kubernetes/storage/shared-volumes/media-standard
+
+patches:
+  - target:
+      kind: PersistentVolume
+      name: media-standard-RENAME-ME
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: media-standard-downloads
 
 configMapGenerator:
   - name: chaptarr-hardlink-script
