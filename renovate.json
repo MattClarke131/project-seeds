@@ -109,7 +109,16 @@
     },
     {
       "description": "Automerge patch bumps for app workloads; platformAutomerge is off because main has no required checks, so GitHub native auto-merge would merge before CI passes.",
-      "matchFileNames": ["services/**"],
+      "matchFileNames": [
+        "services/13ft/**",
+        "services/downloads-standard/**",
+        "services/immich/**",
+        "services/immich-power-tools/**",
+        "services/jellyfin/**",
+        "services/jellystat/**",
+        "services/ladder/**",
+        "services/productivity/**"
+      ],
       "matchUpdateTypes": ["patch"],
       "automerge": true,
       "automergeType": "pr",
