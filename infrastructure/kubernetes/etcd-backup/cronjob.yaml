@@ -30,6 +30,13 @@ spec:
                 # reachable snapshot source rather than "the" source of truth.
                 - name: CP_NODE
                   value: "10.0.10.40"
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "256Mi"
+                  cpu: "200m"
               volumeMounts:
                 - name: talosconfig
                   mountPath: /talos
