@@ -5,6 +5,10 @@ metadata:
   namespace: downloads-standard
 spec:
   replicas: 1
+  # config PVC is ReadWriteOncePod - RollingUpdate deadlocks trying to
+  # schedule a second pod while the first still holds the mount (#200).
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: sonarr-anime
@@ -17,13 +21,19 @@ spec:
       # This runs before every Sonarr start and always overwrites the
       # Postgres block in config.xml, so it stays a pure reflection of the
       # Deployment + Secret rather than a manual one-time edit.
-      # Requires postgres-secret to already exist in this namespace (reflected
-      # from database/postgres-app - see docs/bootstrap/database.md). If applied
-      # before the secret is reflected, this container blocks in
+      # Requires postgres-sonarr-anime-reflection to already exist in this
+      # namespace (reflected from database/postgres-sonarr-anime - see
+      # docs/bootstrap/database.md and issue #113). If applied before the
+      # secret is reflected, this container blocks in
       # CreateContainerConfigError until it appears, then proceeds on its own.
       initContainers:
       - name: postgres-config
         image: busybox:1.38
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
         command:
         - sh
         - -c
@@ -39,19 +49,16 @@ spec:
         - name: POSTGRES_HOST
           value: "postgres-rw.database.svc.cluster.local"
         - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: port
+          value: "5432"
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-sonarr-anime-reflection
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-sonarr-anime-reflection
               key: password
         - name: POSTGRES_MAIN_DB
           value: "sonarr-anime-main"
@@ -60,6 +67,13 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       containers:
       - name: sonarr-anime
         image: lscr.io/linuxserver/sonarr:4.0.19.2979-ls322

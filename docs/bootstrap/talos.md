@@ -7,25 +7,25 @@ Talos is an immutable OS, meaning it is read-only and cannot be modified after d
 
 ### Who owns which extensions
 
-`infrastructure/proxmox/opentofu/cluster.tf` resolves each role's extension set into a Talos Image Factory schematic and feeds it into `machine.install.image`:
-- Control planes: `qemu-guest-agent`
-- Workers: `qemu-guest-agent` + `i915` (see `locals.tf`)
+**The template must have every extension baked in at build time.** A `qm clone` copies the template's disk as-is. Talos only runs its install-to-disk step - the one that would apply `machine.install.image` below - if it doesn't yet consider the disk "installed". A cloned disk already qualifies as installed, so Talos skips that step and just boots whatever the template already had. This bit the real fleet once - see #16.
 
-`i915` is the Intel GPU driver - it's universal across all workers even though only `k8s-livio-w1` actually has a GPU passed through (see `services/jellyfin/README.md` and the GPU passthrough section below).
+`infrastructure/proxmox/opentofu/cluster.tf` still resolves each role's extension set into a schematic and feeds it into `machine.install.image`:
+- Control planes: `qemu-guest-agent`, `iscsi-tools`
+- Workers: `qemu-guest-agent`, `iscsi-tools`, `i915` (see `locals.tf`)
 
-Talos reinstalls itself to `install.image` on first boot **regardless of what the template already had**, so `install.image`/`cluster.tf` is the sole source of truth for which extensions actually end up running. That means `i915` never needs to be baked into the template itself - only `cluster.tf` needs to know about it.
+Treat that as documentation of intent, not as something that takes effect on its own. It only matters for a genuinely fresh (non-cloned) install, or if a node is manually re-upgraded via `talosctl upgrade --image=<install.image>` later. Plain clones - which is every real fleet node - never pick it up.
 
-The **template** (Step 1 below) bakes in only `qemu-guest-agent`, and for one specific reason:
-- Terraform's `agent { enabled = true }` block (`vms.tf`) waits for the QEMU guest agent to respond before it considers a clone "up".
-- The currently-booted image (and its agent) keeps running throughout Talos's background reinstall to `install.image` - so having the agent present from the template means that wait never stalls, whatever `install.image` changes to.
+Every host has one template, shared by its control plane and all its workers (see `template_vm_id` in `terraform.tfvars`). So the template must be built with the **union** of every role's extensions: `qemu-guest-agent`, `iscsi-tools`, `i915`. `i915` ends up on every node this way, including control planes - that's fine, it's just an unused driver on any node without the GPU passed through (see the GPU passthrough section below).
 
-If the extension set in `cluster.tf` ever changes, that takes effect fleet-wide the next time each node goes through an install cycle (`talosctl upgrade`, or a destroy/recreate against the current template) - **no template rebuild required**.
+**If the extension set in `cluster.tf` ever changes, you must rebuild the template** (Steps 1-2 below) before cloning any new node from it. Nothing enforces this automatically - a stale template clones silently, with whatever extensions it happened to have. Remember to rebuild.
+
+`vms.tf`'s VM resources don't have an `agent` block. Nothing needs agent-discovered IPs - every node's static IP is already known up front (`locals.control_plane_nodes`/`worker_nodes`). See #16.
 
 ## Steps
 ### Step 1: Get Talos Linux Image
 Run these steps on **each** proxmox host
 
-1. Get the schematic ID for the template's extension set. The template only needs `qemu-guest-agent` (see "Who owns which extensions" above) - everything role-specific like `i915` is applied later via `cluster.tf`'s `install.image`, not baked in here:
+1. Get the schematic ID for the template's extension set - the union from "Who owns which extensions" above:
 ```bash
 curl -s -X POST https://factory.talos.dev/schematics \
   -H "Content-Type: application/json" \
@@ -33,13 +33,15 @@ curl -s -X POST https://factory.talos.dev/schematics \
     "customization": {
       "systemExtensions": {
         "officialExtensions": [
-          "siderolabs/qemu-guest-agent"
+          "siderolabs/qemu-guest-agent",
+          "siderolabs/iscsi-tools",
+          "siderolabs/i915"
         ]
       }
     }
   }'
 ```
-This returns a schematic `id` (a stable hash of the extension list - independent of Talos version). Re-run this if the template's own extension set ever changes; the id will change too.
+This returns a schematic `id`. It changes if you ever change the extension list above - re-run this and rebuild the template (Step 2) when that happens.
 
 2. Download the image (`nocloud`, not `bare-metal`, because it includes cloud-init support which Talos uses for initial configuration - `raw.xz` format):
 ```bash
@@ -71,6 +73,7 @@ qm create 10000 \
   --name talos-template \
   --memory 4096 \
   --cores 4 \
+  --cpu host \
   --net0 virtio,bridge=vmbr0 \
   --scsi0 local-zfs:0,import-from=/var/lib/vz/template/iso/talos-<talos-version>-nocloud-amd64.raw \
   --boot order=scsi0 \
@@ -81,6 +84,15 @@ qm create 10000 \
   --agent enabled=1 \
   --template
 ```
+
+**`--cpu host` matters even though Terraform's `clone` resource sets it again on
+every real fleet VM** (`cpu.type = "host"` in `vms.tf`, so production nodes are
+unaffected either way): a VM cloned straight from this template with plain
+`qm clone` - e.g. for scratch testing - silently inherits the template's own
+CPU model instead, defaulting to `kvm64` if unset here. `kvm64` boots Talos
+1.13's kernel into an immediate panic (`This program can only be run on
+AMD64 processors`) with no indication why. Set it on the template so a
+manual clone behaves the same as a Terraform-managed one.
 
 **`--machine q35` is required**, not optional, even if you don't need GPU passthrough on this particular host: PCIe passthrough (`hostpci` with `pcie=1`) only works on `q35` machine type, and this is set at template-creation time - it's not something Terraform or a later `qm set` can cleanly retrofit onto VMs already cloned from a `pc`/`i440fx` template. Missing this flag was the cause of a real passthrough failure during the `livio-w1` GPU work (silent until the VM was actually rebooted with `hostpci0` attached).
 

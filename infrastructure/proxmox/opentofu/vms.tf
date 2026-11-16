@@ -7,6 +7,12 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
+  # This VM's IP is static and known up front (see locals.control_plane_nodes),
+  # so Terraform doesn't need the agent for IP discovery. The agent block is
+  # still required: the bpg/proxmox provider only defaults agent.enabled=true
+  # up to v0.111; v0.112+ instead falls back to Proxmox's own default
+  # (disabled), so Talos's ext-qemu-guest-agent extension would otherwise
+  # never see a virtio-serial channel to attach to.
   agent {
     enabled = true
   }
@@ -18,10 +24,20 @@ resource "proxmox_virtual_environment_vm" "control_plane" {
   cpu {
     cores = each.value.cores
     type  = "host"
+    units = each.value.cpu_units
   }
 
   memory {
     dedicated = each.value.memory_mb
+  }
+
+  # Overrides the clone's inherited disk pool/size - see topology.tf's
+  # datastore_id/disk_size_gb for why any given host or VM deviates from the
+  # template default.
+  disk {
+    datastore_id = each.value.datastore_id
+    interface    = "scsi0"
+    size         = each.value.disk_size_gb
   }
 
   network_device {
@@ -47,6 +63,7 @@ resource "proxmox_virtual_environment_vm" "worker" {
   node_name   = each.value.proxmox_node
   vm_id       = each.value.vm_id
 
+  # See the control_plane resource above.
   agent {
     enabled = true
   }
@@ -58,10 +75,18 @@ resource "proxmox_virtual_environment_vm" "worker" {
   cpu {
     cores = each.value.cores
     type  = "host"
+    units = each.value.cpu_units
   }
 
   memory {
     dedicated = each.value.memory_mb
+  }
+
+  # See the control_plane resource above.
+  disk {
+    datastore_id = each.value.datastore_id
+    interface    = "scsi0"
+    size         = each.value.disk_size_gb
   }
 
   network_device {

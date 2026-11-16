@@ -6,6 +6,7 @@ resources:
   - observability.yaml
   - database.yaml
   - storage.yaml
+  - cilium.yaml
   - cert-manager.yaml
   - ingress.yaml
   - ci-cd.yaml
@@ -14,4 +15,7 @@ resources:
   - downloads-standard.yaml
   - immich.yaml
   - jellyfin.yaml
+  - ladder.yaml
+  - 13ft.yaml
+  - vikunja.yaml
   - etcd-backup.yaml

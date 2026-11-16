@@ -122,6 +122,94 @@ spec:
               currently {{ printf "%.1f" $value }}%. Risks an OOMKill if it
               keeps climbing.
 
+    - name: custom-flux-health
+      rules:
+        # gotk_resource_info (customResourceState, see helmrelease.yaml)
+        # covers every Flux object's Ready condition - a failure here won't
+        # crash any pod, so nothing else alerts on it (#56).
+        - alert: FluxReconciliationFailing
+          expr: gotk_resource_info{ready="False"} == 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Flux {{ $labels.customresource_kind }}/{{ $labels.name }} in {{ $labels.exported_namespace }} isn't Ready."
+            description: >-
+              {{ $labels.customresource_kind }}/{{ $labels.name }} in
+              {{ $labels.exported_namespace }} has failed to reconcile for
+              at least 15 minutes. Check `flux logs` or `kubectl describe`
+              for that object - the previously-applied version is still
+              live, so nothing else will have alerted on this.
+
+    - name: custom-truenas-metrics
+      rules:
+        # graphite-exporter has no scrape-target failure of its own to alert
+        # on (Prometheus sees it as `up` even when sleipnir's netdata has
+        # stopped pushing) - this is what actually caught issue #101, where
+        # the metric sat at a stale value for days with nothing noticing.
+        - alert: TrueNASMetricsStale
+          expr: time() - graphite_last_processed_timestamp_seconds{job="graphite-exporter"} > 1800
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "sleipnir's TrueNAS metrics haven't updated in over 30 minutes."
+            description: >-
+              graphite-exporter last processed a sample from sleipnir's
+              netdata {{ printf "%.0f" $value }}s ago. Check netdata's
+              exporting engine on sleipnir (`journalctl -u netdata`,
+              /etc/netdata/exporting.conf) and that graphite-exporter's pod
+              is reachable at its LoadBalancer IP (`kubectl get svc -n
+              observability graphite-exporter`).
+
+    - name: custom-ingress-nginx
+      rules:
+        # Grouped by ingress rather than one shared ratio across every
+        # backend. Baseline 5xx rates vary a lot per service (health
+        # checks, expected 404s), and a shared baseline would let a noisy
+        # backend mask a spike in a clean one.
+        #
+        # Excludes ingress="" - requests that matched no Ingress object.
+        # That bucket has no real backend behind it, so it isn't
+        # actionable, and shouldn't share a baseline with real services.
+        #
+        # Fires only when three conditions hold together: the 5xx rate
+        # clears a 5% floor, exceeds 3x that ingress's own trailing 1h
+        # average, and the window has at least 20 requests. The volume
+        # check matters because a handful of requests can push the ratio
+        # to 100% on a single failure, clearing both other thresholds.
+        - alert: IngressNginx5xxRateSpike
+          expr: |
+            (
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!="", status=~"5.."}[5m]))
+              /
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m]))
+            ) > 0.05
+            and
+            sum by (ingress) (increase(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m])) > 20
+            and
+            (
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!="", status=~"5.."}[5m]))
+              /
+              sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m]))
+            ) > 3 * avg_over_time(
+              (
+                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!="", status=~"5.."}[5m]))
+                /
+                sum by (ingress) (rate(nginx_ingress_controller_requests{job="ingress-nginx", ingress!=""}[5m]))
+              )[1h:5m]
+            )
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "An ingress's 5xx rate has spiked above its own baseline."
+            description: >-
+              {{ $labels.ingress }}'s 5xx rate has stayed above 5% and 3x
+              its trailing 1-hour baseline for 10 minutes, on at least 20
+              requests in 5 minutes. Check the dashboard's status-code
+              breakdown for this ingress.
+
     - name: custom-etcd-latency
       rules:
         # Scraped via the etcd job in ADR 003's etcd addendum - see
@@ -156,3 +244,103 @@ spec:
               {{ printf "%.1f" $value }}ms. Same underlying
               concern as EtcdHighFsyncDuration - see that alert's
               description.
+
+    - name: custom-zfs-health
+      rules:
+        # Textfile-collector script writes this per Proxmox host - see
+        # infrastructure/proxmox/scripts/zpool_health_textfile.sh and
+        # docs/bootstrap/host-monitoring.md.
+        - alert: ZpoolNotOnline
+          # warning: a non-ONLINE pool can mean an active drive failure
+          # needing physical replacement, not just a benign, self-correcting
+          # event - see #125/#231.
+          expr: zpool_health_ok == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A ZFS pool on {{ $labels.host }} has left the ONLINE state."
+            description: >-
+              Pool {{ $labels.pool }} on {{ $labels.host }} has reported a
+              non-ONLINE state for 5 minutes. Run
+              `zpool status {{ $labels.pool }}` on that host for the
+              vdev-level cause.
+        # Mirrors TrueNASMetricsStale (custom-truenas-metrics) - the timer
+        # itself failing would otherwise look identical to a healthy pool.
+        - alert: ZpoolHealthMetricsStale
+          expr: time() - zpool_health_textfile_timestamp_seconds > 1800
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.host }}'s zpool health textfile hasn't updated in over 30 minutes."
+            description: >-
+              The zpool-health systemd timer on {{ $labels.host }} hasn't
+              refreshed its textfile-collector output in over 30 minutes.
+              Check `systemctl status zpool-health.timer` on that host.
+
+    - name: custom-cnpg-postgres
+      rules:
+        # Scraped via the cnpg-postgres PodMonitor (issue #162), which covers
+        # both the "postgres" and "immich-db" Clusters. Both run instances: 2,
+        # so a healthy primary always shows exactly one connected streaming
+        # replica - a fixed threshold, since "any replica down" is bad
+        # regardless of workload.
+        - alert: CNPGReplicaDown
+          expr: cnpg_pg_replication_streaming_replicas{cnpg_instance_role="primary"} < 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG cluster's primary has no connected replica."
+            description: >-
+              {{ $labels.cnpg_cluster }}'s primary has had no streaming
+              replica connected for 5 minutes. The cluster is running on a
+              single instance with no failover target.
+        # Covers both failure modes: the pod/exporter is unreachable at all
+        # (Prometheus's own `up`), and the pod is up but postgres itself
+        # isn't (cnpg_collector_up, CNPG's own liveness signal).
+        - alert: CNPGInstanceDown
+          expr: up{job="observability/cnpg-postgres"} == 0 or cnpg_collector_up == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG instance is down or unreachable."
+            description: >-
+              {{ $labels.cnpg_cluster }} instance {{ $labels.pod }} has
+              been down or unreachable for 5 minutes. Check
+              `kubectl get cluster -n {{ $labels.namespace }} {{ $labels.cnpg_cluster }}`.
+        # Seconds have real physical meaning here regardless of workload -
+        # any sustained lag risks stale reads off -ro/-r and a stale
+        # failover target.
+        - alert: CNPGReplicationLagHigh
+          expr: cnpg_pg_replication_lag > 30
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG replica is falling behind its primary."
+            description: >-
+              {{ $labels.cnpg_cluster }} instance {{ $labels.pod }} has been
+              more than 30s behind its primary for 5 minutes, is currently
+              {{ printf "%.1f" $value }}s.
+        # "Normal" connection count is workload-dependent (arr apps vs.
+        # immich vs. jellystat), so this alerts on percentage of each
+        # cluster's own max_connections rather than a fixed count.
+        - alert: CNPGConnectionPoolNearExhaustion
+          expr: |
+            100 * sum by (cnpg_cluster) (cnpg_backends_total)
+            / on (cnpg_cluster) group_left()
+            max by (cnpg_cluster) (cnpg_pg_settings_setting{name="max_connections"})
+            > 80
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "A CNPG cluster is approaching max_connections."
+            description: >-
+              {{ $labels.cnpg_cluster }} has used more than 80% of its
+              max_connections for 10 minutes, currently
+              {{ printf "%.1f" $value }}%. New connections (e.g. a deploy
+              or backfill) may start failing.

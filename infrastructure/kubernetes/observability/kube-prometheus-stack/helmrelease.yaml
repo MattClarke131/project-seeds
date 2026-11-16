@@ -13,13 +13,7 @@ spec:
   chart:
     spec:
       chart: kube-prometheus-stack
-      # Reverted from 88.5.4 (2026-08-25): that upgrade's HelmRelease timed
-      # out and failed to remediate cleanly while the cluster hit unrelated
-      # node instability mid-rollout, and was suspended + manually rolled
-      # back to stop further retries. Back to the last known-good version
-      # until the broader rollout-safety issue this surfaced (see follow-up
-      # ticket) is understood and fixed.
-      version: "88.6.1"
+      version: "91.8.2"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
@@ -124,12 +118,33 @@ spec:
         storageClassName: nfs-provisioner
         size: 10Gi
 
-      # nfs-provisioner doesn't enforce ReadWriteOnce exclusivity, so a
-      # RollingUpdate can briefly double-mount this PVC across old and new pods.
-      # Grafana stores its own state in SQLite, which doesn't tolerate two
-      # concurrent writers - same failure mode that hit Bazarr, see #13.
+      # Dashboards/users/alerting live in the shared CNPG cluster, not
+      # local SQLite - see #35.
+      #
+      # Requires postgres-secret in this namespace (reflected from
+      # database/postgres-grafana, its own dedicated role per #113 - see
+      # docs/bootstrap/database.md).
+      env:
+        GF_DATABASE_TYPE: postgres
+        GF_DATABASE_HOST: postgres-rw.database.svc.cluster.local:5432
+        GF_DATABASE_NAME: grafana
+      envValueFrom:
+        GF_DATABASE_USER:
+          secretKeyRef:
+            name: postgres-secret
+            key: username
+        GF_DATABASE_PASSWORD:
+          secretKeyRef:
+            name: postgres-secret
+            key: password
+
+      # Safe now that state is in Postgres, not a local single-writer
+      # SQLite file - see #35.
       deploymentStrategy:
-        type: Recreate
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 1
+          maxUnavailable: 0
 
       sidecar:
         dashboards:
@@ -146,6 +161,10 @@ spec:
           url: http://loki-gateway.observability.svc.cluster.local
           isDefault: false
           editable: true
+
+    # Cilium replaces kube-proxy, so there is nothing to scrape or alert on.
+    kubeProxy:
+      enabled: false
 
     defaultRules:
       disabled:
@@ -195,8 +214,15 @@ spec:
           repeat_interval: 12h
           receiver: "null"
           routes:
+            # Dead-man's-switch (#160): kube-prometheus-stack's defaultRules
+            # ship a Watchdog rule that always fires. Routing it to ntfy
+            # rather than discarding it means its *absence* in ntfy is
+            # itself a signal that Alertmanager or the ntfy delivery path
+            # has broken - this component's own failure is otherwise
+            # invisible by design.
             - matchers: [alertname = "Watchdog"]
-              receiver: "null"
+              receiver: ntfy-bridge
+              repeat_interval: 1h
             - matchers: [severity =~ "critical|warning"]
               receiver: ntfy-bridge
         templates:

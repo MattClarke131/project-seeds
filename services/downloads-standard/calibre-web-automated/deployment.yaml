@@ -3,8 +3,16 @@ kind: Deployment
 metadata:
   name: calibre-web-automated
   namespace: downloads-standard
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: "linuxserver.io s6-overlay base image runs its init as root to chown /config etc. to PUID/PGID before dropping to that user; forcing runAsNonRoot at the k8s level would skip that step entirely"
+    ignore-check.kube-linter.io/no-read-only-root-fs: "same s6-overlay init writes outside the mounted volumes during startup"
 spec:
   replicas: 1
+  # config/library PVCs are ReadWriteOncePod - RollingUpdate deadlocks
+  # trying to schedule a second pod while the first still holds the mount
+  # (#200) - hit repeatedly during #18 follow-up work.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: calibre-web-automated
@@ -15,7 +23,7 @@ spec:
     spec:
       containers:
       - name: calibre-web-automated
-        image: crocodilestick/calibre-web-automated:v4.0.6
+        image: crocodilestick/calibre-web-automated:v4.0.8
         ports:
         - containerPort: 8083
           name: http
@@ -26,6 +34,14 @@ spec:
           value: "1000"
         - name: TZ
           value: "America/New_York"
+        # The ingest folder is an NFS-backed subpath (media-standard), and
+        # Chaptarr's hardlinks into it are written from a different pod/NFS
+        # client than CWA's own. Plain inotify doesn't see filesystem
+        # changes made by another NFS client, so CWA's watcher would never
+        # notice a hardlinked import without this - switches CWA to a
+        # polling-based watcher instead (issue #18).
+        - name: NETWORK_SHARE_MODE
+          value: "true"
         volumeMounts:
         - name: config
           mountPath: /config
