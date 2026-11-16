@@ -108,6 +108,20 @@
       "matchUpdateTypes": ["major"]
     },
     {
+      "description": "Automerge patch bumps for app workloads; platformAutomerge is off because main has no required checks, so GitHub native auto-merge would merge before CI passes.",
+      "matchFileNames": ["services/**"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "platformAutomerge": false
+    },
+    {
+      "description": "newt carries all public ingress through the Pangolin tunnel, so its bumps always stay manual.",
+      "matchPackageNames": ["fosrl/newt"],
+      "automerge": false
+    },
+    {
       "description": "Cilium is the CNI, so a bad upgrade takes down cluster networking. It does not support skipping minors, so each minor gets its own PR. Minor and major bumps link the upgrade guide and carry a label for live testing (pre-pull images, check ingress, run the connectivity test).",
       "matchDatasources": ["helm"],
       "matchPackageNames": ["cilium"],
