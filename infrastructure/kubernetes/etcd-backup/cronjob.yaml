@@ -16,7 +16,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: etcd-snapshot
-              image: ghcr.io/siderolabs/talosctl:v1.13.8
+              image: ghcr.io/siderolabs/talosctl:v1.14.5
               command: ["/bin/sh", "-c"]
               args:
                 - |
