@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qbittorrent-exporter
+  namespace: observability
+  labels:
+    app: qbittorrent-exporter
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - downloads-standard
+  selector:
+    matchLabels:
+      app: qbittorrent-exporter
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 20s
+      metricRelabelings:
+        # Per-torrent metrics are ~17 series per torrent; keep only those the Torrents dashboard uses.
+        - sourceLabels: [__name__]
+          regex: qbittorrent_torrent_(added_on|completed_on|time_active|popularity|seeders|leechers|ratio|size_bytes|session_downloaded_bytes|session_uploaded_bytes|total_downloaded_bytes|total_uploaded_bytes)
+          action: drop

@@ -66,9 +66,12 @@ resources:
   - upgrade-search/cronjob.yaml
   - upgrade-search/pvc.yaml
   - qbittorrent-vpn/deployment.yaml
+  - qbittorrent-vpn/gluetun-control-auth.yaml
   - qbittorrent-vpn/ingress.yaml
   - qbittorrent-vpn/pvc-config.yaml
   - qbittorrent-vpn/service.yaml
+  - qbittorrent-exporter/deployment.yaml
+  - qbittorrent-exporter/service.yaml
   - calibre-web-automated/deployment.yaml
   - calibre-web-automated/ingress.yaml
   - calibre-web-automated/ingress-books-sync.yaml

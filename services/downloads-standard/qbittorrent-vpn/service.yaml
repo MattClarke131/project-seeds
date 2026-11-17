@@ -16,3 +16,7 @@ spec:
     targetPort: 41231
     protocol: TCP
     name: torrent-port
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: gluetun-ctrl
