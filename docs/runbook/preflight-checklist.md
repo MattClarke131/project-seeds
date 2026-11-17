@@ -2,7 +2,7 @@
 
 Complete this before any change that could take down a node, a host, or stored data. Examples: draining or resizing a VM, rebooting a Proxmox host or TrueNAS, upgrading Talos or Kubernetes, or bumping a major version on a stateful HelmRelease.
 
-[`scripts/preflight.sh`](../../scripts/preflight.sh) runs every gate in section 1 and prints one PASS, WARN, or FAIL line per gate. This document is the source of truth. If the two disagree, fix the script.
+[`scripts/preflight.sh`](../../scripts/preflight.sh) runs every gate in section 1 except the rollback plan, which stays manual. It prints one PASS, WARN, or FAIL line per gate. This document is the source of truth. If the two disagree, fix the script.
 
 ```bash
 scripts/preflight.sh --host <host>   # repeat --host for each host the change touches, or pass --host all
@@ -20,7 +20,7 @@ Every gate is read-only.
 | zpools healthy | `ssh <host> zpool status -x` for `razlo`, `nicholas`, `livio`, and `sleipnir` | `all pools are healthy` |
 | Host memory | `ssh <host> free -m` for `razlo`, `nicholas`, and `livio` | At least 2048 in the `available` column |
 | Recent etcd backup | `kubectl get jobs -n etcd-backup` | A job with `COMPLETIONS 1/1` that finished in the last 24h |
-| Rollback plan | None | Written down: how to undo the change, and how long that takes |
+| Rollback plan | None, not checked by the script | Written down: how to undo the change, and how long that takes |
 
 ### Degraded pools
 

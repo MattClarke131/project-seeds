@@ -41,7 +41,7 @@ warnings=0
 
 report() {
   local status=$1 gate=$2 detail=$3
-  printf '%-6s %-28s %s\n' "$status" "$gate" "$detail"
+  printf '%-5s %-28s %s\n' "$status" "$gate" "$detail"
   case "$status" in
     FAIL) failures=$((failures + 1)) ;;
     WARN) warnings=$((warnings + 1)) ;;
@@ -176,7 +176,6 @@ for host in "${PROXMOX_HOSTS[@]}"; do
   check_memory "$host"
 done
 check_etcd_backup
-report MANUAL rollback-plan "write it down before proceeding"
 
 echo
 if [ "$failures" -gt 0 ]; then
