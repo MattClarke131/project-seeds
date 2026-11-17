@@ -14,16 +14,24 @@ spec:
       template:
         spec:
           restartPolicy: Never
-          containers:
-            - name: etcd-snapshot
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          # The talosctl image is built FROM scratch with no shell, so it runs
+          # talosctl directly. A busybox container then dates and prunes the file.
+          initContainers:
+            - name: snapshot
               image: ghcr.io/siderolabs/talosctl:v1.14.5
-              command: ["/bin/sh", "-c"]
               args:
-                - |
-                  set -eu
-                  talosctl --talosconfig /talos/talosconfig -n "$CP_NODE" -e "$CP_NODE" \
-                    etcd snapshot "/backup/etcd-$(date +%F).db"
-                  find /backup -name 'etcd-*.db' -mtime +14 -delete
+                - --talosconfig=/talos/talosconfig
+                - --nodes=$(CP_NODE)
+                - --endpoints=$(CP_NODE)
+                - etcd
+                - snapshot
+                # Outside the etcd-*.db pattern, so a failed run never counts as a backup.
+                - /backup/snapshot.tmp
+              securityContext:
+                allowPrivilegeEscalation: false
               env:
                 # Any of the three control-plane nodes works - etcd data is
                 # replicated across all of them, so this is just a fixed,
@@ -41,6 +49,28 @@ spec:
                 - name: talosconfig
                   mountPath: /talos
                   readOnly: true
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: rotate
+              image: busybox:1.37.0
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  mv /backup/snapshot.tmp "/backup/etcd-$(date +%F).db"
+                  find /backup -name 'etcd-*.db' -mtime +14 -delete
+                  ls -l /backup
+              securityContext:
+                allowPrivilegeEscalation: false
+              resources:
+                requests:
+                  memory: "16Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "64Mi"
+                  cpu: "100m"
+              volumeMounts:
                 - name: backup
                   mountPath: /backup
           volumes:
