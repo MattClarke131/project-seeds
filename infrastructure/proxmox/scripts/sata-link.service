@@ -1,0 +1,6 @@
+[Unit]
+Description=Write SATA link reset counts to node-exporter's textfile collector
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/sata_link_textfile.sh

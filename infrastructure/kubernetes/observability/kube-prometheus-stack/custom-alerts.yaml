@@ -279,6 +279,33 @@ spec:
               refreshed its textfile-collector output in over 30 minutes.
               Check `systemctl status zpool-health.timer` on that host.
 
+    - name: custom-sata-link
+      rules:
+        # Written per Proxmox host by infrastructure/proxmox/scripts/sata_link_textfile.sh (#143).
+        - alert: SataLinkReset
+          expr: increase(sata_link_resets_total[1h]) > 0
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "SATA link {{ $labels.port }} on {{ $labels.host }} hard-reset in the last hour."
+            description: >-
+              The kernel on {{ $labels.host }} reset SATA link
+              {{ $labels.port }}. Run `journalctl -k | grep {{ $labels.port }}`
+              on that host for the error lines. On nicholas ata1 this means
+              the max_performance power-saving fix from #143 did not hold.
+        - alert: SataLinkMetricsStale
+          expr: time() - sata_link_textfile_timestamp_seconds > 1800
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.host }}'s SATA link textfile hasn't updated in over 30 minutes."
+            description: >-
+              The sata-link systemd timer on {{ $labels.host }} hasn't
+              refreshed its textfile-collector output in over 30 minutes.
+              Check `systemctl status sata-link.timer` on that host.
+
     - name: custom-cnpg-postgres
       rules:
         # Scraped via the cnpg-postgres PodMonitor (issue #162), which covers

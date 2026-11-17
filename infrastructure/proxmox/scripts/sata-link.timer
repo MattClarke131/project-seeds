@@ -1,0 +1,9 @@
+[Unit]
+Description=Periodically write SATA link reset counts to node-exporter's textfile collector
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

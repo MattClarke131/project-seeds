@@ -21,11 +21,10 @@ FINAL="$TEXTFILE_DIR/zpool_health.prom"
     echo "zpool_health_ok{pool=\"$pool\"} $ok"
 
     # Vdev lines in `zpool status` output are the only ones with exactly
-    # NAME STATE READ WRITE CKSUM (5 fields, last 3 numeric) - this also
-    # matches the header row's NAME/STATE columns being non-numeric, so it's
-    # naturally excluded.
+    # NAME STATE READ WRITE CKSUM with fields 3-5 numeric. NF >= 5 because a
+    # faulted vdev appends a note such as "too many errors".
     zpool status "$pool" | awk -v pool="$pool" '
-      NF == 5 && $3 ~ /^[0-9]+$/ && $4 ~ /^[0-9]+$/ && $5 ~ /^[0-9]+$/ {
+      NF >= 5 && $3 ~ /^[0-9]+$/ && $4 ~ /^[0-9]+$/ && $5 ~ /^[0-9]+$/ {
         read += $3; write += $4; cksum += $5
       }
       END {
