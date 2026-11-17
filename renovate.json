@@ -146,7 +146,8 @@
       "automerge": true,
       "automergeType": "pr",
       "automergeStrategy": "squash",
-      "platformAutomerge": false
+      "platformAutomerge": false,
+      "commitMessagePrefix": "[Auto-Merge]"
     },
     {
       "description": "newt carries all public ingress through the Pangolin tunnel, so its bumps always stay manual.",
