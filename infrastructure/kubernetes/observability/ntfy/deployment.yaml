@@ -45,6 +45,15 @@ spec:
       labels:
         app: ntfy
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: topology.eye-of-michael/physical-host
+                    operator: NotIn
+                    values: ["razlo"]
       containers:
         - name: ntfy
           image: binwiederhier/ntfy:v2.37.2

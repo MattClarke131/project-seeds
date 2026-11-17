@@ -13,6 +13,15 @@ spec:
       labels:
         app: newt
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: topology.eye-of-michael/physical-host
+                    operator: NotIn
+                    values: ["razlo"]
       containers:
       - name: newt
         image: fosrl/newt:1.20.0

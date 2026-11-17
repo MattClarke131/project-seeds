@@ -29,6 +29,15 @@ spec:
       labels:
         app: ntfy-alertmanager
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: topology.eye-of-michael/physical-host
+                    operator: NotIn
+                    values: ["razlo"]
       containers:
         - name: ntfy-alertmanager
           image: xenrox/ntfy-alertmanager:1.0.1

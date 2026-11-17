@@ -38,6 +38,15 @@ spec:
               - prometheus.labmatt.com
             secretName: prometheus-tls
       prometheusSpec:
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: topology.eye-of-michael/physical-host
+                      operator: NotIn
+                      values: ["razlo"]
         # Mount targets from ConfigMap
         configMaps:
           - prometheus-targets
@@ -178,6 +187,15 @@ spec:
 
     alertmanager:
       alertmanagerSpec:
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: topology.eye-of-michael/physical-host
+                      operator: NotIn
+                      values: ["razlo"]
         # Mounts ntfy-alertmanager-bridge-webhook-auth (created out-of-band via
         # `kubectl create secret`, not in git) at
         # /etc/alertmanager/secrets/ntfy-alertmanager-bridge-webhook-auth/{username,password}
