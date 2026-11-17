@@ -95,7 +95,12 @@ metadata:
   name: nfs-provisioner
   annotations:
     storageclass.kubernetes.io/is-default-class: "true"
+    # Let Flux recreate the class, since reclaimPolicy and parameters are immutable
+    kustomize.toolkit.fluxcd.io/force: enabled
 provisioner: nfs-provisioner
+# Keep data on TrueNAS when a PVC is deleted
+reclaimPolicy: Retain
 parameters:
-  archiveOnDelete: "false"
+  # Archive instead of erase if a PV is ever switched back to Delete
+  archiveOnDelete: "true"
 allowVolumeExpansion: true

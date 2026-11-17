@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-snapshot
+  namespace: etcd-backup
+spec:
+  schedule: "0 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: Never
+          # The talosctl image is distroless, with no shell. Snapshot to a
+          # fixed name here, then rename and prune it in the busybox container.
+          initContainers:
+            - name: etcd-snapshot
+              image: ghcr.io/siderolabs/talosctl:v1.14.5
+              args:
+                - --talosconfig=/talos/talosconfig
+                - --nodes=$(CP_NODE)
+                - --endpoints=$(CP_NODE)
+                - etcd
+                - snapshot
+                - /backup/.incoming.db
+              env:
+                # Any of the three control-plane nodes works - etcd data is
+                # replicated across all of them, so this is just a fixed,
+                # reachable snapshot source rather than "the" source of truth.
+                - name: CP_NODE
+                  value: "10.0.10.40"
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "256Mi"
+                  cpu: "200m"
+              volumeMounts:
+                - name: talosconfig
+                  mountPath: /talos
+                  readOnly: true
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: store
+              image: busybox:1.38
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  # Rename on the same volume, since a cross-volume copy OOMs on the 83 MB file.
+                  mv /backup/.incoming.db "/backup/etcd-$(date +%F).db"
+                  find /backup -name 'etcd-*.db' -mtime +14 -delete
+                  ls -l /backup
+              resources:
+                requests:
+                  memory: "16Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "64Mi"
+                  cpu: "100m"
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: talosconfig
+              secret:
+                secretName: etcd-backup-talosconfig
+            - name: backup
+              persistentVolumeClaim:
+                claimName: etcd-snapshots

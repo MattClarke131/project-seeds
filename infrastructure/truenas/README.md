@@ -19,6 +19,14 @@ chmod +x /mnt/<pool>/scripts/*.sh
 - Schedule: Every Minute (or as desired)
 - User: root
 
+## Before rebooting/updating TrueNAS
+Scale every Deployment backed by an iSCSI PVC to 0 first. Scale back to 1 once TrueNAS is reachable again. A reboot with an iSCSI session still open can force the volume's filesystem read-only, and it doesn't self-heal on its own. NFS-backed pods don't need this.
+
+Find the current list:
+```bash
+kubectl get pvc -A -o json | jq -r '.items[] | select(.spec.storageClassName=="truenas-iscsi") | "\(.metadata.namespace)/\(.metadata.name)"'
+```
+
 ## ZFS snapshot policy (sleipnir/k8s)
 
 Protects against write mistakes (bad rollout, corrupted upgrade, wrong
@@ -71,14 +79,4 @@ Same two-task-per-dataset split as above.
 
 ### Runbook: before a major stateful upgrade
 
-Before bumping a major version on any stateful HelmRelease (Postgres,
-Prometheus, or anything else with a PVC on `nfs-provisioner` or
-`truenas-iscsi`), take a manual snapshot first so there's a known-good
-rollback point independent of the automatic schedule:
-
-```
-zfs snapshot -r sleipnir/k8s@pre-<component>-<version>
-zfs snapshot -r sleipnir/k8s-iscsi@pre-<component>-<version>
-```
-
-e.g. `zfs snapshot -r sleipnir/k8s@pre-prometheus-v88.5.4`
+Moved to the [preflight checklist](../../docs/runbook/preflight-checklist.md#2-safety-snapshots). Its safety snapshots section covers the manual `zfs snapshot` on both datasets.

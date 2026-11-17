@@ -1,6 +1,7 @@
 # Physical/VM topology for the Proxmox fleet
 locals {
   # Note: we reserve 4GB for Proxmox itself (host_reserved_mb below)
+  # Workers leave ~4GB unallocated per host since QEMU overhead and ZFS ARC exceed host_reserved_mb (host OOM on razlo, 2026-10-31).
   proxmox_hosts = [
     {
       name = "nicholas", host_ip = "10.0.10.5", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 10000,
@@ -21,7 +22,7 @@ locals {
           ip_address   = "10.0.10.31"
           mac_address  = "BC:24:11:64:EF:4D"
           cores        = 4
-          memory_mb    = 12288
+          memory_mb    = 10240
           datastore_id = "local-zfs"
           disk_size_gb = 50
           cpu_units    = 1024
@@ -30,7 +31,7 @@ locals {
           ip_address   = "10.0.10.32"
           mac_address  = "BC:24:11:06:3E:03"
           cores        = 4
-          memory_mb    = 12288
+          memory_mb    = 10240
           datastore_id = "local-zfs"
           disk_size_gb = 50
           cpu_units    = 1024
@@ -54,7 +55,7 @@ locals {
           ip_address  = "10.0.10.41"
           mac_address = "BC:24:11:0B:6D:B4"
           cores       = 4
-          memory_mb   = 12288
+          memory_mb   = 10240
           # Jellyfin's GPU-passthrough transcode workload (see gpu_passthrough_worker_key)
           # needs more local scratch space for /cache than a plain worker - see issue #253.
           datastore_id = "local-zfs"
@@ -65,7 +66,7 @@ locals {
           ip_address   = "10.0.10.42"
           mac_address  = "BC:24:11:5B:DE:D9"
           cores        = 4
-          memory_mb    = 12288
+          memory_mb    = 10240
           datastore_id = "local-zfs"
           disk_size_gb = 50
           cpu_units    = null
@@ -91,7 +92,7 @@ locals {
           ip_address   = "10.0.10.51"
           mac_address  = "BC:24:11:07:64:8A"
           cores        = 8
-          memory_mb    = 12288
+          memory_mb    = 10240
           datastore_id = "local-zfs"
           disk_size_gb = 50
           cpu_units    = 1024
@@ -100,7 +101,7 @@ locals {
           ip_address   = "10.0.10.52"
           mac_address  = "BC:24:11:3E:CF:5B"
           cores        = 8
-          memory_mb    = 12288
+          memory_mb    = 10240
           datastore_id = "local-zfs"
           disk_size_gb = 50
           cpu_units    = 1024

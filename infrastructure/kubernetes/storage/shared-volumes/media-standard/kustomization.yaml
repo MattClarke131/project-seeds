@@ -1,0 +1,6 @@
+# One static PV per consuming namespace, all on the same NFS export. Include
+# this component and rename the PV; see README.md.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - pv.yaml

@@ -10,6 +10,7 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 1800  # kill a hung run so Forbid doesn't skip every later run
       template:
         spec:
           restartPolicy: Never

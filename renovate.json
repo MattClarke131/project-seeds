@@ -4,7 +4,7 @@
   "dependencyDashboard": true,
   "labels": ["renovate"],
   "prConcurrentLimit": 5,
-  "minimumReleaseAge": "7 days",
+  "minimumReleaseAge": "6 days",
   "vulnerabilityAlerts": {
     "minimumReleaseAge": "0 days"
   },
@@ -47,6 +47,18 @@
     },
     {
       "customType": "regex",
+      "description": "Track the cluster's Kubernetes version (locals.kubernetes_version) so a new release shows up as a PR - this only bumps the pinned version string, it does not run talosctl upgrade-k8s against the live cluster.",
+      "managerFilePatterns": [
+        "/^infrastructure/proxmox/opentofu/locals\\.tf$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)\\s*kubernetes_version\\s*=\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
       "description": "Track kube-linter releases (#115, #132) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Verification uses cosign against kube-linter's static publisher key rather than a per-release checksum, so a version bump here needs no accompanying manual edit.",
       "managerFilePatterns": [
         "/^\\.github/workflows/pr-validate\\.yml$/"
@@ -81,31 +93,66 @@
   ],
   "packageRules": [
     {
-      "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
+      "description": "Group the *arr media stack's patch bumps into one PR. Kept apart from minors so a single minor bump can't block automerge for the whole group.",
       "matchFileNames": [
         "services/downloads-standard/**"
       ],
-      "matchUpdateTypes": ["patch", "minor", "digest"],
-      "groupName": "arr stack (minor/patch)"
+      "matchUpdateTypes": ["patch"],
+      "groupName": "arr stack (patch)"
     },
     {
-      "description": "Group each OpenTofu root's provider bumps into their own single PR",
+      "description": "Group the *arr media stack's minor and digest bumps into one PR, merged by hand",
+      "matchFileNames": [
+        "services/downloads-standard/**"
+      ],
+      "matchUpdateTypes": ["minor", "digest"],
+      "groupName": "arr stack (minor)"
+    },
+    {
+      "description": "Group each OpenTofu root's provider bumps into their own single PR. matchManagers keeps regex-tracked version pins (e.g. kubernetes_version, talos_version in locals.tf) out of the group, so they get their own PRs.",
       "matchFileNames": ["infrastructure/proxmox/opentofu/**"],
+      "matchManagers": ["terraform"],
       "groupName": "proxmox opentofu providers"
     },
     {
       "description": "Group each OpenTofu root's provider bumps into their own single PR",
       "matchFileNames": ["infrastructure/tunnel/opentofu/**"],
+      "matchManagers": ["terraform"],
       "groupName": "tunnel opentofu providers"
     },
     {
       "description": "Group each OpenTofu root's provider bumps into their own single PR",
       "matchFileNames": ["infrastructure/home-assistant/opentofu/**"],
+      "matchManagers": ["terraform"],
       "groupName": "home-assistant opentofu providers"
     },
     {
       "description": "Major version bumps stay ungrouped (one PR each) rather than bundled with minor/patch - worth reading closely at merge time rather than rubber-stamping",
       "matchUpdateTypes": ["major"]
+    },
+    {
+      "description": "Automerge patch bumps for app workloads; platformAutomerge is off because main has no required checks, so GitHub native auto-merge would merge before CI passes.",
+      "matchFileNames": [
+        "services/13ft/**",
+        "services/downloads-standard/**",
+        "services/immich/**",
+        "services/immich-power-tools/**",
+        "services/jellyfin/**",
+        "services/jellystat/**",
+        "services/ladder/**",
+        "services/productivity/**"
+      ],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "platformAutomerge": false,
+      "commitMessagePrefix": "[Auto-Merge]"
+    },
+    {
+      "description": "newt carries all public ingress through the Pangolin tunnel, so its bumps always stay manual.",
+      "matchPackageNames": ["fosrl/newt"],
+      "automerge": false
     },
     {
       "description": "Cilium is the CNI, so a bad upgrade takes down cluster networking. It does not support skipping minors, so each minor gets its own PR. Minor and major bumps link the upgrade guide and carry a label for live testing (pre-pull images, check ingress, run the connectivity test).",
@@ -123,6 +170,17 @@
         "Read the [Cilium {{{newMajor}}}.{{{newMinor}}} upgrade guide](https://docs.cilium.io/en/v{{{newMajor}}}.{{{newMinor}}}/operations/upgrade/) before merging.",
         "Pre-pull the new image on every node first: `talosctl -n <node-ip> image pull quay.io/cilium/cilium:v{{{newVersion}}}`.",
         "After rollout: `cilium status`, check ingress at 10.0.10.60, and run `cilium connectivity test --test '^no-policies'`."
+      ]
+    },
+    {
+      "description": "Kubernetes can't skip minors, so each minor gets its own PR. Merge the lowest one first; the rest rebase onto it.",
+      "matchPackageNames": ["kubernetes/kubernetes"],
+      "separateMultipleMinor": true,
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "Kubernetes can't skip minors. If several of these PRs are open, merge the lowest version first.",
+        "Check the [Talos support matrix](https://www.talos.dev/latest/introduction/support-matrix/) for this version before merging.",
+        "After merging, roll out with `talosctl upgrade-k8s --to {{{newVersion}}}`."
       ]
     },
     {
