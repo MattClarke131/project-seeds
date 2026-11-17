@@ -4,7 +4,8 @@
 set -euo pipefail
 
 NAMESPACE=etcd-backup
-JOB="pre-change-$(date +%Y%m%d-%H%M)"
+# Use UTC to match the date in the snapshot file name.
+JOB="pre-change-$(date -u +%Y%m%d-%H%M)"
 TIMEOUT_SECONDS=300
 
 kubectl create job -n "$NAMESPACE" --from=cronjob/etcd-snapshot "$JOB"
