@@ -79,14 +79,4 @@ Same two-task-per-dataset split as above.
 
 ### Runbook: before a major stateful upgrade
 
-Before bumping a major version on any stateful HelmRelease (Postgres,
-Prometheus, or anything else with a PVC on `nfs-provisioner` or
-`truenas-iscsi`), take a manual snapshot first so there's a known-good
-rollback point independent of the automatic schedule:
-
-```
-zfs snapshot -r sleipnir/k8s@pre-<component>-<version>
-zfs snapshot -r sleipnir/k8s-iscsi@pre-<component>-<version>
-```
-
-e.g. `zfs snapshot -r sleipnir/k8s@pre-prometheus-v88.5.4`
+Moved to the [preflight checklist](../../docs/runbook/preflight-checklist.md#2-safety-snapshots). Its safety snapshots section covers the manual `zfs snapshot` on both datasets.

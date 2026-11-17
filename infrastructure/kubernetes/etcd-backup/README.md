@@ -24,6 +24,12 @@ kubectl create secret generic etcd-backup-talosconfig -n etcd-backup \
 rm /tmp/etcd-backup-talosconfig
 ```
 
+## On-demand snapshot
+
+Run [`snapshot-now.sh`](snapshot-now.sh) before a risky change. It runs the
+CronJob as a one-off Job, prints its logs, and exits non-zero on failure. The
+snapshot file is named by date, so it replaces that day's 03:00 snapshot.
+
 ## Restore
 
 ```bash
