@@ -14,8 +14,8 @@ rather than the fleet's admin talosconfig - it grants only the etcd snapshot
 API call, nothing else:
 
 ```bash
-talosctl config new etcd-backup --roles os:etcd:backup --crt-ttl 87600h \
-  > /tmp/etcd-backup-talosconfig
+talosctl config new /tmp/etcd-backup-talosconfig \
+  --roles os:etcd:backup --crt-ttl 87600h
 
 kubectl create secret generic etcd-backup-talosconfig -n etcd-backup \
   --from-file=talosconfig=/tmp/etcd-backup-talosconfig \
