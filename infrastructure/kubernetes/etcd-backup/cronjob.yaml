@@ -14,6 +14,13 @@ spec:
       template:
         spec:
           restartPolicy: Never
+          # No fsGroup: kubelet ignores it on NFS. /backup is mode 0777, so UID 1000 can still prune older root-owned snapshots.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
           # The talosctl image is distroless, with no shell. Snapshot to a
           # fixed name here, then rename and prune it in the busybox container.
           initContainers:
@@ -32,6 +39,11 @@ spec:
                 # reachable snapshot source rather than "the" source of truth.
                 - name: CP_NODE
                   value: "10.0.10.40"
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
               resources:
                 requests:
                   memory: "64Mi"
@@ -56,6 +68,11 @@ spec:
                   mv /backup/.incoming.db "/backup/etcd-$(date +%F).db"
                   find /backup -name 'etcd-*.db' -mtime +14 -delete
                   ls -l /backup
+              securityContext:
+                readOnlyRootFilesystem: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
               resources:
                 requests:
                   memory: "16Mi"
