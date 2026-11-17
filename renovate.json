@@ -93,12 +93,20 @@
   ],
   "packageRules": [
     {
-      "description": "Group the *arr media stack together so a bump lands as one PR instead of one per app",
+      "description": "Group the *arr media stack's patch bumps into one PR. Kept apart from minors so a single minor bump can't block automerge for the whole group.",
       "matchFileNames": [
         "services/downloads-standard/**"
       ],
-      "matchUpdateTypes": ["patch", "minor", "digest"],
-      "groupName": "arr stack (minor/patch)"
+      "matchUpdateTypes": ["patch"],
+      "groupName": "arr stack (patch)"
+    },
+    {
+      "description": "Group the *arr media stack's minor and digest bumps into one PR, merged by hand",
+      "matchFileNames": [
+        "services/downloads-standard/**"
+      ],
+      "matchUpdateTypes": ["minor", "digest"],
+      "groupName": "arr stack (minor)"
     },
     {
       "description": "Group each OpenTofu root's provider bumps into their own single PR. matchManagers keeps regex-tracked version pins (e.g. kubernetes_version, talos_version in locals.tf) out of the group, so they get their own PRs.",
