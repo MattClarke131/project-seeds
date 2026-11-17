@@ -25,6 +25,11 @@ spec:
       initContainers:
       - name: pin-apikey
         image: busybox:1.38
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
         command:
         - sh
         - -c
@@ -41,6 +46,13 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /config
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       containers:
       - name: bazarr
         image: lscr.io/linuxserver/bazarr:v1.6.0-ls361
@@ -61,24 +73,23 @@ spec:
               key: api-key
         # Bazarr reads Postgres config from env vars directly, unlike
         # Radarr/Sonarr which only read config.xml.
+        # Requires postgres-bazarr-reflection to exist first (reflected from
+        # database/postgres-bazarr - see docs/bootstrap/database.md).
         - name: POSTGRES_ENABLED
           value: "true"
         - name: POSTGRES_HOST
           value: "postgres-rw.database.svc.cluster.local"
         - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-secret
-              key: port
+          value: "5432"
         - name: POSTGRES_USERNAME
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-bazarr-reflection
               key: username
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-bazarr-reflection
               key: password
         - name: POSTGRES_DATABASE
           value: "bazarr"

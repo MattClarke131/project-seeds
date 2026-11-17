@@ -1,7 +1,7 @@
 locals {
   # Versions
   kubernetes_version = "v1.34.1"
-  talos_version      = "v1.13.8"
+  talos_version      = "v1.14.5"
   kube_vip_version   = "v1.0.1"
 
   # Pinned to whatever version the cluster was originally bootstrapped with - this is NOT
@@ -38,13 +38,16 @@ locals {
   cluster_vip    = "10.0.10.2"
   nameservers    = ["9.9.9.9", "1.1.1.1"]
 
+  # Range Cilium's CiliumLoadBalancerIPPool draws LoadBalancer IPs from.
+  cilium_lb_ip_range = "10.0.10.60-10.0.10.69"
+
   # VM ID allocation
   control_plane_vm_id_base = 100
   worker_vm_id_base        = 200
 
   # Control Planes - one per Proxmox host
   control_plane_nodes = {
-    for idx, host in var.proxmox_hosts : host.name => {
+    for idx, host in local.proxmox_hosts : host.name => {
       proxmox_node   = host.name
       vm_id          = local.control_plane_vm_id_base + idx
       ip_address     = host.control_plane.ip_address
@@ -53,12 +56,15 @@ locals {
       cores          = host.control_plane.cores
       memory_mb      = host.control_plane.memory_mb
       template_vm_id = host.template_vm_id
+      datastore_id   = host.control_plane.datastore_id
+      disk_size_gb   = host.control_plane.disk_size_gb
+      cpu_units      = host.control_plane.cpu_units
     }
   }
 
   # Workers - Many per Proxmox host
   worker_nodes = merge([
-    for host_idx, host in var.proxmox_hosts :
+    for host_idx, host in local.proxmox_hosts :
     { for worker_idx, worker in host.workers :
       "${host.name}-w${worker_idx + 1}" => {
         proxmox_node   = host.name
@@ -69,6 +75,9 @@ locals {
         cores          = worker.cores
         memory_mb      = worker.memory_mb
         template_vm_id = host.template_vm_id
+        datastore_id   = worker.datastore_id
+        disk_size_gb   = worker.disk_size_gb
+        cpu_units      = worker.cpu_units
       }
     }
   ]...)

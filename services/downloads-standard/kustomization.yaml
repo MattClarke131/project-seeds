@@ -4,6 +4,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespace.yaml
+  - pvc-media-standard.yaml
   - seerr/helmrepository.yaml
   - seerr/helmrelease.yaml
   - prowlarr/deployment.yaml
@@ -15,35 +16,44 @@ resources:
   - cross-seed/deployment.yaml
   - cross-seed/pvc.yaml
   - cross-seed/service.yaml
+  - autobrr/deployment.yaml
+  - autobrr/ingress.yaml
+  - autobrr/postgres-databases.yaml
+  - autobrr/postgres-secret.yaml
+  - autobrr/service.yaml
   - radarr/deployment.yaml
   - radarr/ingress.yaml
   - radarr/postgres-databases.yaml
   - radarr/pvc-config.yaml
-  - radarr/pvc-media.yaml
   - radarr/service.yaml
   - radarr-portuguese/deployment.yaml
   - radarr-portuguese/ingress.yaml
   - radarr-portuguese/postgres-databases.yaml
+  - radarr-portuguese/postgres-secret.yaml
   - radarr-portuguese/pvc-config.yaml
   - radarr-portuguese/service.yaml
   - sonarr/deployment.yaml
   - sonarr/ingress.yaml
   - sonarr/postgres-databases.yaml
+  - sonarr/postgres-secret.yaml
   - sonarr/pvc-config.yaml
   - sonarr/service.yaml
   - sonarr-anime/deployment.yaml
   - sonarr-anime/ingress.yaml
   - sonarr-anime/postgres-databases.yaml
+  - sonarr-anime/postgres-secret.yaml
   - sonarr-anime/pvc-config.yaml
   - sonarr-anime/service.yaml
   - sonarr-portuguese/deployment.yaml
   - sonarr-portuguese/ingress.yaml
   - sonarr-portuguese/postgres-databases.yaml
+  - sonarr-portuguese/postgres-secret.yaml
   - sonarr-portuguese/pvc-config.yaml
   - sonarr-portuguese/service.yaml
   - bazarr/deployment.yaml
   - bazarr/ingress.yaml
   - bazarr/postgres-databases.yaml
+  - bazarr/postgres-secret.yaml
   - bazarr/pvc-config.yaml
   - bazarr/service.yaml
   - sabnzbd/deployment.yaml
@@ -65,9 +75,30 @@ resources:
   - calibre-web-automated/pvc-config.yaml
   - calibre-web-automated/pvc-library.yaml
   - calibre-web-automated/service.yaml
-  - chaptarr/configmap-hardlink-script.yaml
   - chaptarr/deployment.yaml
   - chaptarr/ingress.yaml
   - chaptarr/postgres-databases.yaml
+  - chaptarr/postgres-secret.yaml
   - chaptarr/pvc-config.yaml
   - chaptarr/service.yaml
+
+components:
+  - ../../infrastructure/kubernetes/storage/shared-volumes/media-standard
+
+patches:
+  - target:
+      kind: PersistentVolume
+      name: media-standard-RENAME-ME
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: media-standard-downloads
+
+configMapGenerator:
+  - name: chaptarr-hardlink-script
+    namespace: downloads-standard
+    files:
+      - hardlink-to-cwa-ingest.sh=chaptarr/hardlink-to-cwa-ingest.sh
+
+generatorOptions:
+  disableNameSuffixHash: true

@@ -26,10 +26,16 @@ data:
         custom_formats:
           - trash_ids:
               - dc98083864ea246d05a42df0d05f81cc  # x265 (HD)
-              - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
             assign_scores_to:
               - name: HD Bluray + WEB
                 score: 500
+          # Scored separately from, and below, "x265 (HD)": both match SDR
+          # releases, so bundling them let SDR outrank HDR (Supergirl, 2026-09-05).
+          - trash_ids:
+              - 839bea857ed2c0a8e084f3cbdbd65ecb  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: -100
           - trash_ids:
               - 2899d84dc9372de3408e6d8cc18e9666  # x264
             assign_scores_to:
@@ -54,10 +60,16 @@ data:
         custom_formats:
           - trash_ids:
               - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
-              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
               - name: WEB-1080p
                 score: 500
+          # Same fix as radarr-standard above: scores stack, so bundling this
+          # with "x265 (HD)" let SDR outrank HDR.
+          - trash_ids:
+              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: WEB-1080p
+                score: -100
           - trash_ids:
               - cddfb4e32db826151d97352b8e37c648  # x264
             assign_scores_to:
@@ -81,10 +93,16 @@ data:
         custom_formats:
           - trash_ids:
               - 47435ece6b99a0b477caf360e79ba0bb  # x265 (HD)
-              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
             assign_scores_to:
               - name: "[Anime] Remux-1080p"
                 score: 500
+          # Same fix as radarr-standard above: scores stack, so bundling this
+          # with "x265 (HD)" let SDR outrank HDR.
+          - trash_ids:
+              - 9b64dff695c2115facf1b6ea59c9bd07  # x265 (no HDR/DV)
+            assign_scores_to:
+              - name: "[Anime] Remux-1080p"
+                score: -100
           - trash_ids:
               - cddfb4e32db826151d97352b8e37c648  # x264
             assign_scores_to:

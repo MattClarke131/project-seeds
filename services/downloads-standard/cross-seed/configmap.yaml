@@ -20,15 +20,20 @@ data:
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/4/api?apikey=${process.env.PROWLARR_API_KEY}`, // IPTorrents
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/5/api?apikey=${process.env.PROWLARR_API_KEY}`, // FileList.io
         `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/6/api?apikey=${process.env.PROWLARR_API_KEY}`, // SpeedApp.io
-        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/7/api?apikey=${process.env.PROWLARR_API_KEY}`, // MyAnonamouse
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/8/api?apikey=${process.env.PROWLARR_API_KEY}`, // TorrentLeech
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/9/api?apikey=${process.env.PROWLARR_API_KEY}`, // CinemaZ
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/10/api?apikey=${process.env.PROWLARR_API_KEY}`, // Anthelion
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/11/api?apikey=${process.env.PROWLARR_API_KEY}`, // CrnaBerza
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/12/api?apikey=${process.env.PROWLARR_API_KEY}`, // DocsPedia
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/13/api?apikey=${process.env.PROWLARR_API_KEY}`, // AvistaZ
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/14/api?apikey=${process.env.PROWLARR_API_KEY}`, // ABtorrents
+        // Redacted: API key login caps at 10 req/10s (per-user, not IP).
+        `http://prowlarr-standard.downloads-standard.svc.cluster.local:9696/15/api?apikey=${process.env.PROWLARR_API_KEY}`, // Redacted
       ],
       torrentClients: [
         `qbittorrent:http://${process.env.QBITTORRENT_USERNAME}:${process.env.QBITTORRENT_PASSWORD}@qbittorrent-vpn.downloads-standard.svc.cluster.local:8080/`,
       ],
-      // Matches qBittorrent's own /media mount, so a match's save path lines
-      // up with qBittorrent's and cross-seed can inject directly into the
-      // client instead of needing separate linkDirs.
-      dataDirs: ["/media"],
+      dataDirs: ["/media/downloads/qbittorrent/completed"],
       matchMode: "safe",
       action: "inject",
       linkCategory: "cross-seed",

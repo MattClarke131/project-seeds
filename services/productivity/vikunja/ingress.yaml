@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vikunja
+  namespace: vikunja
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Matches Vikunja's default files.maxsize, above nginx's 1m default.
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - vikunja.labmatt.com
+      secretName: vikunja-tls
+  rules:
+  - host: vikunja.labmatt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: vikunja
+            port:
+              number: 3456

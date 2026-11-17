@@ -22,8 +22,20 @@ spec:
       containers:
       - name: hello-world
         image: gcr.io/google-samples/hello-app:2.0
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65534
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
         ports:
         - containerPort: 8080
+        resources:
+          requests:
+            cpu: 5m
+            memory: 8Mi
+          limits:
+            cpu: 10m
+            memory: 16Mi
 ---
 apiVersion: v1
 kind: Service

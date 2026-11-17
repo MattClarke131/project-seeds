@@ -8,6 +8,116 @@ spec:
     initdb:
       database: jfstat
       owner: app
+  managed:
+    roles:
+      - name: sonarr-anime
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-sonarr-anime
+      - name: radarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-radarr
+      - name: radarr-portuguese
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-radarr-portuguese
+      - name: sonarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-sonarr
+      - name: sonarr-portuguese
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-sonarr-portuguese
+      - name: bazarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-bazarr
+      - name: chaptarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-chaptarr
+      - name: jellystat
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-jellystat
+      - name: grafana
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-grafana
+      - name: autobrr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-autobrr
+      - name: vikunja
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-vikunja
+  postgresql:
+    pg_hba:
+      # Must come first. Each per-app block's `all all reject` line
+      # below would otherwise catch postgres too, blocking superuser
+      # access to that app's database by name.
+      - host all postgres all scram-sha-256
+
+      - host sonarr-standard-main,sonarr-standard-log sonarr all scram-sha-256
+      - host sonarr-standard-main,sonarr-standard-log all all reject
+      - host all sonarr all reject
+
+      - host radarr-main,radarr-log radarr all scram-sha-256
+      - host radarr-main,radarr-log all all reject
+      - host all radarr all reject
+
+      - host sonarr-anime-main,sonarr-anime-log sonarr-anime all scram-sha-256
+      - host sonarr-anime-main,sonarr-anime-log all all reject
+      - host all sonarr-anime all reject
+
+      - host sonarr-portuguese-main,sonarr-portuguese-log sonarr-portuguese all scram-sha-256
+      - host sonarr-portuguese-main,sonarr-portuguese-log all all reject
+      - host all sonarr-portuguese all reject
+
+      - host radarr-portuguese-main,radarr-portuguese-log radarr-portuguese all scram-sha-256
+      - host radarr-portuguese-main,radarr-portuguese-log all all reject
+      - host all radarr-portuguese all reject
+
+      - host bazarr bazarr all scram-sha-256
+      - host bazarr all all reject
+      - host all bazarr all reject
+
+      - host chaptarr-main,chaptarr-log,chaptarr-cache chaptarr all scram-sha-256
+      - host chaptarr-main,chaptarr-log,chaptarr-cache all all reject
+      - host all chaptarr all reject
+
+      - host jfstat jellystat all scram-sha-256
+      - host jfstat all all reject
+      - host all jellystat all reject
+
+      - host grafana grafana all scram-sha-256
+      - host grafana all all reject
+      - host all grafana all reject
+
+      - host autobrr autobrr all scram-sha-256
+      - host autobrr all all reject
+      - host all autobrr all reject
+
+      - host vikunja vikunja all scram-sha-256
+      - host vikunja all all reject
+      - host all vikunja all reject
+
+      # Deny-by-default: blocks any role not already allowed above.
+      - host all all all reject
   instances: 2
   affinity:
     podAntiAffinityType: required
@@ -18,4 +128,4 @@ spec:
   inheritedMetadata:
     annotations:
       reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
-      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "jellyfin,signal-messaging,downloads-standard"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "jellyfin,signal-messaging,downloads-standard,observability"

@@ -47,7 +47,7 @@
     },
     {
       "customType": "regex",
-      "description": "Track kube-linter releases (#115) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Renovate only bumps KUBE_LINTER_VERSION here; KUBE_LINTER_SHA256 right below it still needs updating by hand in the same PR, or the checksum step fails CI.",
+      "description": "Track kube-linter releases (#115, #132) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Verification uses cosign against kube-linter's static publisher key rather than a per-release checksum, so a version bump here needs no accompanying manual edit.",
       "managerFilePatterns": [
         "/^\\.github/workflows/pr-validate\\.yml$/"
       ],
@@ -55,6 +55,19 @@
         "KUBE_LINTER_VERSION: \"(?<currentValue>[0-9.]+)\""
       ],
       "depNameTemplate": "stackrox/kube-linter",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track kubeconform releases (#132) - it had no Renovate coverage at all, so it never surfaced as a PR. kubeconform doesn't publish cosign/sigstore signatures like kube-linter (#115) does, only a per-release CHECKSUMS file, so KUBECONFORM_SHA256 right below it still needs updating by hand in the same PR, or the checksum step fails CI.",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/pr-validate\\.yml$/"
+      ],
+      "matchStrings": [
+        "KUBECONFORM_VERSION: \"(?<currentValue>[0-9.]+)\""
+      ],
+      "depNameTemplate": "yannh/kubeconform",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.*)$"
     }
@@ -93,6 +106,47 @@
     {
       "description": "Major version bumps stay ungrouped (one PR each) rather than bundled with minor/patch - worth reading closely at merge time rather than rubber-stamping",
       "matchUpdateTypes": ["major"]
+    },
+    {
+      "description": "Automerge patch bumps for app workloads; platformAutomerge is off because main has no required checks, so GitHub native auto-merge would merge before CI passes.",
+      "matchFileNames": [
+        "services/13ft/**",
+        "services/downloads-standard/**",
+        "services/immich/**",
+        "services/immich-power-tools/**",
+        "services/jellyfin/**",
+        "services/jellystat/**",
+        "services/ladder/**",
+        "services/productivity/**"
+      ],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "platformAutomerge": false
+    },
+    {
+      "description": "newt carries all public ingress through the Pangolin tunnel, so its bumps always stay manual.",
+      "matchPackageNames": ["fosrl/newt"],
+      "automerge": false
+    },
+    {
+      "description": "Cilium is the CNI, so a bad upgrade takes down cluster networking. It does not support skipping minors, so each minor gets its own PR. Minor and major bumps link the upgrade guide and carry a label for live testing (pre-pull images, check ingress, run the connectivity test).",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["cilium"],
+      "separateMultipleMinor": true
+    },
+    {
+      "description": "Cilium minor/major upgrade notes. See docs/bootstrap/cilium.md for the rollout checks.",
+      "matchDatasources": ["helm"],
+      "matchPackageNames": ["cilium"],
+      "matchUpdateTypes": ["minor", "major"],
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "Read the [Cilium {{{newMajor}}}.{{{newMinor}}} upgrade guide](https://docs.cilium.io/en/v{{{newMajor}}}.{{{newMinor}}}/operations/upgrade/) before merging.",
+        "Pre-pull the new image on every node first: `talosctl -n <node-ip> image pull quay.io/cilium/cilium:v{{{newVersion}}}`.",
+        "After rollout: `cilium status`, check ingress at 10.0.10.60, and run `cilium connectivity test --test '^no-policies'`."
+      ]
     },
     {
       "description": "jellyfin/jellyfin's Docker image has no source-repo metadata, so Renovate can't auto-discover changelog/release notes for it - point it at the source explicitly",

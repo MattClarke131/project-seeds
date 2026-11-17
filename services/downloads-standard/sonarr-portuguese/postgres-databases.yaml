@@ -5,7 +5,7 @@ metadata:
   namespace: database
 spec:
   name: sonarr-portuguese-main
-  owner: app
+  owner: sonarr-portuguese
   cluster:
     name: postgres
 ---
@@ -16,6 +16,6 @@ metadata:
   namespace: database
 spec:
   name: sonarr-portuguese-log
-  owner: app
+  owner: sonarr-portuguese
   cluster:
     name: postgres

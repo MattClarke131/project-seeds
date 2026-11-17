@@ -15,7 +15,10 @@ spec:
     spec:
       containers:
         - name: immich-power-tools
-          image: ghcr.io/immich-power-tools/immich-power-tools:v0.22.0
+          image: ghcr.io/immich-power-tools/immich-power-tools:v0.24.0
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
           env:
             - name: IMMICH_URL
               value: "http://immich-server.immich.svc.cluster.local:2283"
@@ -41,3 +44,10 @@ spec:
                   key: password
           ports:
             - containerPort: 3000
+          resources:
+            requests:
+              cpu: 5m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 256Mi

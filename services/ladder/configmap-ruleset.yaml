@@ -1,0 +1,31 @@
+# Curated locally, not pointed at github.com/everywall/ladder-rules (stalled).
+# This rule was sourced from that repo's ruleset, typo-fixed.
+#
+# useFlareSolverr is on since a DataDome challenge blocks a plain fetch;
+# ladder only borrows FlareSolverr's solved cookies for its own plain request
+# (doesn't proxy its rendered page), so the fake Googlebot UA was dropped -
+# it'd clash with a cookie a real browser solved.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ladder-ruleset
+  namespace: ladder
+data:
+  ruleset.yaml: |
+    - domains:
+        - www.nytimes.com
+      useFlareSolverr: true
+      headers:
+        cookie: nyt-a=; nyt-gdpr=0; nyt-geo=DE; nyt-privacy=1
+        referer: https://www.google.com/
+        content-security-policy: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;"
+      injections:
+        - position: head
+          append: |
+            <script>
+              window.localStorage.clear();
+              document.addEventListener("DOMContentLoaded", () => {
+                const banners = document.querySelectorAll('div[data-testid="inline-message"], div[id^="ad-"], div[id^="leaderboard-"], div.expanded-dock, div.pz-ad-box, div[id="top-wrapper"], div[id="bottom-wrapper"]');
+                banners.forEach(el => { el.remove(); });
+              });
+            </script>

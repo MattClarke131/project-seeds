@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: autobrr
+  namespace: database
+spec:
+  name: autobrr
+  owner: autobrr
+  cluster:
+    name: postgres
