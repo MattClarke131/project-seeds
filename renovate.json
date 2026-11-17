@@ -180,7 +180,9 @@
       "prBodyNotes": [
         "Kubernetes can't skip minors. If several of these PRs are open, merge the lowest version first.",
         "Check the [Talos support matrix](https://www.talos.dev/latest/introduction/support-matrix/) for this version before merging.",
-        "After merging, roll out with `talosctl upgrade-k8s --to {{{newVersion}}}`."
+        "Check that each add-on's current version supports Kubernetes {{{newMajor}}}.{{{newMinor}}}: Cilium, Flux, CNPG, democratic-csi, cert-manager, ingress-nginx, and kube-prometheus-stack. Upgrade any add-on that doesn't before this hop. The Talos dry-run below doesn't check add-ons.",
+        "Dry-run with `talosctl -n 10.0.10.50 upgrade-k8s --to {{{newVersion}}} --dry-run`. It flags removed APIs and pre-pulls images.",
+        "Roll out live with `talosctl -n 10.0.10.50 upgrade-k8s --to {{{newVersion}}}`, check node and pod health, then merge. This pin feeds only new installs, so merging changes nothing live."
       ]
     },
     {
