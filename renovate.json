@@ -47,6 +47,18 @@
     },
     {
       "customType": "regex",
+      "description": "Track the cluster's Kubernetes version (locals.kubernetes_version) so a new release shows up as a PR - this only bumps the pinned version string, it does not run talosctl upgrade-k8s against the live cluster.",
+      "managerFilePatterns": [
+        "/^infrastructure/proxmox/opentofu/locals\\.tf$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)\\s*kubernetes_version\\s*=\\s*\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
       "description": "Track kube-linter releases (#115, #132) so a version bump surfaces as its own PR - a natural point to diff `kube-linter checks list` against .kube-linter.yaml and decide if anything new default-enabled upstream is worth opting into. Verification uses cosign against kube-linter's static publisher key rather than a per-release checksum, so a version bump here needs no accompanying manual edit.",
       "managerFilePatterns": [
         "/^\\.github/workflows/pr-validate\\.yml$/"
@@ -146,6 +158,17 @@
         "Read the [Cilium {{{newMajor}}}.{{{newMinor}}} upgrade guide](https://docs.cilium.io/en/v{{{newMajor}}}.{{{newMinor}}}/operations/upgrade/) before merging.",
         "Pre-pull the new image on every node first: `talosctl -n <node-ip> image pull quay.io/cilium/cilium:v{{{newVersion}}}`.",
         "After rollout: `cilium status`, check ingress at 10.0.10.60, and run `cilium connectivity test --test '^no-policies'`."
+      ]
+    },
+    {
+      "description": "Kubernetes can't skip minors, so each minor gets its own PR. Merge the lowest one first; the rest rebase onto it.",
+      "matchPackageNames": ["kubernetes/kubernetes"],
+      "separateMultipleMinor": true,
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "Kubernetes can't skip minors. If several of these PRs are open, merge the lowest version first.",
+        "Check the [Talos support matrix](https://www.talos.dev/latest/introduction/support-matrix/) for this version before merging.",
+        "After merging, roll out with `talosctl upgrade-k8s --to {{{newVersion}}}`."
       ]
     },
     {
