@@ -3,6 +3,8 @@ kind: CronJob
 metadata:
   name: renovate
   namespace: ci-cd
+  annotations:
+    ignore-check.kube-linter.io/no-read-only-root-fs: "renovate writes its cache and repo checkouts to the image's own filesystem, outside any mounted volume"
 spec:
   schedule: "0 6 * * *"  # daily, 6 AM - tighten to weekly once PR volume/grouping feels right
   concurrencyPolicy: Forbid
