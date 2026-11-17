@@ -103,13 +103,9 @@ jobs:
       - name: Install flux CLI
         if: steps.check.outputs.changed == 'true'
         env:
-          FLUX_VERSION: "2.9.5"
-          # The installed CLI's own version doesn't need to match the target
-          # version below - `flux install --version` fetches that version's
-          # manifests from GitHub regardless. Pinning + checksumming this one
-          # lets Renovate bump it like any other tool (see kubeconform above)
-          # without trusting an unpinned install script in CI.
-          FLUX_SHA256: "b853df82adfd7736f580692f9f734473d571606307139f8fd20c2a80dd1ff473"
+          # Must be at least the manifest's Flux version; an older CLI refuses to generate newer manifests.
+          FLUX_VERSION: "2.10.0"
+          FLUX_SHA256: "208dd7012c04fedeed5b2d0b6e63df3b15b1c34a381527811685c098bc9f8659"
         run: |
           set -e
           curl -sSLO "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_amd64.tar.gz"
