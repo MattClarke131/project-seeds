@@ -1,6 +1,6 @@
 locals {
   # Versions
-  kubernetes_version = "v1.36.6"
+  kubernetes_version = "v1.37.2"
   talos_version      = "v1.14.5"
   kube_vip_version   = "v1.0.1"
 
