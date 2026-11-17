@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: flaresolverr
   namespace: ladder
+  annotations:
+    ignore-check.kube-linter.io/no-read-only-root-fs: "undetected-chromedriver patches its own chromedriver binary in place under /app at startup (#227)"
 spec:
   replicas: 1
   selector:
