@@ -4,7 +4,7 @@
   "dependencyDashboard": true,
   "labels": ["renovate"],
   "prConcurrentLimit": 5,
-  "minimumReleaseAge": "7 days",
+  "minimumReleaseAge": "6 days",
   "vulnerabilityAlerts": {
     "minimumReleaseAge": "0 days"
   },
