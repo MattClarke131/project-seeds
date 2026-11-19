@@ -273,9 +273,11 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "gluetun_public_ip_info",
+              "expr": "max by (city, country) (gluetun_public_ip_info)",
               "legendFormat": "{{city}}, {{country}}",
-              "refId": "A"
+              "refId": "A",
+              "instant": true,
+              "range": false
             }
           ]
         },
@@ -334,7 +336,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_download_speed_bytes",
+              "expr": "max(qbittorrent_global_download_speed_bytes)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -395,7 +397,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_upload_speed_bytes",
+              "expr": "max(qbittorrent_global_upload_speed_bytes)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -815,7 +817,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_download_speed_bytes",
+              "expr": "max(qbittorrent_global_download_speed_bytes)",
               "legendFormat": "Download",
               "refId": "A"
             },
@@ -824,7 +826,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_upload_speed_bytes",
+              "expr": "max(qbittorrent_global_upload_speed_bytes)",
               "legendFormat": "Upload",
               "refId": "B"
             }
@@ -1058,7 +1060,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_progress) and on (name) (qbittorrent_torrent_amount_left_bytes > 0)",
+              "expr": "max by (hash, name) (qbittorrent_torrent_progress) and on (hash) (qbittorrent_torrent_amount_left_bytes > 0)",
               "legendFormat": "",
               "refId": "progress",
               "instant": true,
@@ -1070,7 +1072,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_download_speed_bytes) and on (name) (qbittorrent_torrent_amount_left_bytes > 0)",
+              "expr": "max by (hash, name) (qbittorrent_torrent_download_speed_bytes) and on (hash) (qbittorrent_torrent_amount_left_bytes > 0)",
               "legendFormat": "",
               "refId": "dl",
               "instant": true,
@@ -1082,7 +1084,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_upload_speed_bytes) and on (name) (qbittorrent_torrent_amount_left_bytes > 0)",
+              "expr": "max by (hash, name) (qbittorrent_torrent_upload_speed_bytes) and on (hash) (qbittorrent_torrent_amount_left_bytes > 0)",
               "legendFormat": "",
               "refId": "ul",
               "instant": true,
@@ -1094,7 +1096,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_amount_left_bytes) and on (name) (qbittorrent_torrent_amount_left_bytes > 0)",
+              "expr": "max by (hash, name) (qbittorrent_torrent_amount_left_bytes) and on (hash) (qbittorrent_torrent_amount_left_bytes > 0)",
               "legendFormat": "",
               "refId": "left",
               "instant": true,
@@ -1106,7 +1108,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_eta) and on (name) (qbittorrent_torrent_amount_left_bytes > 0)",
+              "expr": "max by (hash, name) (qbittorrent_torrent_eta) and on (hash) (qbittorrent_torrent_amount_left_bytes > 0)",
               "legendFormat": "",
               "refId": "eta",
               "instant": true,
@@ -1123,7 +1125,8 @@ data:
               "id": "organize",
               "options": {
                 "excludeByName": {
-                  "Time": true
+                  "Time": true,
+                  "hash": true
                 },
                 "renameByName": {
                   "name": "Torrent",
@@ -1297,7 +1300,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_progress) and on (name) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
+              "expr": "max by (hash, name) (qbittorrent_torrent_progress) and on (hash) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
               "legendFormat": "",
               "refId": "progress",
               "instant": true,
@@ -1309,7 +1312,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_download_speed_bytes) and on (name) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
+              "expr": "max by (hash, name) (qbittorrent_torrent_download_speed_bytes) and on (hash) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
               "legendFormat": "",
               "refId": "dl",
               "instant": true,
@@ -1321,7 +1324,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_upload_speed_bytes) and on (name) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
+              "expr": "max by (hash, name) (qbittorrent_torrent_upload_speed_bytes) and on (hash) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
               "legendFormat": "",
               "refId": "ul",
               "instant": true,
@@ -1333,7 +1336,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_amount_left_bytes) and on (name) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
+              "expr": "max by (hash, name) (qbittorrent_torrent_amount_left_bytes) and on (hash) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
               "legendFormat": "",
               "refId": "left",
               "instant": true,
@@ -1345,7 +1348,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (name) (qbittorrent_torrent_eta) and on (name) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
+              "expr": "max by (hash, name) (qbittorrent_torrent_eta) and on (hash) (topk(10, qbittorrent_torrent_upload_speed_bytes > 0))",
               "legendFormat": "",
               "refId": "eta",
               "instant": true,
@@ -1362,7 +1365,8 @@ data:
               "id": "organize",
               "options": {
                 "excludeByName": {
-                  "Time": true
+                  "Time": true,
+                  "hash": true
                 },
                 "renameByName": {
                   "name": "Torrent",
@@ -1447,7 +1451,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_torrents",
+              "expr": "max(qbittorrent_global_torrents)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1577,7 +1581,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_free_space_on_disk_bytes",
+              "expr": "max(qbittorrent_global_free_space_on_disk_bytes)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1642,7 +1646,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_ratio",
+              "expr": "max(qbittorrent_global_ratio)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1700,7 +1704,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_total_peer_connections",
+              "expr": "max(qbittorrent_global_total_peer_connections)",
               "legendFormat": "Peer connections",
               "refId": "A"
             },
@@ -1709,11 +1713,730 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_dht_nodes",
+              "expr": "max(qbittorrent_global_dht_nodes)",
               "legendFormat": "DHT nodes",
               "refId": "B"
             }
           ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 39
+          },
+          "id": 24,
+          "panels": [],
+          "title": "Cross-seed",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "RSS scans completed in the last hour. Expect 2 (rssCadence is 30 minutes); 0 means the job has stopped.",
+          "id": 25,
+          "title": "RSS scans (1h)",
+          "type": "stat",
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 0,
+            "y": 40
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  },
+                  {
+                    "color": "green",
+                    "value": 2
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= \"RSS scan complete\" [1h])) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Daily search runs started in the last 26 hours. 0 means the daily search missed its slot.",
+          "id": 26,
+          "title": "Search runs (26h)",
+          "type": "stat",
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 40
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "green",
+                    "value": 1
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= \"suitable to search for matches\" [26h])) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Torrents the latest daily search set out to check. Anything searched in the last 30 days is skipped (excludeRecentSearch).",
+          "id": 27,
+          "title": "Search queue",
+          "type": "stat",
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 8,
+            "y": 40
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "max(max_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= \"suitable to search for matches\" | regexp `, (?P<n>\\d+) suitable` | unwrap n [26h]))",
+              "legendFormat": "",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Cross-seeds the latest daily search found.",
+          "id": 28,
+          "title": "Found (last run)",
+          "type": "stat",
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 12,
+            "y": 40
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "max(max_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= \"cross seeds from\" | regexp `Found (?P<n>\\d+) cross seeds from` | unwrap n [26h]))",
+              "legendFormat": "",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Torrents cross-seed has injected (tagged cross-seed).",
+          "id": 29,
+          "title": "Cross-seeds",
+          "type": "stat",
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 16,
+            "y": 40
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(qbittorrent_torrent_tags{tag=\"cross-seed\"})",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Times an indexer answered 429 and cross-seed paused it in the last 24 hours.",
+          "id": 30,
+          "title": "Rate-limit stalls (24h)",
+          "type": "stat",
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 20,
+            "y": 40
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  },
+                  {
+                    "color": "red",
+                    "value": 24
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |~ \"Paging .* stopped\" | regexp `Paging (?P<indexer>.+?) stopped` [24h])) or vector(0)",
+              "legendFormat": "",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Torrents cross-seed has injected (tagged cross-seed).",
+          "id": 31,
+          "title": "Cross-seeds over time",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 44
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 10,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "count(qbittorrent_torrent_tags{tag=\"cross-seed\"})",
+              "legendFormat": "Cross-seeds",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "RSS scans completed and daily-search queries sent, per hour.",
+          "id": 32,
+          "title": "Scan activity",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 44
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "bars",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "none",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= \"RSS scan complete\" [$__interval]))",
+              "legendFormat": "RSS scans",
+              "refId": "A",
+              "queryType": "range"
+            },
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= \"Searching for\" [$__interval]))",
+              "legendFormat": "Search queries",
+              "refId": "B",
+              "queryType": "range"
+            }
+          ],
+          "interval": "1h"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Upload speed from cross-seeded torrents versus everything else.",
+          "id": 33,
+          "title": "Upload: cross-seeds vs. originals",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 16,
+            "y": 44
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "line",
+                "lineWidth": 1,
+                "fillOpacity": 20,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(qbittorrent_torrent_upload_speed_bytes and on (hash) qbittorrent_torrent_tags{tag=\"cross-seed\"}) or vector(0)",
+              "legendFormat": "Cross-seeds",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "sum(qbittorrent_torrent_upload_speed_bytes unless on (hash) qbittorrent_torrent_tags{tag=\"cross-seed\"}) or vector(0)",
+              "legendFormat": "Originals",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Cross-seed matches found per day, by indexer.",
+          "id": 34,
+          "title": "Matches by indexer",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 52
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "bars",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum by (indexer) (count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |~ \"on .* by MATCH\" | regexp `\\] on (?P<indexer>.+?) by MATCH` [$__interval]))",
+              "legendFormat": "{{indexer}}",
+              "refId": "A",
+              "queryType": "range"
+            }
+          ],
+          "interval": "1d"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "429 responses per day, by indexer. A steady bar means cross-seed's delay is too short for that site.",
+          "id": 35,
+          "title": "Rate-limit stalls by indexer",
+          "type": "timeseries",
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 52
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "bars",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum by (indexer) (count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |~ \"Paging .* stopped\" | regexp `Paging (?P<indexer>.+?) stopped` [$__interval]))",
+              "legendFormat": "{{indexer}}",
+              "refId": "A",
+              "queryType": "range"
+            }
+          ],
+          "interval": "1d"
         }
       ],
       "refresh": "30s",

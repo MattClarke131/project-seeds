@@ -44,6 +44,9 @@ spec:
             secretKeyRef:
               name: cross-seed-secrets
               key: qbittorrent-password
+        # Cross-seeds share names with their originals; without the hash label they collapse into one series.
+        - name: ENABLE_LABEL_WITH_HASH
+          value: "true"
         readinessProbe:
           httpGet:
             path: /metrics
