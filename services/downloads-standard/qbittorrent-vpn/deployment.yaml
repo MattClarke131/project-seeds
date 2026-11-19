@@ -128,7 +128,9 @@ spec:
         image: curlimages/curl:8.22.0
         securityContext:
           runAsNonRoot: true
-          runAsUser: 100
+          # Matches qbittorrent's PUID/PGID so it can write to the shared config volume.
+          runAsUser: 1000
+          runAsGroup: 1000
           readOnlyRootFilesystem: true
           allowPrivilegeEscalation: false
         env:
@@ -137,13 +139,33 @@ spec:
             secretKeyRef:
               name: mam-dynamic-seedbox
               key: mam_id
+        volumeMounts:
+        # Persists the latest rotated mam_id across pod restarts.
+        - name: config
+          mountPath: /state
         command:
         - sh
         - -c
         - |
+          umask 077
+          dir=/state/mam-dynamic-seedbox
+          mkdir -p "$dir"
+          seed=$(printf %s "$MAM_ID" | sha256sum | cut -c1-16)
+          # Reseed from the Secret only when it changes, so a new session replaces the saved cookie.
+          if [ ! -s "$dir/mam_id" ] || [ "$(cat "$dir/seed" 2>/dev/null)" != "$seed" ]; then
+            printf %s "$MAM_ID" > "$dir/mam_id"
+            printf %s "$seed" > "$dir/seed"
+            echo "$(date -u +%FT%TZ) seeded mam_id from Secret"
+          fi
           while true; do
-            resp=$(curl -sS -w '\nHTTP:%{http_code}' -b "mam_id=${MAM_ID}" https://t.myanonamouse.net/json/dynamicSeedbox.php)
-            echo "$(date -u +%FT%TZ) ${resp}"
+            resp=$(curl -sS -w '\nHTTP:%{http_code}' -D "$dir/headers" -b "mam_id=$(cat "$dir/mam_id")" https://t.myanonamouse.net/json/dynamicSeedbox.php)
+            # MAM returns a new mam_id on every call; the old value eventually stops working.
+            new=$(sed -n 's/^[Ss]et-[Cc]ookie: *mam_id=\([^;]*\).*/\1/p' "$dir/headers" | tr -d '\r' | tail -1)
+            rm -f "$dir/headers"
+            if [ -n "$new" ]; then
+              printf %s "$new" > "$dir/mam_id.tmp" && mv "$dir/mam_id.tmp" "$dir/mam_id"
+            fi
+            echo "$(date -u +%FT%TZ) ${resp} cookie_rotated=$([ -n "$new" ] && echo yes || echo no)"
             # MAM's rate limit is once/hour on a rolling window; a small
             # margin here avoids routinely landing inside that window and
             # getting a harmless-but-wasted 429 "Last change too recent".
