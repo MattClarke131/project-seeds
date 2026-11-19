@@ -682,7 +682,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (container) ({__name__=~\"(radarr|sonarr|prowlarr|bazarr)_system_status\", job=\"exportarr\"}) or max by (container) (clamp_max(sabnzbd_status{job=\"exportarr\"}, 1)) or max by (container) (up{job=\"exportarr\"} * 0)",
+              "expr": "max by (container) (up{job=\"exportarr\"}) * on (container) (max by (container) ({__name__=~\"(radarr|sonarr|prowlarr|bazarr)_system_status\", job=\"exportarr\"}) or max by (container) (up{job=\"exportarr\"}) * 0 + 1)",
               "legendFormat": "{{container}}",
               "refId": "A"
             }
@@ -888,7 +888,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count(max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0) or vector(0)",
+              "expr": "count(max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"} or label_replace(label_replace(bazarr_system_health_issues{job=\"exportarr\"} > 0, \"source\", \"$1\", \"object\", \"(.+)\"), \"message\", \"$1\", \"issue\", \"(.+)\")) > 0) or vector(0)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -962,7 +962,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (container, source, message) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0",
+              "expr": "max by (container, source, message) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"} or label_replace(label_replace(bazarr_system_health_issues{job=\"exportarr\"} > 0, \"source\", \"$1\", \"object\", \"(.+)\"), \"message\", \"$1\", \"issue\", \"(.+)\")) > 0",
               "legendFormat": "",
               "refId": "A",
               "format": "table",
@@ -1054,7 +1054,7 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "description": "Monitored movies, episodes and subtitles not yet downloaded. Should trend down after new requests.",
+          "description": "Monitored movies, episodes and movie subtitles not yet downloaded. Should trend down after new requests. Missing episode subtitles aren't counted; exportarr skips them by default because collecting them is slow.",
           "id": 43,
           "title": "Missing",
           "type": "timeseries",
@@ -1116,7 +1116,7 @@ data:
                 "uid": "prometheus"
               },
               "expr": "max(bazarr_subtitles_missing_total{job=\"exportarr\"})",
-              "legendFormat": "bazarr subtitles",
+              "legendFormat": "bazarr movie subtitles",
               "refId": "C"
             }
           ]
@@ -1173,7 +1173,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count by (container) (max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0)",
+              "expr": "count by (container) (max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"} or label_replace(label_replace(bazarr_system_health_issues{job=\"exportarr\"} > 0, \"source\", \"$1\", \"object\", \"(.+)\"), \"message\", \"$1\", \"issue\", \"(.+)\")) > 0)",
               "legendFormat": "{{container}}",
               "refId": "A"
             }
