@@ -371,3 +371,50 @@ spec:
               max_connections for 10 minutes, currently
               {{ printf "%.1f" $value }}%. New connections (e.g. a deploy
               or backfill) may start failing.
+
+    - name: custom-downloads-standard
+      rules:
+        # Critical so it pages: VPN drops are a known recurring failure here.
+        # absent() also covers gluetun's control server or the qbittorrent-vpn pod being down.
+        - alert: DownloadsVPNDown
+          expr: absent(gluetun_vpn_info{status="running"})
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "downloads-standard VPN tunnel is down; torrenting has stopped."
+            description: >-
+              gluetun in the qbittorrent-vpn pod has not reported a running
+              VPN for 5 minutes. Check `kubectl logs -n downloads-standard
+              deploy/qbittorrent-vpn -c gluetun`. This also fires if
+              json-exporter cannot reach gluetun's control server on port 8000.
+        # Info severity: shown on the Torrents dashboard and in Alertmanager, never sent to ntfy.
+        - alert: ArrHealthCheckFailing
+          expr: |
+            max by (container, source, message) (
+              {__name__=~"(radarr|sonarr|prowlarr)_system_health_issues", source!="UpdateCheck"}
+            ) > 0
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: "{{ $labels.container }} reports a failing health check."
+            description: >-
+              {{ $labels.container }} health check {{ $labels.source }} has
+              failed for 1 hour: {{ $labels.message }}
+        - alert: ArrQueueStuck
+          expr: |
+            sum by (container) (
+              max by (container, download_state, download_status, status) (
+                {__name__=~"(radarr|sonarr)_queue_total", download_status=~"warning|error"}
+              )
+            ) > 0
+          for: 24h
+          labels:
+            severity: info
+          annotations:
+            summary: "{{ $labels.container }} has queue items stuck for a day."
+            description: >-
+              {{ $labels.container }} has had {{ $value }} queue items in a
+              warning or error state for 24 hours. They will not import on
+              their own; see Activity > Queue in the app.

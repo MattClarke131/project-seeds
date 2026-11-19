@@ -48,3 +48,19 @@ kubectl create job --from=cronjob/recyclarr recyclarr-manual-sync-anime -n downl
 ```bash
 kubectl logs -n downloads-standard -l job-name=recyclarr-manual-sync-anime -f
 ```
+
+## exportarr API keys
+`exportarr/` exports Prometheus metrics for the Downloads Grafana dashboard (#165).
+It reuses `radarr-api-key`, `sonarr-api-key` and `bazarr-secret` from above, plus Prowlarr's key in `cross-seed-secrets`.
+It also needs three Secrets of its own. These commands copy each key from the app's config, so the key never lands in shell history:
+```bash
+for app in radarr-portuguese sonarr-portuguese; do
+  kubectl exec -n downloads-standard deploy/$app -c $app -- \
+    sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' /config/config.xml | tr -d '\n' |
+    kubectl create secret generic $app-api-key -n downloads-standard --from-file=api-key=/dev/stdin
+done
+
+kubectl exec -n downloads-standard deploy/sabnzbd-standard -- \
+  sed -n 's/^api_key = //p' /config/sabnzbd.ini | tr -d '\n' |
+  kubectl create secret generic sabnzbd-api-key -n downloads-standard --from-file=api-key=/dev/stdin
+```

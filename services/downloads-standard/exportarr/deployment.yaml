@@ -1,0 +1,243 @@
+# Prometheus exporters for the *arr apps, Bazarr and SABnzbd (#165).
+# One exportarr container per app, all in one pod: exporter bumps or a
+# missing API key Secret never restart or block the apps themselves.
+# API key Secrets are created out of band; see ../README.md.
+# sonarr-anime is skipped: it is kept but unused, so its health checks always fail (#167).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exportarr
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exportarr
+  template:
+    metadata:
+      labels:
+        app: exportarr
+    spec:
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+      - name: radarr-standard
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["radarr"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9707
+          name: radarr-std
+        env:
+        - name: PORT
+          value: "9707"
+        - name: URL
+          value: "http://radarr-standard:7878"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: radarr-api-key
+              key: api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9707
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      - name: radarr-portuguese
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["radarr"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9708
+          name: radarr-pt
+        env:
+        - name: PORT
+          value: "9708"
+        - name: URL
+          value: "http://radarr-portuguese:7878"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: radarr-portuguese-api-key
+              key: api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9708
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      - name: sonarr-standard
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["sonarr"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9709
+          name: sonarr-std
+        env:
+        - name: PORT
+          value: "9709"
+        - name: URL
+          value: "http://sonarr-standard:8989"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sonarr-api-key
+              key: api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9709
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      - name: sonarr-portuguese
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["sonarr"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9711
+          name: sonarr-pt
+        env:
+        - name: PORT
+          value: "9711"
+        - name: URL
+          value: "http://sonarr-portuguese:8989"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sonarr-portuguese-api-key
+              key: api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9711
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      - name: prowlarr
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["prowlarr"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9712
+          name: prowlarr
+        env:
+        - name: PORT
+          value: "9712"
+        - name: URL
+          value: "http://prowlarr-standard:9696"
+        # Reuses cross-seed's copy of the Prowlarr key rather than a second Secret.
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: prowlarr-api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9712
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      - name: bazarr
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["bazarr"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9713
+          name: bazarr
+        env:
+        - name: PORT
+          value: "9713"
+        - name: URL
+          value: "http://bazarr:6767"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bazarr-secret
+              key: api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9713
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      - name: sabnzbd
+        image: ghcr.io/onedr0p/exportarr:v2.3.0
+        args: ["sabnzbd"]
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9714
+          name: sabnzbd
+        env:
+        - name: PORT
+          value: "9714"
+        - name: URL
+          value: "http://sabnzbd-standard:8080"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sabnzbd-api-key
+              key: api-key
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 9714
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
