@@ -612,7 +612,7 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "description": "Whether each app's API answers exportarr. sonarr-anime is not exported; it is kept but unused (#167).",
+          "description": "Whether each app's API answers exportarr. Down also means its exporter is down. sonarr-anime is not exported; it is kept but unused (#167).",
           "id": 37,
           "title": "App status",
           "type": "stat",
@@ -682,7 +682,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (container) ({__name__=~\"(radarr|sonarr|prowlarr|bazarr)_system_status\", job=\"exportarr\"}) or max by (container) (clamp_max(sabnzbd_status{job=\"exportarr\"}, 1))",
+              "expr": "max by (container) ({__name__=~\"(radarr|sonarr|prowlarr|bazarr)_system_status\", job=\"exportarr\"}) or max by (container) (clamp_max(sabnzbd_status{job=\"exportarr\"}, 1)) or max by (container) (up{job=\"exportarr\"} * 0)",
               "legendFormat": "{{container}}",
               "refId": "A"
             }
@@ -706,7 +706,18 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "none",
-              "mappings": [],
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "-1": {
+                      "text": "Unknown",
+                      "color": "text",
+                      "index": 0
+                    }
+                  }
+                }
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -747,7 +758,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (container) (max by (container, download_state, download_status, status) ({__name__=~\"(radarr|sonarr)_queue_total\", job=\"exportarr\", download_state=~\"importPending|importBlocked|failedPending\", download_status=~\"warning|error\"})) or (max by (container) ({__name__=~\"(radarr|sonarr)_system_status\", job=\"exportarr\"}) * 0)",
+              "expr": "sum by (container) (max by (container, download_state, download_status, status) ({__name__=~\"(radarr|sonarr)_queue_total\", job=\"exportarr\", download_state=~\"importPending|importBlocked|failedPending\", download_status=~\"warning|error\"})) or (max by (container) (up{job=\"exportarr\", container=~\"radarr-.*|sonarr-.*\"}) - 1)",
               "legendFormat": "{{container}}",
               "refId": "A"
             }
