@@ -1,0 +1,15 @@
+# Gluetun control-server auth. Only these two read-only routes are open, for
+# json-exporter's VPN panels on the Torrents dashboard (#165). Every other
+# route (e.g. PUT /v1/vpn/status, which stops the tunnel) falls to gluetun's
+# default role and stays protected.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gluetun-control-auth
+  namespace: downloads-standard
+data:
+  config.toml: |
+    [[roles]]
+    name = "metrics"
+    routes = ["GET /v1/vpn/status", "GET /v1/publicip/ip"]
+    auth = "none"

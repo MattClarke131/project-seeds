@@ -1,0 +1,59 @@
+# Prometheus exporter for qBittorrent, feeding the Torrents Grafana
+# dashboard (#165). Runs as its own Deployment, not a sidecar in
+# qbittorrent-vpn, so exporter image bumps never restart torrenting.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent-exporter
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qbittorrent-exporter
+  template:
+    metadata:
+      labels:
+        app: qbittorrent-exporter
+    spec:
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+      containers:
+      - name: qbittorrent-exporter
+        image: ghcr.io/martabal/qbittorrent-exporter:v2.0.4
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 8090
+          name: metrics
+        env:
+        - name: QBITTORRENT_BASE_URL
+          value: "http://qbittorrent-vpn.downloads-standard.svc.cluster.local:8080"
+        # Reuses cross-seed's qBittorrent WebUI login rather than a second
+        # manual Secret holding the same credentials.
+        - name: QBITTORRENT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: qbittorrent-username
+        - name: QBITTORRENT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cross-seed-secrets
+              key: qbittorrent-password
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+          periodSeconds: 30
+          timeoutSeconds: 10
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "20m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"

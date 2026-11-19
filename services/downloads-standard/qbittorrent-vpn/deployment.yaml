@@ -62,8 +62,9 @@ spec:
         - name: FIREWALL_VPN_INPUT_PORTS
           value: "41231"
         # Cilium gives pods a /32, so gluetun's default eth0 input rule misses the pod IP and drops the WebUI.
+        # 8000 is the control server, scraped by json-exporter (see gluetun-control-auth.yaml).
         - name: FIREWALL_INPUT_PORTS
-          value: "8080"
+          value: "8080,8000"
         ports:
         - containerPort: 8000
           name: gluetun-ctrl
@@ -74,6 +75,10 @@ spec:
         volumeMounts:
         - name: dev-net-tun
           mountPath: /dev/net/tun
+        - name: gluetun-control-auth
+          mountPath: /gluetun/auth/config.toml
+          subPath: config.toml
+          readOnly: true
         resources:
           requests:
             memory: "64Mi"
@@ -157,6 +162,9 @@ spec:
         hostPath:
           path: /dev/net/tun
           type: CharDevice
+      - name: gluetun-control-auth
+        configMap:
+          name: gluetun-control-auth
       - name: config
         persistentVolumeClaim:
           claimName: qbittorrent-vpn-config-iscsi

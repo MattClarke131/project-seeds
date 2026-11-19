@@ -16,6 +16,7 @@ resources:
   - dashboards/kubernetes-overview.yaml
   - dashboards/live-logs.yaml
   - dashboards/proxmox-overview.yaml
+  - dashboards/torrents.yaml
   - dashboards/truenas-overview.yaml
   - flux-monitoring/podmonitor.yaml
   - graphite-exporter/deployment.yaml
@@ -38,4 +39,5 @@ resources:
   - ntfy/deployment.yaml
   - ntfy/ingress.yaml
   - services/jellyfin-servicemonitor.yaml
+  - services/qbittorrent-exporter-servicemonitor.yaml
   - headlamp
