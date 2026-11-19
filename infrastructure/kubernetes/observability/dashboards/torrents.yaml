@@ -273,9 +273,11 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "gluetun_public_ip_info",
+              "expr": "max by (city, country) (gluetun_public_ip_info)",
               "legendFormat": "{{city}}, {{country}}",
-              "refId": "A"
+              "refId": "A",
+              "instant": true,
+              "range": false
             }
           ]
         },
@@ -334,7 +336,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_download_speed_bytes",
+              "expr": "max(qbittorrent_global_download_speed_bytes)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -395,7 +397,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_upload_speed_bytes",
+              "expr": "max(qbittorrent_global_upload_speed_bytes)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -815,7 +817,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_download_speed_bytes",
+              "expr": "max(qbittorrent_global_download_speed_bytes)",
               "legendFormat": "Download",
               "refId": "A"
             },
@@ -824,7 +826,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_upload_speed_bytes",
+              "expr": "max(qbittorrent_global_upload_speed_bytes)",
               "legendFormat": "Upload",
               "refId": "B"
             }
@@ -1449,7 +1451,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_torrents",
+              "expr": "max(qbittorrent_global_torrents)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1579,7 +1581,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_free_space_on_disk_bytes",
+              "expr": "max(qbittorrent_global_free_space_on_disk_bytes)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1644,7 +1646,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_ratio",
+              "expr": "max(qbittorrent_global_ratio)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1702,7 +1704,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_total_peer_connections",
+              "expr": "max(qbittorrent_global_total_peer_connections)",
               "legendFormat": "Peer connections",
               "refId": "A"
             },
@@ -1711,7 +1713,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "qbittorrent_global_dht_nodes",
+              "expr": "max(qbittorrent_global_dht_nodes)",
               "legendFormat": "DHT nodes",
               "refId": "B"
             }
