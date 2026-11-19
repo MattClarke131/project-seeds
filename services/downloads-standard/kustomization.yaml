@@ -9,6 +9,8 @@ resources:
   - seerr/helmrelease.yaml
   - prowlarr/deployment.yaml
   - prowlarr/ingress.yaml
+  - prowlarr/postgres-databases.yaml
+  - prowlarr/postgres-secret.yaml
   - prowlarr/pvc.yaml
   - prowlarr/service.yaml
   - cross-seed/configmap.yaml

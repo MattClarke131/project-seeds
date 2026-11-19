@@ -21,6 +21,54 @@ spec:
       labels:
         app: prowlarr-standard
     spec:
+      # Prowlarr reads Postgres settings only from config.xml. This rewrites
+      # that block on every start so it always matches the secret below.
+      initContainers:
+      - name: postgres-config
+        image: busybox:1.38
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+        command:
+        - sh
+        - -c
+        - |
+          set -eu
+          CONFIG=/config/config.xml
+          sed -i '/<Postgres[A-Za-z]*>/d' "$CONFIG"
+          sed -i "s#</Config>#  <PostgresUser>${POSTGRES_USER}</PostgresUser>\n  <PostgresPassword>${POSTGRES_PASSWORD}</PostgresPassword>\n  <PostgresPort>${POSTGRES_PORT}</PostgresPort>\n  <PostgresHost>${POSTGRES_HOST}</PostgresHost>\n  <PostgresMainDb>${POSTGRES_MAIN_DB}</PostgresMainDb>\n  <PostgresLogDb>${POSTGRES_LOG_DB}</PostgresLogDb>\n</Config>#" "$CONFIG"
+        env:
+        # The secret's "host" key only resolves inside the database namespace.
+        - name: POSTGRES_HOST
+          value: "postgres-rw.database.svc.cluster.local"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-prowlarr-reflection
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-prowlarr-reflection
+              key: password
+        - name: POSTGRES_MAIN_DB
+          value: "prowlarr-main"
+        - name: POSTGRES_LOG_DB
+          value: "prowlarr-log"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        resources:
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            cpu: 50m
+            memory: 64Mi
       containers:
       - name: prowlarr-standard
         image: lscr.io/linuxserver/prowlarr:2.5.2.5491-ls157
