@@ -68,12 +68,16 @@ systemctl daemon-reload
 systemctl enable --now sata-link.timer
 ```
 
-### Disabling SATA link power management (nicholas only)
+### Disabling SATA link power management (nicholas and razlo)
 
-nicholas's boot SSD (Phison PS3111-S11 controller) drops its link when waking
-from the power-saving state, the same fault the kernel works around for the
-PNY CS900. The kernel quirk matches by model name, and this drive reports a
-generic `SATA SSD`, so the setting is applied by hand:
+Two SATA boot SSDs drop their link when waking from the power-saving state:
+- **nicholas `ata1`:** Phison PS3111-S11 controller, the same fault the kernel
+  works around for the PNY CS900. The kernel quirk matches by model name, and
+  this drive reports a generic `SATA SSD`, so it never applies.
+- **razlo `ata5`:** Samsung MZNLF192 M.2. Each reset fails in-flight writes,
+  which ZFS counts as `rpool` write errors and marks the pool DEGRADED.
+
+livio boots from NVMe and does not need this. Apply it by hand:
 ```bash
 cp 90-sata-lpm.rules /etc/udev/rules.d/
 udevadm control --reload
