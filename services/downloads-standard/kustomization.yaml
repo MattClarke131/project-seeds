@@ -72,6 +72,8 @@ resources:
   - qbittorrent-vpn/service.yaml
   - qbittorrent-exporter/deployment.yaml
   - qbittorrent-exporter/service.yaml
+  - exportarr/deployment.yaml
+  - exportarr/service.yaml
   - calibre-web-automated/deployment.yaml
   - calibre-web-automated/ingress.yaml
   - calibre-web-automated/ingress-books-sync.yaml

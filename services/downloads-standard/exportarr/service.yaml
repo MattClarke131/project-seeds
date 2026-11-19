@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: exportarr
+  namespace: downloads-standard
+  labels:
+    app: exportarr
+spec:
+  type: ClusterIP
+  selector:
+    app: exportarr
+  ports:
+  - name: radarr-std
+    port: 9707
+    targetPort: radarr-std
+    protocol: TCP
+  - name: radarr-pt
+    port: 9708
+    targetPort: radarr-pt
+    protocol: TCP
+  - name: sonarr-std
+    port: 9709
+    targetPort: sonarr-std
+    protocol: TCP
+  - name: sonarr-pt
+    port: 9711
+    targetPort: sonarr-pt
+    protocol: TCP
+  - name: prowlarr
+    port: 9712
+    targetPort: prowlarr
+    protocol: TCP
+  - name: bazarr
+    port: 9713
+    targetPort: bazarr
+    protocol: TCP
+  - name: sabnzbd
+    port: 9714
+    targetPort: sabnzbd
+    protocol: TCP

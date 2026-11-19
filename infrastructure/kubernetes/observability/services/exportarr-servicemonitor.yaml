@@ -1,0 +1,38 @@
+# One endpoint per exportarr container; the `container` label names the app instance.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: exportarr
+  namespace: observability
+  labels:
+    app: exportarr
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - downloads-standard
+  selector:
+    matchLabels:
+      app: exportarr
+  endpoints:
+    - port: radarr-std
+      interval: 60s
+      scrapeTimeout: 30s
+    - port: radarr-pt
+      interval: 60s
+      scrapeTimeout: 30s
+    - port: sonarr-std
+      interval: 60s
+      scrapeTimeout: 30s
+    - port: sonarr-pt
+      interval: 60s
+      scrapeTimeout: 30s
+    - port: prowlarr
+      interval: 60s
+      scrapeTimeout: 30s
+    - port: sabnzbd
+      interval: 60s
+      scrapeTimeout: 30s
+    - port: bazarr
+      interval: 60s
+      scrapeTimeout: 30s
