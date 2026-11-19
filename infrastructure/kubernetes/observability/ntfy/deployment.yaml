@@ -22,7 +22,7 @@ spec:
   ports:
     - name: http
       port: 80
-      targetPort: 80
+      targetPort: http
   selector:
     app: ntfy
 ---
@@ -45,6 +45,14 @@ spec:
       labels:
         app: ntfy
     spec:
+      # auth.db lives on NFS, where fsGroup is ignored, so it must be owned by UID 1000 itself.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: ntfy
           image: binwiederhier/ntfy:v2.37.2
@@ -52,8 +60,9 @@ spec:
           env:
             - name: NTFY_BASE_URL
               value: "https://ntfy.labmatt.com"
+            # Unprivileged port, so non-root needs no NET_BIND_SERVICE. The Service still exposes 80.
             - name: NTFY_LISTEN_HTTP
-              value: ":80"
+              value: ":8080"
             - name: NTFY_BEHIND_PROXY
               value: "true"
             - name: NTFY_CACHE_FILE
@@ -67,8 +76,13 @@ spec:
             - name: NTFY_ENABLE_SIGNUP
               value: "false"
           ports:
-            - containerPort: 80
+            - containerPort: 8080
               name: http
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           volumeMounts:
             - name: cache
               mountPath: /var/cache/ntfy
