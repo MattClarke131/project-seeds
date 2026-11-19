@@ -54,3 +54,40 @@ systemctl status zpool-health.timer
 cat /var/lib/prometheus/node-exporter/zpool_health.prom
 curl -s localhost:9100/metrics | grep zpool_
 ```
+
+## SATA link resets (issue #143)
+
+Counts `ataN: hard resetting link` kernel messages per port and reports each
+port's link power management policy. The `SataLinkReset` alert fires on any
+new reset. Install on each Proxmox host:
+```bash
+cp sata_link_textfile.sh /usr/local/bin/
+chmod +x /usr/local/bin/sata_link_textfile.sh
+cp sata-link.service sata-link.timer /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now sata-link.timer
+```
+
+### Disabling SATA link power management (nicholas and razlo)
+
+Two SATA boot SSDs drop their link when waking from the power-saving state:
+- **nicholas `ata1`:** Phison PS3111-S11 controller, the same fault the kernel
+  works around for the PNY CS900. The kernel quirk matches by model name, and
+  this drive reports a generic `SATA SSD`, so it never applies.
+- **razlo `ata5`:** Samsung MZNLF192 M.2. Each reset fails in-flight writes,
+  which ZFS counts as `rpool` write errors and marks the pool DEGRADED.
+
+livio boots from NVMe and does not need this. Apply it by hand:
+```bash
+cp 90-sata-lpm.rules /etc/udev/rules.d/
+udevadm control --reload
+for f in /sys/class/scsi_host/host*/link_power_management_policy; do echo max_performance > "$f"; done
+```
+To undo, delete `/etc/udev/rules.d/90-sata-lpm.rules` and reboot.
+
+### Verification
+```bash
+systemctl status sata-link.timer
+cat /var/lib/prometheus/node-exporter/sata_link.prom
+cat /sys/class/scsi_host/host*/link_power_management_policy
+```
