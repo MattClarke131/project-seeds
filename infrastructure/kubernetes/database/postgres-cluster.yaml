@@ -65,6 +65,11 @@ spec:
         login: true
         passwordSecret:
           name: postgres-vikunja
+      - name: prowlarr
+        ensure: present
+        login: true
+        passwordSecret:
+          name: postgres-prowlarr
   postgresql:
     pg_hba:
       # Must come first. Each per-app block's `all all reject` line
@@ -115,6 +120,10 @@ spec:
       - host vikunja vikunja all scram-sha-256
       - host vikunja all all reject
       - host all vikunja all reject
+
+      - host prowlarr-main,prowlarr-log prowlarr all scram-sha-256
+      - host prowlarr-main,prowlarr-log all all reject
+      - host all prowlarr all reject
 
       # Deny-by-default: blocks any role not already allowed above.
       - host all all all reject
