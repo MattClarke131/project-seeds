@@ -375,12 +375,14 @@ spec:
     - name: custom-downloads-standard
       rules:
         # Critical so it pages: VPN drops are a known recurring failure here.
-        # absent() also covers gluetun's control server or the qbittorrent-vpn pod being down.
+        # A missing series also fires, covering gluetun's control server or the qbittorrent-vpn pod being down.
         - alert: DownloadsVPNDown
-          expr: absent(gluetun_vpn_info{status="running"})
+          expr: (count(gluetun_vpn_info{status="running"}) or vector(0)) == 0
           for: 5m
           labels:
             severity: critical
+            # gluetun_vpn_info carries json-exporter's namespace; group with the stack it describes.
+            namespace: downloads-standard
           annotations:
             summary: "downloads-standard VPN tunnel is down; torrenting has stopped."
             description: >-
@@ -388,10 +390,12 @@ spec:
               VPN for 5 minutes. Check `kubectl logs -n downloads-standard
               deploy/qbittorrent-vpn -c gluetun`. This also fires if
               json-exporter cannot reach gluetun's control server on port 8000.
-        # Info severity: shown on the Torrents dashboard and in Alertmanager, never sent to ntfy.
+        # Info severity: never sent to ntfy, and InfoInhibitor suppresses it in Alertmanager.
+        # Visible as firing in Grafana's alert rule list; the Downloads dashboard is the main view.
+        # Grouped without `message` so the timer survives changes to e.g. Prowlarr's failed-indexer list.
         - alert: ArrHealthCheckFailing
           expr: |
-            max by (container, source, message) (
+            max by (namespace, container, source) (
               {__name__=~"(radarr|sonarr|prowlarr)_system_health_issues", source!="UpdateCheck"}
             ) > 0
           for: 1h
@@ -401,20 +405,24 @@ spec:
             summary: "{{ $labels.container }} reports a failing health check."
             description: >-
               {{ $labels.container }} health check {{ $labels.source }} has
-              failed for 1 hour: {{ $labels.message }}
+              failed for 1 hour. The Failing health checks table on the
+              Downloads dashboard shows the message.
+        # Only import-side states count; slow or stalled downloads are on the qBittorrent tiles.
         - alert: ArrQueueStuck
           expr: |
-            sum by (container) (
-              max by (container, download_state, download_status, status) (
-                {__name__=~"(radarr|sonarr)_queue_total", download_status=~"warning|error"}
+            sum by (namespace, container) (
+              max by (namespace, container, download_state, download_status, status) (
+                {__name__=~"(radarr|sonarr)_queue_total",
+                 download_state=~"importPending|importBlocked|failedPending",
+                 download_status=~"warning|error"}
               )
             ) > 0
           for: 24h
           labels:
             severity: info
           annotations:
-            summary: "{{ $labels.container }} has queue items stuck for a day."
+            summary: "{{ $labels.container }} has imports stuck for a day."
             description: >-
-              {{ $labels.container }} has had {{ $value }} queue items in a
-              warning or error state for 24 hours. They will not import on
-              their own; see Activity > Queue in the app.
+              {{ $labels.container }} has had {{ $value }} downloaded items
+              failing to import for 24 hours. They will not import on their
+              own; see Activity > Queue in the app.

@@ -52,15 +52,23 @@ kubectl logs -n downloads-standard -l job-name=recyclarr-manual-sync-anime -f
 ## exportarr API keys
 `exportarr/` exports Prometheus metrics for the Downloads Grafana dashboard (#165).
 It reuses `radarr-api-key`, `sonarr-api-key` and `bazarr-secret` from above, plus Prowlarr's key in `cross-seed-secrets`.
-It also needs three Secrets of its own. These commands copy each key from the app's config, so the key never lands in shell history:
+It also needs three Secrets of its own. These commands copy each key from the app's config, so the key never lands in shell history or output.
+Each step stops if the read fails or finds no key, rather than creating an empty Secret:
 ```bash
+# Usage: make_key_secret <secret-name> <command that prints the key...>
+make_key_secret() {
+  name=$1; shift
+  key=$("$@") || { echo "reading key for $name failed" >&2; return 1; }
+  [ -n "$key" ] || { echo "no key found for $name" >&2; return 1; }
+  printf %s "$key" |
+    kubectl create secret generic "$name" -n downloads-standard --from-file=api-key=/dev/stdin
+}
+
 for app in radarr-portuguese sonarr-portuguese; do
-  kubectl exec -n downloads-standard deploy/$app -c $app -- \
-    sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' /config/config.xml | tr -d '\n' |
-    kubectl create secret generic $app-api-key -n downloads-standard --from-file=api-key=/dev/stdin
+  make_key_secret "$app-api-key" kubectl exec -n downloads-standard "deploy/$app" -c "$app" -- \
+    sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' /config/config.xml
 done
 
-kubectl exec -n downloads-standard deploy/sabnzbd-standard -- \
-  sed -n 's/^api_key = //p' /config/sabnzbd.ini | tr -d '\n' |
-  kubectl create secret generic sabnzbd-api-key -n downloads-standard --from-file=api-key=/dev/stdin
+make_key_secret sabnzbd-api-key kubectl exec -n downloads-standard deploy/sabnzbd-standard -- \
+  sed -n 's/^api_key = //p' /config/sabnzbd.ini
 ```

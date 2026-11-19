@@ -693,9 +693,9 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "description": "Queue items in a warning or error state. These never import on their own; clear them in Activity > Queue.",
+          "description": "Downloaded items failing to import. These never import on their own; clear them in Activity > Queue.",
           "id": 38,
-          "title": "Stuck queue items",
+          "title": "Stuck imports",
           "type": "stat",
           "gridPos": {
             "x": 10,
@@ -747,7 +747,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "sum by (container) (max by (container, download_state, download_status, status) ({__name__=~\"(radarr|sonarr)_queue_total\", job=\"exportarr\", download_status=~\"warning|error\"})) or (max by (container) ({__name__=~\"(radarr|sonarr)_system_status\", job=\"exportarr\"}) * 0)",
+              "expr": "sum by (container) (max by (container, download_state, download_status, status) ({__name__=~\"(radarr|sonarr)_queue_total\", job=\"exportarr\", download_state=~\"importPending|importBlocked|failedPending\", download_status=~\"warning|error\"})) or (max by (container) ({__name__=~\"(radarr|sonarr)_system_status\", job=\"exportarr\"}) * 0)",
               "legendFormat": "{{container}}",
               "refId": "A"
             }
@@ -877,7 +877,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count(max by (container, source, message) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0) or vector(0)",
+              "expr": "count(max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0) or vector(0)",
               "legendFormat": "",
               "refId": "A"
             }
@@ -1162,7 +1162,7 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count by (container) (max by (container, source, message) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0)",
+              "expr": "count by (container) (max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"}) > 0)",
               "legendFormat": "{{container}}",
               "refId": "A"
             }
