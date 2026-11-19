@@ -30,6 +30,9 @@ spec:
                   value: "github"
                 - name: RENOVATE_REPOSITORIES
                   value: '["MattClarke131/project-seeds"]'
+                # Commit as the PAT's owner; the default address belongs to a Mend-owned GitHub user.
+                - name: RENOVATE_GIT_AUTHOR
+                  value: "Renovate <4278212+MattClarke131@users.noreply.github.com>"
                 - name: RENOVATE_TOKEN
                   valueFrom:
                     secretKeyRef:
