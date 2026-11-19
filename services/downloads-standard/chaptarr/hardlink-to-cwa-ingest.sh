@@ -5,6 +5,8 @@ set -eu
 
 ROOT_FOLDER=/media/books
 INGEST_FOLDER=/media/books-ingest
+# CWA's PUID/PGID. Chaptarr runs as root, so folders it creates need handing over.
+CWA_OWNER=1000:1000
 
 # Test clicks don't set Chaptarr_AddedBookPaths - treat that as a no-op
 # success rather than trying to detect "Test" specifically.
@@ -36,5 +38,11 @@ for src in $Chaptarr_AddedBookPaths; do
   dest="$INGEST_FOLDER/$rel"
   mkdir -p "$(dirname "$dest")"
   ln -f "$src" "$dest"
+  # CWA must own the folders to delete processed files. Skip the file: it shares an inode with the library copy.
+  dir=$(dirname "$dest")
+  while [ "$dir" != "$INGEST_FOLDER" ]; do
+    chown "$CWA_OWNER" "$dir"
+    dir=$(dirname "$dir")
+  done
   echo "hardlink-to-cwa-ingest: linked $src -> $dest"
 done
