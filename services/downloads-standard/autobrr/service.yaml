@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: autobrr
   namespace: downloads-standard
+  labels:
+    app: autobrr
 spec:
   type: ClusterIP
   selector:
@@ -12,3 +14,7 @@ spec:
     targetPort: 7474
     protocol: TCP
     name: http
+  - port: 9074
+    targetPort: 9074
+    protocol: TCP
+    name: metrics

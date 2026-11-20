@@ -38,6 +38,7 @@ resources:
   - ntfy-alertmanager/deployment.yaml
   - ntfy/deployment.yaml
   - ntfy/ingress.yaml
+  - services/autobrr-servicemonitor.yaml
   - services/exportarr-servicemonitor.yaml
   - services/jellyfin-servicemonitor.yaml
   - services/qbittorrent-exporter-servicemonitor.yaml
