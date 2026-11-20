@@ -1,5 +1,4 @@
-# image.tag is pinned deliberately, not left at the chart default -
-# never track :latest on a release with persistent state.
+# No image.tag override: the chart's appVersion sets the image, so Renovate's chart bumps carry it (#338).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -23,9 +22,6 @@ spec:
     remediation:
       retries: 1
   values:
-    image:
-      tag: v3.4.1
-
     config:
       persistence:
         size: 20Gi
