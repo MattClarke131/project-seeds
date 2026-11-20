@@ -85,7 +85,7 @@ spec:
       - name: metadata
         persistentVolumeClaim:
           claimName: audiobookshelf-metadata-iscsi
-      # Chaptarr hardlinks audiobook imports here, which requires the same filesystem as /media/books.
+      # Chaptarr's Audio root folder (/media/audiobooks).
       - name: audiobooks
         persistentVolumeClaim:
           claimName: media-standard
