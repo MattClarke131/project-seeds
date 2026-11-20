@@ -93,6 +93,13 @@
   ],
   "packageRules": [
     {
+      "description": "Default docker versioning treats linuxserver's -lsNNN build suffix as a compatibility tag, so no newer tag ever matches (#196). Parse it as a revision instead. Covers 3- and 4-part app versions plus qbittorrent's -rN and _vX.Y.Z (libtorrent) infixes.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["lscr.io/linuxserver/**", "ghcr.io/linuxserver/**"],
+      "matchCurrentValue": "/-ls\\d+$/",
+      "versioning": "regex:^v?(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:\\.(?<build>\\d+))?(?:-r\\d+|_v[\\d.]+)?-ls(?<revision>\\d+)$"
+    },
+    {
       "description": "Group the *arr media stack's patch bumps into one PR. Kept apart from minors so a single minor bump can't block automerge for the whole group.",
       "matchFileNames": [
         "services/downloads-standard/**"
