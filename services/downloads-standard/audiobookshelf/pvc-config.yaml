@@ -1,0 +1,13 @@
+# SQLite database (users, listening progress, library index). iSCSI, since SQLite locking is unreliable over NFS.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobookshelf-config-iscsi
+  namespace: downloads-standard
+spec:
+  accessModes:
+    - ReadWriteOncePod
+  storageClassName: truenas-iscsi
+  resources:
+    requests:
+      storage: 2Gi

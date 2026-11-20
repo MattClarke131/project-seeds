@@ -1,0 +1,13 @@
+# Covers, per-item metadata, cache, logs, and ABS's own scheduled backups.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobookshelf-metadata-iscsi
+  namespace: downloads-standard
+spec:
+  accessModes:
+    - ReadWriteOncePod
+  storageClassName: truenas-iscsi
+  resources:
+    requests:
+      storage: 10Gi

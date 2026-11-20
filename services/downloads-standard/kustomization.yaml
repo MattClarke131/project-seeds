@@ -88,6 +88,11 @@ resources:
   - chaptarr/postgres-secret.yaml
   - chaptarr/pvc-config.yaml
   - chaptarr/service.yaml
+  - audiobookshelf/deployment.yaml
+  - audiobookshelf/ingress.yaml
+  - audiobookshelf/pvc-config.yaml
+  - audiobookshelf/pvc-metadata.yaml
+  - audiobookshelf/service.yaml
 
 components:
   - ../../infrastructure/kubernetes/storage/shared-volumes/media-standard

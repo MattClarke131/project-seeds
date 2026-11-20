@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookshelf
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  # config/metadata PVCs are ReadWriteOncePod - RollingUpdate deadlocks
+  # scheduling a second pod while the first still holds the mount (#200).
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: audiobookshelf
+  template:
+    metadata:
+      labels:
+        app: audiobookshelf
+    spec:
+      # Plain Node image with no s6 init, so it runs unprivileged from the start.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: audiobookshelf
+        image: ghcr.io/advplyr/audiobookshelf:2.37.2
+        env:
+        # Unprivileged port, so non-root needs no NET_BIND_SERVICE. The Service still exposes 80.
+        - name: PORT
+          value: "8080"
+        - name: TZ
+          value: "America/New_York"
+        ports:
+        - containerPort: 8080
+          name: http
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: metadata
+          mountPath: /metadata
+        # Read-only: these files share inodes with seeding torrents, so ABS must never retag them in place.
+        - name: audiobooks
+          mountPath: /audiobooks
+          subPath: audiobooks
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        # First boot spent ~2 min creating the database before listening, so allow up to 10.
+        startupProbe:
+          httpGet:
+            path: /healthcheck
+            port: http
+          periodSeconds: 10
+          failureThreshold: 60
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: http
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: http
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "2000m"
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: audiobookshelf-config-iscsi
+      - name: metadata
+        persistentVolumeClaim:
+          claimName: audiobookshelf-metadata-iscsi
+      # Chaptarr hardlinks audiobook imports here, which requires the same filesystem as /media/books.
+      - name: audiobooks
+        persistentVolumeClaim:
+          claimName: media-standard
+      - name: tmp
+        emptyDir: {}
