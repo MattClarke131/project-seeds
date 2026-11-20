@@ -27,7 +27,7 @@ data:
           }
         ]
       },
-      "description": "Is downloading healthy? VPN tunnel, qBittorrent, the *arr apps' queues and health checks, and SABnzbd (#165).",
+      "description": "Is downloading healthy? VPN tunnel, qBittorrent, MAM, the *arr apps' queues and health checks, Prowlarr indexers, autobrr, cross-seed, and SABnzbd (#165).",
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 1,
@@ -57,10 +57,10 @@ data:
           "title": "VPN tunnel",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 0,
-            "y": 1
+            "y": 1,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -133,15 +133,78 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
+          "description": "Current VPN exit IP location, from gluetun.",
+          "id": 4,
+          "title": "VPN exit",
+          "type": "stat",
+          "gridPos": {
+            "x": 8,
+            "y": 1,
+            "w": 8,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "name",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (city, country) (gluetun_public_ip_info)",
+              "legendFormat": "{{city}}, {{country}}",
+              "refId": "A",
+              "instant": true,
+              "range": false
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "description": "qBittorrent's own view of reachability. Firewalled means the AirVPN forwarded port isn't reaching it, so peers can't connect in.",
           "id": 3,
           "title": "qBittorrent connection",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 4,
-            "y": 1
+            "x": 16,
+            "y": 1,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -223,78 +286,15 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "description": "Current VPN exit IP location, from gluetun.",
-          "id": 4,
-          "title": "VPN exit",
-          "type": "stat",
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 8,
-            "y": 1
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "none",
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "blue",
-                    "value": null
-                  }
-                ]
-              },
-              "color": {
-                "mode": "thresholds"
-              }
-            },
-            "overrides": []
-          },
-          "options": {
-            "colorMode": "background",
-            "graphMode": "none",
-            "justifyMode": "center",
-            "textMode": "name",
-            "wideLayout": true,
-            "showPercentChange": false,
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "prometheus"
-              },
-              "expr": "max by (city, country) (gluetun_public_ip_info)",
-              "legendFormat": "{{city}}, {{country}}",
-              "refId": "A",
-              "instant": true,
-              "range": false
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
           "description": "Total download speed.",
           "id": 5,
           "title": "Download",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 3,
-            "x": 12,
-            "y": 1
+            "x": 0,
+            "y": 5,
+            "w": 5,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -352,10 +352,10 @@ data:
           "title": "Upload",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 3,
-            "x": 15,
-            "y": 1
+            "x": 5,
+            "y": 5,
+            "w": 5,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -413,10 +413,10 @@ data:
           "title": "Downloading",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 2,
-            "x": 18,
-            "y": 1
+            "x": 10,
+            "y": 5,
+            "w": 5,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -474,10 +474,10 @@ data:
           "title": "Stalled",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 2,
-            "x": 20,
-            "y": 1
+            "x": 15,
+            "y": 5,
+            "w": 5,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -539,10 +539,10 @@ data:
           "title": "Errored",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 2,
-            "x": 22,
-            "y": 1
+            "x": 20,
+            "y": 5,
+            "w": 4,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -604,10 +604,10 @@ data:
             "uid": "loki"
           },
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 0,
-            "y": 5
+            "y": 9,
+            "w": 8,
+            "h": 4
           },
           "targets": [
             {
@@ -671,10 +671,10 @@ data:
             "uid": "loki"
           },
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 4,
-            "y": 5
+            "x": 8,
+            "y": 9,
+            "w": 8,
+            "h": 4
           },
           "targets": [
             {
@@ -729,19 +729,54 @@ data:
           }
         },
         {
-          "id": 54,
-          "type": "logs",
-          "title": "MAM sidecar log",
-          "description": "Recent mam-dynamic-seedbox sidecar output: MAM replies, waits for the hourly limit, and retries before the VPN is up.",
           "datasource": {
             "type": "loki",
             "uid": "loki"
           },
+          "description": "When MAM last issued the sidecar a fresh mam_id. Every reached call rotates it, and at least one call runs daily. Older than a day means calls are failing and the saved cookie will eventually expire.",
+          "id": 56,
+          "title": "MAM cookie rotated",
+          "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 16,
-            "x": 8,
-            "y": 5
+            "x": 16,
+            "y": 9,
+            "w": 8,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "dateTimeFromNow",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              },
+              "noValue": "None in 48h"
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
           },
           "targets": [
             {
@@ -749,20 +784,61 @@ data:
                 "type": "loki",
                 "uid": "loki"
               },
+              "expr": "max(max_over_time({namespace=\"downloads-standard\", container=\"mam-dynamic-seedbox\", pod=~\"qbittorrent-vpn-.*\"} |= \"cookie_rotated=yes\" | label_format ts=`{{ __timestamp__ | unixEpoch }}` | unwrap ts [48h])) * 1000",
               "refId": "A",
-              "expr": "{namespace=\"downloads-standard\", container=\"mam-dynamic-seedbox\", pod=~\"qbittorrent-vpn-.*\"}",
-              "queryType": "range"
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "collapsed": true,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 13
+          },
+          "id": 55,
+          "panels": [
+            {
+              "id": 54,
+              "type": "logs",
+              "title": "MAM sidecar log",
+              "description": "Recent mam-dynamic-seedbox sidecar output: MAM replies, waits for the hourly limit, and retries before the VPN is up.",
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "gridPos": {
+                "x": 0,
+                "y": 14,
+                "w": 24,
+                "h": 10
+              },
+              "targets": [
+                {
+                  "datasource": {
+                    "type": "loki",
+                    "uid": "loki"
+                  },
+                  "refId": "A",
+                  "expr": "{namespace=\"downloads-standard\", container=\"mam-dynamic-seedbox\", pod=~\"qbittorrent-vpn-.*\"}",
+                  "queryType": "range"
+                }
+              ],
+              "options": {
+                "showTime": true,
+                "showLabels": false,
+                "wrapLogMessage": false,
+                "sortOrder": "Descending",
+                "dedupStrategy": "none",
+                "enableLogDetails": false,
+                "prettifyLogMessage": false
+              }
             }
           ],
-          "options": {
-            "showTime": false,
-            "showLabels": false,
-            "wrapLogMessage": false,
-            "sortOrder": "Descending",
-            "dedupStrategy": "none",
-            "enableLogDetails": false,
-            "prettifyLogMessage": false
-          }
+          "title": "MAM sidecar log",
+          "type": "row"
         },
         {
           "collapsed": false,
@@ -770,7 +846,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 9
+            "y": 14
           },
           "id": 36,
           "panels": [],
@@ -788,9 +864,9 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 10,
-            "w": 10,
-            "h": 4
+            "y": 15,
+            "w": 24,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -868,9 +944,9 @@ data:
           "title": "Stuck imports",
           "type": "stat",
           "gridPos": {
-            "x": 10,
-            "y": 10,
-            "w": 8,
+            "x": 0,
+            "y": 23,
+            "w": 24,
             "h": 4
           },
           "fieldConfig": {
@@ -939,52 +1015,170 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "description": "Prowlarr indexers disabled after repeated errors.",
-          "id": 39,
-          "title": "Indexers down",
-          "type": "stat",
+          "description": "Every Prowlarr indexer. Counts cover Prowlarr's retained history (reset by the Postgres move, #398). Down means Prowlarr disabled it after repeated errors.",
+          "id": 57,
+          "title": "Prowlarr indexers",
+          "type": "table",
           "gridPos": {
-            "x": 18,
-            "y": 10,
-            "w": 3,
-            "h": 4
+            "x": 0,
+            "y": 27,
+            "w": 24,
+            "h": 11
           },
           "fieldConfig": {
             "defaults": {
-              "unit": "none",
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                }
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Status"
+                },
+                "properties": [
                   {
-                    "color": "green",
-                    "value": null
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "0": {
+                            "text": "OK",
+                            "color": "green",
+                            "index": 0
+                          },
+                          "1": {
+                            "text": "Down",
+                            "color": "red",
+                            "index": 1
+                          }
+                        }
+                      }
+                    ]
                   },
                   {
-                    "color": "orange",
-                    "value": 1
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background",
+                      "mode": "basic"
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 90
                   }
                 ]
               },
-              "color": {
-                "mode": "thresholds"
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Failed queries"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "text",
+                          "value": null
+                        },
+                        {
+                          "color": "orange",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Failed grabs"
+                },
+                "properties": [
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "text",
+                          "value": null
+                        },
+                        {
+                          "color": "orange",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Avg response"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "ms"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "VIP expires in"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "s"
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 0
+                  }
+                ]
               }
-            },
-            "overrides": []
+            ]
           },
           "options": {
-            "colorMode": "background",
-            "graphMode": "none",
-            "justifyMode": "center",
-            "textMode": "value",
-            "wideLayout": true,
-            "showPercentChange": false,
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
+            "showHeader": true,
+            "cellHeight": "sm",
+            "sortBy": [
+              {
+                "displayName": "Indexer",
+                "desc": false
+              }
+            ],
+            "footer": {
+              "show": false,
+              "reducer": [
+                "sum"
               ],
-              "fields": "",
-              "values": false
+              "fields": ""
             }
           },
           "targets": [
@@ -993,74 +1187,124 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count(max by (indexer) (prowlarr_indexer_unavailable{job=\"exportarr\"}) == 1) or vector(0)",
-              "legendFormat": "",
-              "refId": "A"
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "description": "App health checks currently failing, ignoring update notices (Renovate pins versions).",
-          "id": 40,
-          "title": "Failing checks",
-          "type": "stat",
-          "gridPos": {
-            "x": 21,
-            "y": 10,
-            "w": 3,
-            "h": 4
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "none",
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "orange",
-                    "value": 1
-                  }
-                ]
-              },
-              "color": {
-                "mode": "thresholds"
-              }
+              "expr": "(max by (indexer) (prowlarr_indexer_unavailable{job=\"exportarr\"}) == 1) or (max by (indexer) (prowlarr_indexer_queries_total{job=\"exportarr\"}) * 0)",
+              "refId": "status",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
             },
-            "overrides": []
-          },
-          "options": {
-            "colorMode": "background",
-            "graphMode": "none",
-            "justifyMode": "center",
-            "textMode": "value",
-            "wideLayout": true,
-            "showPercentChange": false,
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            }
-          },
-          "targets": [
             {
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "count(max by (container, source) ({__name__=~\"(radarr|sonarr|prowlarr)_system_health_issues\", job=\"exportarr\", source!=\"UpdateCheck\"} or label_replace(label_replace(bazarr_system_health_issues{job=\"exportarr\"} > 0, \"source\", \"$1\", \"object\", \"(.+)\"), \"message\", \"$1\", \"issue\", \"(.+)\")) > 0) or vector(0)",
-              "legendFormat": "",
-              "refId": "A"
+              "expr": "max by (indexer) (prowlarr_indexer_queries_total{job=\"exportarr\"})",
+              "refId": "queries",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (indexer) (prowlarr_indexer_failed_queries_total{job=\"exportarr\"})",
+              "refId": "failed",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (indexer) (prowlarr_indexer_rss_queries_total{job=\"exportarr\"})",
+              "refId": "rss",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (indexer) (prowlarr_indexer_grabs_total{job=\"exportarr\"})",
+              "refId": "grabs",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (indexer) (prowlarr_indexer_failed_grabs_total{job=\"exportarr\"})",
+              "refId": "failedgrabs",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (indexer) (prowlarr_indexer_average_response_time_ms{job=\"exportarr\"})",
+              "refId": "resp",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (indexer) (prowlarr_indexer_vip_expires_in_seconds{job=\"exportarr\"})",
+              "refId": "vip",
+              "format": "table",
+              "instant": true,
+              "legendFormat": ""
+            }
+          ],
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                },
+                "indexByName": {
+                  "indexer": 0,
+                  "Value #status": 1,
+                  "Value #queries": 2,
+                  "Value #failed": 3,
+                  "Value #rss": 4,
+                  "Value #grabs": 5,
+                  "Value #failedgrabs": 6,
+                  "Value #resp": 7,
+                  "Value #vip": 8
+                },
+                "renameByName": {
+                  "indexer": "Indexer",
+                  "Value #status": "Status",
+                  "Value #queries": "Queries",
+                  "Value #failed": "Failed queries",
+                  "Value #rss": "RSS queries",
+                  "Value #grabs": "Grabs",
+                  "Value #failedgrabs": "Failed grabs",
+                  "Value #resp": "Avg response",
+                  "Value #vip": "VIP expires in"
+                }
+              }
             }
           ]
         },
@@ -1075,9 +1319,9 @@ data:
           "type": "table",
           "gridPos": {
             "x": 0,
-            "y": 14,
-            "w": 14,
-            "h": 8
+            "y": 38,
+            "w": 24,
+            "h": 7
           },
           "fieldConfig": {
             "defaults": {
@@ -1171,9 +1415,9 @@ data:
           "title": "Queue by state",
           "type": "timeseries",
           "gridPos": {
-            "x": 14,
-            "y": 14,
-            "w": 10,
+            "x": 0,
+            "y": 45,
+            "w": 8,
             "h": 8
           },
           "fieldConfig": {
@@ -1229,9 +1473,9 @@ data:
           "title": "Missing",
           "type": "timeseries",
           "gridPos": {
-            "x": 0,
-            "y": 22,
-            "w": 12,
+            "x": 8,
+            "y": 45,
+            "w": 8,
             "h": 8
           },
           "fieldConfig": {
@@ -1301,9 +1545,9 @@ data:
           "title": "Failing checks over time",
           "type": "timeseries",
           "gridPos": {
-            "x": 12,
-            "y": 22,
-            "w": 12,
+            "x": 16,
+            "y": 45,
+            "w": 8,
             "h": 8
           },
           "fieldConfig": {
@@ -1355,7 +1599,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 30
+            "y": 53
           },
           "id": 10,
           "panels": [],
@@ -1372,10 +1616,10 @@ data:
           "title": "Connectivity",
           "type": "state-timeline",
           "gridPos": {
-            "h": 5,
-            "w": 16,
             "x": 0,
-            "y": 31
+            "y": 54,
+            "w": 16,
+            "h": 5
           },
           "fieldConfig": {
             "defaults": {
@@ -1470,10 +1714,10 @@ data:
           "title": "Exit IP",
           "type": "state-timeline",
           "gridPos": {
-            "h": 5,
-            "w": 8,
             "x": 16,
-            "y": 31
+            "y": 54,
+            "w": 8,
+            "h": 5
           },
           "fieldConfig": {
             "defaults": {
@@ -1530,10 +1774,10 @@ data:
           "title": "Transfer speed",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 12,
             "x": 0,
-            "y": 36
+            "y": 59,
+            "w": 12,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -1597,10 +1841,10 @@ data:
           "title": "Incomplete torrents by state",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 12,
             "x": 12,
-            "y": 36
+            "y": 59,
+            "w": 12,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -1651,7 +1895,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 44
+            "y": 67
           },
           "id": 15,
           "panels": [],
@@ -1668,10 +1912,10 @@ data:
           "title": "Incomplete",
           "type": "table",
           "gridPos": {
-            "h": 10,
-            "w": 14,
             "x": 0,
-            "y": 45
+            "y": 68,
+            "w": 14,
+            "h": 10
           },
           "fieldConfig": {
             "defaults": {
@@ -1908,10 +2152,10 @@ data:
           "title": "Top uploads",
           "type": "table",
           "gridPos": {
-            "h": 10,
-            "w": 10,
             "x": 14,
-            "y": 45
+            "y": 68,
+            "w": 10,
+            "h": 10
           },
           "fieldConfig": {
             "defaults": {
@@ -2144,7 +2388,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 55
+            "y": 78
           },
           "id": 18,
           "panels": [],
@@ -2161,10 +2405,10 @@ data:
           "title": "Torrents",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 0,
-            "y": 56
+            "y": 79,
+            "w": 4,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2222,10 +2466,10 @@ data:
           "title": "Seeding",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 4,
-            "y": 56
+            "y": 79,
+            "w": 4,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2283,10 +2527,10 @@ data:
           "title": "Free disk",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 8,
-            "y": 56
+            "y": 79,
+            "w": 4,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2349,13 +2593,13 @@ data:
           },
           "description": "All-time uploaded divided by downloaded.",
           "id": 22,
-          "title": "All-time ratio",
+          "title": "Ratio",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 12,
-            "y": 56
+            "y": 79,
+            "w": 4,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2417,10 +2661,10 @@ data:
           "title": "Peers and DHT",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 8,
             "x": 16,
-            "y": 56
+            "y": 79,
+            "w": 8,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -2480,7 +2724,268 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 64
+            "y": 87
+          },
+          "id": 58,
+          "panels": [],
+          "title": "autobrr",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "autobrr IRC errors, such as a failed SASL login or a dropped announce channel.",
+          "id": 59,
+          "title": "IRC errors (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 88,
+            "w": 8,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `\"module\":\"irc\"` |= `\"level\":\"error\"` [24h])) or vector(0)",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Announces that matched an autobrr filter and ran its action (push to Sonarr/Radarr, or cross-seed).",
+          "id": 60,
+          "title": "Filter matches (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 8,
+            "y": 88,
+            "w": 8,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `filter matched!` [24h])) or vector(0)",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "When an announce last matched a filter. Hours of silence usually means the IRC connection is down.",
+          "id": 61,
+          "title": "Last match",
+          "type": "stat",
+          "gridPos": {
+            "x": 16,
+            "y": 88,
+            "w": 8,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "dateTimeFromNow",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "text",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              },
+              "noValue": "None in 48h"
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "max(max_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `filter matched!` | label_format ts=`{{ __timestamp__ | unixEpoch }}` | unwrap ts [48h])) * 1000",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "autobrr filter matches per filter. A flat line across all filters means IRC is quiet or down.",
+          "id": 62,
+          "title": "Filter matches by filter",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 92,
+            "w": 24,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "bars",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "refId": "A",
+              "queryType": "range",
+              "legendFormat": "{{filter}}",
+              "expr": "sum by (filter) (count_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `filter matched!` | json filter [$__interval]))"
+            }
+          ],
+          "interval": "1d"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 100
           },
           "id": 24,
           "panels": [],
@@ -2497,10 +3002,10 @@ data:
           "title": "RSS scans (1h)",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
             "x": 0,
-            "y": 65
+            "y": 101,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2567,10 +3072,10 @@ data:
           "title": "Search runs (26h)",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 4,
-            "y": 65
+            "x": 8,
+            "y": 101,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2633,10 +3138,10 @@ data:
           "title": "Search queue",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 8,
-            "y": 65
+            "x": 16,
+            "y": 101,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2695,10 +3200,10 @@ data:
           "title": "Found (last run)",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 12,
-            "y": 65
+            "x": 0,
+            "y": 105,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2757,10 +3262,10 @@ data:
           "title": "Cross-seeds",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 16,
-            "y": 65
+            "x": 8,
+            "y": 105,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2818,10 +3323,10 @@ data:
           "title": "Rate-limit stalls (24h)",
           "type": "stat",
           "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 20,
-            "y": 65
+            "x": 16,
+            "y": 105,
+            "w": 8,
+            "h": 4
           },
           "fieldConfig": {
             "defaults": {
@@ -2880,6 +3385,132 @@ data:
         },
         {
           "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Releases autobrr's cross-seed filter sent to cross-seed's /api/announce webhook.",
+          "id": 63,
+          "title": "Announces from autobrr (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 109,
+            "w": 12,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `webhook action executed` |= `Announce to cross-seed` [24h])) or vector(0)",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Calls cross-seed refused for a bad API key, including autobrr announces. Non-zero means the webhook key is wrong.",
+          "id": 64,
+          "title": "Rejected API calls (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 12,
+            "y": 109,
+            "w": 12,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"cross-seed\"} |= `Unauthorized API access attempt` [24h])) or vector(0)",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
@@ -2888,10 +3519,10 @@ data:
           "title": "Cross-seeds over time",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 8,
             "x": 0,
-            "y": 69
+            "y": 113,
+            "w": 8,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -2946,10 +3577,10 @@ data:
           "title": "Scan activity",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 8,
             "x": 8,
-            "y": 69
+            "y": 113,
+            "w": 8,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -3016,10 +3647,10 @@ data:
           "title": "Upload: cross-seeds vs. originals",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 8,
             "x": 16,
-            "y": 69
+            "y": 113,
+            "w": 8,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -3083,10 +3714,10 @@ data:
           "title": "Matches by indexer",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 12,
             "x": 0,
-            "y": 77
+            "y": 121,
+            "w": 12,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -3143,10 +3774,10 @@ data:
           "title": "Rate-limit stalls by indexer",
           "type": "timeseries",
           "gridPos": {
-            "h": 8,
-            "w": 12,
             "x": 12,
-            "y": 77
+            "y": 121,
+            "w": 12,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -3199,7 +3830,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 85
+            "y": 129
           },
           "id": 45,
           "panels": [],
@@ -3217,7 +3848,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 86,
+            "y": 130,
             "w": 5,
             "h": 4
           },
@@ -3304,7 +3935,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 5,
-            "y": 86,
+            "y": 130,
             "w": 5,
             "h": 4
           },
@@ -3365,7 +3996,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 10,
-            "y": 86,
+            "y": 130,
             "w": 5,
             "h": 4
           },
@@ -3426,7 +4057,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 15,
-            "y": 86,
+            "y": 130,
             "w": 5,
             "h": 4
           },
@@ -3487,7 +4118,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 20,
-            "y": 86,
+            "y": 130,
             "w": 4,
             "h": 4
           },
@@ -3552,7 +4183,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 90,
+            "y": 134,
             "w": 24,
             "h": 8
           },
@@ -3603,7 +4234,8 @@ data:
         "gluetun",
         "downloads",
         "arr",
-        "sabnzbd"
+        "sabnzbd",
+        "autobrr"
       ],
       "templating": {
         "list": []
