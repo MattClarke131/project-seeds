@@ -2,10 +2,9 @@
 
 Audiobook server and player backend. See GitHub issue #193.
 
-Chaptarr downloads audiobooks into its Mixed root folder (`/media/books`).
-Its Connect script hardlinks audiobook files into `/media/audiobooks`,
-mirroring Chaptarr's `{Author}/{Book}/` layout. ABS mounts that folder
-read-only at `/audiobooks`. See `../chaptarr/README.md` for the script.
+Chaptarr saves audiobooks into its Audio root folder, `/media/audiobooks`.
+ABS mounts that folder read-only at `/audiobooks`. Chaptarr's AudioBookShelf
+connection triggers a rescan after each import (see `../chaptarr/README.md`).
 
 ## First-time setup (`audiobooks.labmatt.com`)
 
