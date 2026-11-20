@@ -19,6 +19,8 @@ metadata:
   namespace: kube-system
   labels:
     app: intel-gpu-plugin
+  annotations:
+    ignore-check.kube-linter.io/run-as-non-root: "must create its socket in and connect to kubelet.sock under the host's root-owned 0755 /var/lib/kubelet/device-plugins, and write CDI specs to root-owned /var/run/cdi; all capabilities are dropped"
 spec:
   selector:
     matchLabels:
