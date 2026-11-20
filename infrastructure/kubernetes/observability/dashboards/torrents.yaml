@@ -1011,7 +1011,7 @@ data:
           ]
         },
         {
-          "id": 65,
+          "id": 71,
           "type": "logs",
           "title": "Unpackerr log",
           "description": "Unpackerr extractions, failures and deletions (#169). Routine polling lines are hidden, so empty means nothing needed extracting.",
@@ -2769,6 +2769,400 @@ data:
         },
         {
           "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Enabled IRC networks autobrr does not count as healthy (disconnected, or not monitoring their announce channel).",
+          "id": 65,
+          "title": "IRC networks unhealthy",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 92,
+            "w": 6,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {
+                      "text": "All healthy",
+                      "index": 0
+                    }
+                  }
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              },
+              "noValue": "autobrr down"
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max(autobrr_irc_enabled_total{job=\"autobrr\"}) - max(autobrr_irc_healthy_total{job=\"autobrr\"})",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Releases autobrr pushed that Sonarr, Radarr or cross-seed accepted. autobrr counts a webhook as approved whatever cross-seed replies.",
+          "id": 66,
+          "title": "Pushes approved (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 6,
+            "y": 92,
+            "w": 6,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(max(increase(autobrr_release_push_approved_total{job=\"autobrr\"}[24h])))",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Releases Sonarr or Radarr turned down. Normal and high: most announces are for shows or movies not in the library.",
+          "id": 67,
+          "title": "Pushes rejected (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 12,
+            "y": 92,
+            "w": 6,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(max(increase(autobrr_release_push_rejected_total{job=\"autobrr\"}[24h])))",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Pushes that failed outright, for example Sonarr unreachable or refusing the release.",
+          "id": 68,
+          "title": "Push errors (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 18,
+            "y": 92,
+            "w": 6,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(max(increase(autobrr_release_push_error_total{job=\"autobrr\"}[24h])))",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "Per IRC network, how long since its announce channel last posted. autobrr resets this on restart, so a network is missing until its next announce.",
+          "id": 69,
+          "title": "Time since last announce",
+          "type": "stat",
+          "gridPos": {
+            "x": 0,
+            "y": 96,
+            "w": 12,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 10800
+                  },
+                  {
+                    "color": "red",
+                    "value": 43200
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              },
+              "decimals": 0
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value_and_name",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "time() - max by (network) (autobrr_irc_channel_last_announced_timestamp_seconds{job=\"autobrr\"})",
+              "legendFormat": "{{network}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "description": "Announces that matched an autobrr filter and ran its action (push to Sonarr/Radarr, or cross-seed).",
+          "id": 60,
+          "title": "Filter matches (24h)",
+          "type": "stat",
+          "gridPos": {
+            "x": 12,
+            "y": 96,
+            "w": 6,
+            "h": 4
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  }
+                ]
+              },
+              "color": {
+                "mode": "thresholds"
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "textMode": "value",
+            "wideLayout": true,
+            "showPercentChange": false,
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `filter matched!` [24h])) or vector(0)",
+              "refId": "A",
+              "queryType": "instant"
+            }
+          ]
+        },
+        {
+          "datasource": {
             "type": "loki",
             "uid": "loki"
           },
@@ -2777,9 +3171,9 @@ data:
           "title": "IRC errors (24h)",
           "type": "stat",
           "gridPos": {
-            "x": 0,
-            "y": 92,
-            "w": 8,
+            "x": 18,
+            "y": 96,
+            "w": 6,
             "h": 4
           },
           "fieldConfig": {
@@ -2837,137 +3231,14 @@ data:
             "type": "loki",
             "uid": "loki"
           },
-          "description": "Announces that matched an autobrr filter and ran its action (push to Sonarr/Radarr, or cross-seed).",
-          "id": 60,
-          "title": "Filter matches (24h)",
-          "type": "stat",
-          "gridPos": {
-            "x": 8,
-            "y": 92,
-            "w": 8,
-            "h": 4
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "none",
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "blue",
-                    "value": null
-                  }
-                ]
-              },
-              "color": {
-                "mode": "thresholds"
-              }
-            },
-            "overrides": []
-          },
-          "options": {
-            "colorMode": "value",
-            "graphMode": "none",
-            "justifyMode": "center",
-            "textMode": "value",
-            "wideLayout": true,
-            "showPercentChange": false,
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "loki",
-                "uid": "loki"
-              },
-              "expr": "sum(count_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `filter matched!` [24h])) or vector(0)",
-              "refId": "A",
-              "queryType": "instant"
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
-          "description": "When an announce last matched a filter. Hours of silence usually means the IRC connection is down.",
-          "id": 61,
-          "title": "Last match",
-          "type": "stat",
-          "gridPos": {
-            "x": 16,
-            "y": 92,
-            "w": 8,
-            "h": 4
-          },
-          "fieldConfig": {
-            "defaults": {
-              "unit": "dateTimeFromNow",
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "text",
-                    "value": null
-                  }
-                ]
-              },
-              "color": {
-                "mode": "thresholds"
-              },
-              "noValue": "None in 48h"
-            },
-            "overrides": []
-          },
-          "options": {
-            "colorMode": "value",
-            "graphMode": "none",
-            "justifyMode": "center",
-            "textMode": "value",
-            "wideLayout": true,
-            "showPercentChange": false,
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            }
-          },
-          "targets": [
-            {
-              "datasource": {
-                "type": "loki",
-                "uid": "loki"
-              },
-              "expr": "max(max_over_time({namespace=\"downloads-standard\", container=\"autobrr\"} |= `filter matched!` | label_format ts=`{{ __timestamp__ | unixEpoch }}` | unwrap ts [48h])) * 1000",
-              "refId": "A",
-              "queryType": "instant"
-            }
-          ]
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "loki"
-          },
           "description": "autobrr filter matches per filter. A flat line across all filters means IRC is quiet or down.",
           "id": 62,
           "title": "Filter matches by filter",
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 96,
-            "w": 24,
+            "y": 100,
+            "w": 12,
             "h": 8
           },
           "fieldConfig": {
@@ -3016,12 +3287,89 @@ data:
           "interval": "1d"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "description": "autobrr push results per hour. Rejected dwarfs approved because most announces are for content not in the library.",
+          "id": 70,
+          "title": "Pushes per hour",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 12,
+            "y": 100,
+            "w": 12,
+            "h": 8
+          },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "drawStyle": "bars",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "mode": "normal",
+                  "group": "A"
+                }
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(max(increase(autobrr_release_push_approved_total{job=\"autobrr\"}[1h])))",
+              "legendFormat": "Approved",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(max(increase(autobrr_release_push_rejected_total{job=\"autobrr\"}[1h])))",
+              "legendFormat": "Rejected",
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "round(max(increase(autobrr_release_push_error_total{job=\"autobrr\"}[1h])))",
+              "legendFormat": "Errors",
+              "refId": "C"
+            }
+          ],
+          "interval": "1d"
+        },
+        {
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 104
+            "y": 108
           },
           "id": 24,
           "panels": [],
@@ -3039,7 +3387,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 105,
+            "y": 109,
             "w": 8,
             "h": 4
           },
@@ -3109,7 +3457,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 8,
-            "y": 105,
+            "y": 109,
             "w": 8,
             "h": 4
           },
@@ -3175,7 +3523,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 16,
-            "y": 105,
+            "y": 109,
             "w": 8,
             "h": 4
           },
@@ -3237,7 +3585,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 109,
+            "y": 113,
             "w": 8,
             "h": 4
           },
@@ -3299,7 +3647,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 8,
-            "y": 109,
+            "y": 113,
             "w": 8,
             "h": 4
           },
@@ -3360,7 +3708,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 16,
-            "y": 109,
+            "y": 113,
             "w": 8,
             "h": 4
           },
@@ -3430,7 +3778,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 113,
+            "y": 117,
             "w": 12,
             "h": 4
           },
@@ -3491,7 +3839,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 12,
-            "y": 113,
+            "y": 117,
             "w": 12,
             "h": 4
           },
@@ -3556,7 +3904,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 117,
+            "y": 121,
             "w": 8,
             "h": 8
           },
@@ -3614,7 +3962,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 8,
-            "y": 117,
+            "y": 121,
             "w": 8,
             "h": 8
           },
@@ -3684,7 +4032,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 16,
-            "y": 117,
+            "y": 121,
             "w": 8,
             "h": 8
           },
@@ -3751,7 +4099,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 125,
+            "y": 129,
             "w": 12,
             "h": 8
           },
@@ -3811,7 +4159,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 12,
-            "y": 125,
+            "y": 129,
             "w": 12,
             "h": 8
           },
@@ -3866,7 +4214,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 133
+            "y": 137
           },
           "id": 45,
           "panels": [],
@@ -3884,7 +4232,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 134,
+            "y": 138,
             "w": 5,
             "h": 4
           },
@@ -3971,7 +4319,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 5,
-            "y": 134,
+            "y": 138,
             "w": 5,
             "h": 4
           },
@@ -4032,7 +4380,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 10,
-            "y": 134,
+            "y": 138,
             "w": 5,
             "h": 4
           },
@@ -4093,7 +4441,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 15,
-            "y": 134,
+            "y": 138,
             "w": 5,
             "h": 4
           },
@@ -4154,7 +4502,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 20,
-            "y": 134,
+            "y": 138,
             "w": 4,
             "h": 4
           },
@@ -4219,7 +4567,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 138,
+            "y": 142,
             "w": 24,
             "h": 8
           },
