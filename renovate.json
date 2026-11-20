@@ -3,7 +3,8 @@
   "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
   "dependencyDashboard": true,
   "labels": ["renovate"],
-  "prConcurrentLimit": 5,
+  "prConcurrentLimit": 7,
+  "prHourlyLimit": 0,
   "minimumReleaseAge": "6 days",
   "vulnerabilityAlerts": {
     "minimumReleaseAge": "0 days"
