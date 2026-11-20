@@ -118,12 +118,9 @@ spec:
             memory: "2Gi"
             cpu: "2000m"
 
-      # Re-authorizes qBittorrent's current VPN exit IP with MAM's tracker
-      # whenever AirVPN reconnects on a new IP (fixes MAM tracker error
-      # "Unrecognized host/PassKey" and the resulting stalled downloads).
-      # Must run as a sidecar in this pod, not a standalone CronJob: it
-      # needs gluetun's network namespace so the call is actually made
-      # from the VPN exit IP.
+      # Registers qBittorrent's VPN exit IP with MAM's tracker, which rejects unregistered IPs
+      # ("Unrecognized host/PassKey"). Runs in this pod so calls leave from the VPN exit IP.
+      # Call rules are in #394.
       - name: mam-dynamic-seedbox
         image: curlimages/curl:8.23.0
         securityContext:
@@ -157,19 +154,57 @@ spec:
             printf %s "$seed" > "$dir/seed"
             echo "$(date -u +%FT%TZ) seeded mam_id from Secret"
           fi
+          log() { echo "$(date -u +%FT%TZ) $*"; }
+          # "<epoch of last call that reached MAM> <registered IP> <epoch it was registered>"; survives restarts.
+          state=$dir/state
+          [ -s "$state" ] || echo "0 none 0" > "$state"
+          next_try=0
+          fails=0
+          waiting_for=
           while true; do
-            resp=$(curl -sS -w '\nHTTP:%{http_code}' -D "$dir/headers" -b "mam_id=$(cat "$dir/mam_id")" https://t.myanonamouse.net/json/dynamicSeedbox.php)
+            now=$(date +%s)
+            read -r reached reg_ip ok_at < "$state"
+            ip=$(curl -sS -m 5 http://127.0.0.1:8000/v1/publicip/ip 2>/dev/null | sed -n 's/.*"public_ip":"\([^"]*\)".*/\1/p')
+            if [ -z "$ip" ] || [ "$now" -lt "$next_try" ]; then
+              sleep 60; continue
+            fi
+            if [ "$ip" = "$reg_ip" ] && [ $((now - ok_at)) -lt 86400 ]; then
+              sleep 60; continue
+            fi
+            # MAM asks for at most one call per hour; restarts read $state so they honor it too.
+            if [ $((now - reached)) -lt 3600 ]; then
+              if [ "$waiting_for" != "$ip" ]; then
+                log "need to register $ip; waiting $((3600 - (now - reached)))s for hourly limit"
+                waiting_for=$ip
+              fi
+              sleep 60; continue
+            fi
+            waiting_for=
+            resp=$(curl -sS -m 30 -w '\nHTTP:%{http_code}' -D "$dir/headers" -b "mam_id=$(cat "$dir/mam_id")" https://t.myanonamouse.net/json/dynamicSeedbox.php 2>&1)
+            code=${resp##*HTTP:}
             # MAM returns a new mam_id on every call; the old value eventually stops working.
-            new=$(sed -n 's/^[Ss]et-[Cc]ookie: *mam_id=\([^;]*\).*/\1/p' "$dir/headers" | tr -d '\r' | tail -1)
+            new=$(sed -n 's/^[Ss]et-[Cc]ookie: *mam_id=\([^;]*\).*/\1/p' "$dir/headers" 2>/dev/null | tr -d '\r' | tail -1)
             rm -f "$dir/headers"
             if [ -n "$new" ]; then
               printf %s "$new" > "$dir/mam_id.tmp" && mv "$dir/mam_id.tmp" "$dir/mam_id"
             fi
-            echo "$(date -u +%FT%TZ) ${resp} cookie_rotated=$([ -n "$new" ] && echo yes || echo no)"
-            # MAM's rate limit is once/hour on a rolling window; a small
-            # margin here avoids routinely landing inside that window and
-            # getting a harmless-but-wasted 429 "Last change too recent".
-            sleep 4200
+            log "$(echo "$resp" | tr '\n' ' ') cookie_rotated=$([ -n "$new" ] && echo yes || echo no)"
+            if [ "$code" = 000 ]; then
+              # MAM never saw this call, so it doesn't count; back off 30s doubling to 10min.
+              fails=$((fails + 1))
+              wait=$((30 << (fails - 1)))
+              [ "$wait" -gt 600 ] && wait=600
+              next_try=$((now + wait))
+            else
+              fails=0
+              case "$resp" in
+                *'"Success":true'*) echo "$now $ip $now" > "$state" ;;
+                *) echo "$now $reg_ip $ok_at" > "$state" ;;
+              esac
+            fi
+            printf '%s %s %s %s\n' "$now" "$ip" "$code" "$(echo "$resp" | sed -n 's/.*"msg":"\([^"]*\)".*/\1/p' | tr ' ' _)" >> "$dir/history"
+            tail -n 3 "$dir/history" > "$dir/history.tmp" && mv "$dir/history.tmp" "$dir/history"
+            sleep 60
           done
         resources:
           requests:
