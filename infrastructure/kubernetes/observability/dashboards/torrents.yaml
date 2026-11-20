@@ -939,15 +939,15 @@ data:
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "description": "Downloaded items failing to import. These never import on their own; clear them in Activity > Queue.",
+          "description": "Downloaded items failing to import. Unpackerr extracts archived downloads within a few minutes (#169), so a count that stays up means extraction failed or the cause isn't an archive. Check the Unpackerr log, then clear the item in Activity > Queue.",
           "id": 38,
           "title": "Stuck imports",
           "type": "stat",
           "gridPos": {
             "x": 0,
             "y": 23,
-            "w": 24,
-            "h": 4
+            "w": 8,
+            "h": 8
           },
           "fieldConfig": {
             "defaults": {
@@ -1011,6 +1011,42 @@ data:
           ]
         },
         {
+          "id": 65,
+          "type": "logs",
+          "title": "Unpackerr log",
+          "description": "Unpackerr extractions, failures and deletions (#169). Routine polling lines are hidden, so empty means nothing needed extracting.",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "gridPos": {
+            "x": 8,
+            "y": 23,
+            "w": 16,
+            "h": 8
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              },
+              "refId": "A",
+              "expr": "{namespace=\"downloads-standard\", container=\"unpackerr\", pod=~\"unpackerr-[a-z0-9]+-[a-z0-9]+\"} !~ `\\] (Queue|Totals|Updated): | => | ==> |Need help\\?`",
+              "queryType": "range"
+            }
+          ],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "wrapLogMessage": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none",
+            "enableLogDetails": false,
+            "prettifyLogMessage": false
+          }
+        },
+        {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
@@ -1021,7 +1057,7 @@ data:
           "type": "table",
           "gridPos": {
             "x": 0,
-            "y": 27,
+            "y": 31,
             "w": 24,
             "h": 11
           },
@@ -1319,7 +1355,7 @@ data:
           "type": "table",
           "gridPos": {
             "x": 0,
-            "y": 38,
+            "y": 42,
             "w": 24,
             "h": 7
           },
@@ -1416,7 +1452,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 45,
+            "y": 49,
             "w": 8,
             "h": 8
           },
@@ -1474,7 +1510,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 8,
-            "y": 45,
+            "y": 49,
             "w": 8,
             "h": 8
           },
@@ -1546,7 +1582,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 16,
-            "y": 45,
+            "y": 49,
             "w": 8,
             "h": 8
           },
@@ -1599,7 +1635,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 53
+            "y": 57
           },
           "id": 10,
           "panels": [],
@@ -1617,7 +1653,7 @@ data:
           "type": "state-timeline",
           "gridPos": {
             "x": 0,
-            "y": 54,
+            "y": 58,
             "w": 16,
             "h": 5
           },
@@ -1715,7 +1751,7 @@ data:
           "type": "state-timeline",
           "gridPos": {
             "x": 16,
-            "y": 54,
+            "y": 58,
             "w": 8,
             "h": 5
           },
@@ -1775,7 +1811,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 59,
+            "y": 63,
             "w": 12,
             "h": 8
           },
@@ -1842,7 +1878,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 12,
-            "y": 59,
+            "y": 63,
             "w": 12,
             "h": 8
           },
@@ -1895,7 +1931,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 67
+            "y": 71
           },
           "id": 15,
           "panels": [],
@@ -1913,7 +1949,7 @@ data:
           "type": "table",
           "gridPos": {
             "x": 0,
-            "y": 68,
+            "y": 72,
             "w": 14,
             "h": 10
           },
@@ -2153,7 +2189,7 @@ data:
           "type": "table",
           "gridPos": {
             "x": 14,
-            "y": 68,
+            "y": 72,
             "w": 10,
             "h": 10
           },
@@ -2388,7 +2424,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 78
+            "y": 82
           },
           "id": 18,
           "panels": [],
@@ -2406,7 +2442,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 79,
+            "y": 83,
             "w": 4,
             "h": 4
           },
@@ -2467,7 +2503,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 4,
-            "y": 79,
+            "y": 83,
             "w": 4,
             "h": 4
           },
@@ -2528,7 +2564,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 8,
-            "y": 79,
+            "y": 83,
             "w": 4,
             "h": 4
           },
@@ -2597,7 +2633,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 12,
-            "y": 79,
+            "y": 83,
             "w": 4,
             "h": 4
           },
@@ -2662,7 +2698,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 16,
-            "y": 79,
+            "y": 83,
             "w": 8,
             "h": 8
           },
@@ -2724,7 +2760,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 87
+            "y": 91
           },
           "id": 58,
           "panels": [],
@@ -2742,7 +2778,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 88,
+            "y": 92,
             "w": 8,
             "h": 4
           },
@@ -2807,7 +2843,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 8,
-            "y": 88,
+            "y": 92,
             "w": 8,
             "h": 4
           },
@@ -2868,7 +2904,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 16,
-            "y": 88,
+            "y": 92,
             "w": 8,
             "h": 4
           },
@@ -2930,7 +2966,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 92,
+            "y": 96,
             "w": 24,
             "h": 8
           },
@@ -2985,7 +3021,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 100
+            "y": 104
           },
           "id": 24,
           "panels": [],
@@ -3003,7 +3039,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 101,
+            "y": 105,
             "w": 8,
             "h": 4
           },
@@ -3073,7 +3109,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 8,
-            "y": 101,
+            "y": 105,
             "w": 8,
             "h": 4
           },
@@ -3139,7 +3175,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 16,
-            "y": 101,
+            "y": 105,
             "w": 8,
             "h": 4
           },
@@ -3201,7 +3237,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 105,
+            "y": 109,
             "w": 8,
             "h": 4
           },
@@ -3263,7 +3299,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 8,
-            "y": 105,
+            "y": 109,
             "w": 8,
             "h": 4
           },
@@ -3324,7 +3360,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 16,
-            "y": 105,
+            "y": 109,
             "w": 8,
             "h": 4
           },
@@ -3394,7 +3430,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 109,
+            "y": 113,
             "w": 12,
             "h": 4
           },
@@ -3455,7 +3491,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 12,
-            "y": 109,
+            "y": 113,
             "w": 12,
             "h": 4
           },
@@ -3520,7 +3556,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 113,
+            "y": 117,
             "w": 8,
             "h": 8
           },
@@ -3578,7 +3614,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 8,
-            "y": 113,
+            "y": 117,
             "w": 8,
             "h": 8
           },
@@ -3648,7 +3684,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 16,
-            "y": 113,
+            "y": 117,
             "w": 8,
             "h": 8
           },
@@ -3715,7 +3751,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 121,
+            "y": 125,
             "w": 12,
             "h": 8
           },
@@ -3775,7 +3811,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 12,
-            "y": 121,
+            "y": 125,
             "w": 12,
             "h": 8
           },
@@ -3830,7 +3866,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 129
+            "y": 133
           },
           "id": 45,
           "panels": [],
@@ -3848,7 +3884,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 130,
+            "y": 134,
             "w": 5,
             "h": 4
           },
@@ -3935,7 +3971,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 5,
-            "y": 130,
+            "y": 134,
             "w": 5,
             "h": 4
           },
@@ -3996,7 +4032,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 10,
-            "y": 130,
+            "y": 134,
             "w": 5,
             "h": 4
           },
@@ -4057,7 +4093,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 15,
-            "y": 130,
+            "y": 134,
             "w": 5,
             "h": 4
           },
@@ -4118,7 +4154,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 20,
-            "y": 130,
+            "y": 134,
             "w": 4,
             "h": 4
           },
@@ -4183,7 +4219,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 134,
+            "y": 138,
             "w": 24,
             "h": 8
           },
