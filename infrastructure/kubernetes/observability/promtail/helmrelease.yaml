@@ -27,3 +27,13 @@ spec:
   values:
     config:
       lokiAddress: http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push
+      snippets:
+        pipelineStages:
+          - cri: {}
+          # Redact API keys and tracker passkeys before they reach Loki (e.g. autobrr logs webhook URLs on error).
+          - replace:
+              expression: '(?i)(?:apikey|api_key|passkey)=([^&\s"\\]+)'
+              replace: "<redacted>"
+          - replace:
+              expression: '(?i)x-api-key\W{1,4}([A-Za-z0-9._~+/=-]{8,})'
+              replace: "<redacted>"
