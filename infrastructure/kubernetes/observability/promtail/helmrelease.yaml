@@ -37,3 +37,16 @@ spec:
           - replace:
               expression: '(?i)x-api-key\W{1,4}([A-Za-z0-9._~+/=-]{8,})'
               replace: "<redacted>"
+          # Other tracker key params, and keys embedded in RSS-download and announce paths (e.g. Sonarr/autobrr grab URLs).
+          - replace:
+              expression: '(?i)[?&](?:torrent_pass|authkey|rsskey|api_token)=([A-Za-z0-9_-]{16,})'
+              replace: "<redacted>"
+          - replace:
+              expression: '/rss/download/\d+/([A-Za-z0-9]{16,})'
+              replace: "<redacted>"
+          - replace:
+              expression: '/([A-Za-z0-9]{16,})/announce'
+              replace: "<redacted>"
+          - replace:
+              expression: '(?i)/announce/([A-Za-z0-9]{16,})'
+              replace: "<redacted>"
