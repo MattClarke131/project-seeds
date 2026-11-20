@@ -72,3 +72,11 @@ done
 make_key_secret sabnzbd-api-key kubectl exec -n downloads-standard deploy/sabnzbd-standard -- \
   sed -n 's/^api_key = //p' /config/sabnzbd.ini
 ```
+
+## Unpackerr
+`unpackerr/` extracts archived torrent downloads (RAR, zip, 7z) that Sonarr and Radarr would otherwise leave stuck in the queue with "Found archive file, might need to be extracted" (#169).
+It deletes the extracted copy 5 minutes after import. The original archive stays so the torrent keeps seeding.
+- **Secrets:** none of its own. It reuses `sonarr-api-key`, `sonarr-portuguese-api-key`, `radarr-api-key` and `radarr-portuguese-api-key`.
+- **Scope:** torrents only. SABnzbd extracts its own downloads. sonarr-anime is skipped (#167).
+- **Web UI:** off. Unpackerr v1 starts one on port 5656 by default; `UN_WEBSERVER_LISTEN_ADDR=""` disables it.
+- **Logs:** `kubectl logs -n downloads-standard deploy/unpackerr`. Queue summaries appear only while something is in flight.

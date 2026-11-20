@@ -75,6 +75,7 @@ resources:
   - qbittorrent-exporter/service.yaml
   - exportarr/deployment.yaml
   - exportarr/service.yaml
+  - unpackerr/deployment.yaml
   - calibre-web-automated/deployment.yaml
   - calibre-web-automated/ingress.yaml
   - calibre-web-automated/ingress-books-sync.yaml

@@ -1,0 +1,110 @@
+# Extracts RAR/zip/7z torrent downloads that Sonarr/Radarr report as
+# "Found archive file, might need to be extracted", then deletes the
+# extracted copy after import (#169). Config is env-only; see ../README.md.
+# Standalone rather than a qbittorrent-vpn sidecar: it needs the shared media
+# volume but not the VPN, so its restarts never drop qBittorrent or gluetun.
+# sonarr-anime is skipped: it is kept but unused (#167).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unpackerr
+  namespace: downloads-standard
+spec:
+  replicas: 1
+  # Two copies polling the same queues would race to extract the same archive.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: unpackerr
+  template:
+    metadata:
+      labels:
+        app: unpackerr
+    spec:
+      securityContext:
+        # Matches qbittorrent and the *arr apps' PUID/PGID so extracted files are importable.
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+      containers:
+      - name: unpackerr
+        image: golift/unpackerr:v1.0.1
+        securityContext:
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+        env:
+        - name: TZ
+          value: "America/New_York"
+        # v1 starts a web UI by default; an empty address turns the HTTP server off.
+        - name: UN_WEBSERVER_LISTEN_ADDR
+          value: ""
+        # Log queue summaries only when something is in flight.
+        - name: UN_ACTIVITY
+          value: "true"
+        # Fallback path when the one a Starr app reports is unreadable.
+        - name: UN_SONARR_standard_PATHS_0
+          value: "/media/downloads/qbittorrent"
+        - name: UN_SONARR_standard_NAME
+          value: "Sonarr"
+        - name: UN_SONARR_standard_URL
+          value: "http://sonarr-standard:8989"
+        - name: UN_SONARR_standard_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sonarr-api-key
+              key: api-key
+        - name: UN_SONARR_portuguese_PATHS_0
+          value: "/media/downloads/qbittorrent"
+        - name: UN_SONARR_portuguese_NAME
+          value: "Sonarr Portuguese"
+        - name: UN_SONARR_portuguese_URL
+          value: "http://sonarr-portuguese:8989"
+        - name: UN_SONARR_portuguese_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sonarr-portuguese-api-key
+              key: api-key
+        - name: UN_RADARR_standard_PATHS_0
+          value: "/media/downloads/qbittorrent"
+        - name: UN_RADARR_standard_NAME
+          value: "Radarr"
+        - name: UN_RADARR_standard_URL
+          value: "http://radarr-standard:7878"
+        - name: UN_RADARR_standard_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: radarr-api-key
+              key: api-key
+        - name: UN_RADARR_portuguese_PATHS_0
+          value: "/media/downloads/qbittorrent"
+        - name: UN_RADARR_portuguese_NAME
+          value: "Radarr Portuguese"
+        - name: UN_RADARR_portuguese_URL
+          value: "http://radarr-portuguese:7878"
+        - name: UN_RADARR_portuguese_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: radarr-portuguese-api-key
+              key: api-key
+        volumeMounts:
+        # Same path as qbittorrent and the *arr apps, so queue paths need no remapping.
+        - name: media
+          mountPath: /media
+        - name: tmp
+          mountPath: /tmp
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "10m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+      volumes:
+      - name: media
+        persistentVolumeClaim:
+          claimName: media-standard
+      - name: tmp
+        emptyDir: {}
