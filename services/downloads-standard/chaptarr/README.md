@@ -25,12 +25,33 @@ their library, one hop further:
 1. Settings -> Connect -> add a Custom Script.
 2. Path: `/scripts/hardlink-to-cwa-ingest.sh` (from the
    `chaptarr-hardlink-script` ConfigMap).
-3. Trigger on "On Release Import" and "On Upgrade".
+3. Trigger on "On Release Import", "On Upgrade", and "On Book File Delete".
+   Leave "On Book File Delete For Upgrade" off: upgrades already pass the
+   replaced files to the import event.
 4. Click "Test" to confirm it's wired up correctly (exits 0, no
    filesystem changes). Trigger a real import to confirm end-to-end.
 
-The script reads `$Chaptarr_AddedBookPaths` (pipe-separated import paths),
-confirmed against `CustomScript.cs` in the Chaptarr source
-(`Chaptarr/chaptarr@main`) - capitalized with a `Chaptarr_` prefix, unlike
-Readarr's lowercase `readarr_addedbookpaths` this was originally modeled
-on.
+## Feeding AudioBookshelf (issue #193)
+
+The same script splits imports by extension:
+
+- **Ebooks** are hardlinked into `/media/books-ingest` for CWA, which deletes
+  them after processing.
+- **Audiobooks** (mp3/m4a/m4b/flac/ogg/opus/wav/aac) are hardlinked into
+  `/media/audiobooks`, a permanent mirror of Chaptarr's layout that ABS
+  reads. Upgrades and file deletes remove the old link, so ABS never shows
+  stale duplicates.
+
+The filename still says "cwa-ingest" so the live Connect entry keeps working.
+
+## Script environment variables
+
+Confirmed against `CustomScript.cs` in the Chaptarr source
+(`Chaptarr/chaptarr@main`). All are capitalized with a `Chaptarr_` prefix,
+unlike Readarr's lowercase `readarr_*` this was originally modeled on.
+
+- `Chaptarr_EventType`: `Download` (import or upgrade), `BookFileDelete`,
+  `Test`, and others the script ignores.
+- `Chaptarr_AddedBookPaths`: pipe-separated imported files.
+- `Chaptarr_DeletedPaths`: pipe-separated files an upgrade replaced.
+- `Chaptarr_BookFile_Path`: the deleted file on `BookFileDelete`.

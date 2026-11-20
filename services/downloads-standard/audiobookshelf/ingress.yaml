@@ -1,0 +1,28 @@
+# Tailnet/LAN-only, same as books.labmatt.com. The mobile app reaches it over Tailscale.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: audiobookshelf
+  namespace: downloads-standard
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+    # Audiobook uploads through the web UI can be several GB.
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - audiobooks.labmatt.com
+      secretName: audiobooks-tls
+  rules:
+  - host: audiobooks.labmatt.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: audiobookshelf
+            port:
+              number: 80
