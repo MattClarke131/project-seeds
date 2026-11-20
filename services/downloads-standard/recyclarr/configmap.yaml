@@ -14,6 +14,10 @@ data:
         quality_definition:
           type: movie
 
+        # Lets custom format scores decide repacks; see the Repack CFs below.
+        media_management:
+          propers_and_repacks: do_not_prefer
+
         quality_profiles:
           - name: HD Bluray + WEB
             reset_unmatched_scores:
@@ -41,6 +45,22 @@ data:
             assign_scores_to:
               - name: HD Bluray + WEB
                 score: -500
+          # TRaSH defaults: a repack outranks its original, but never outweighs the x265/x264 gap.
+          - trash_ids:
+              - e7718d7a3ce595f289bfee26adc178f5  # Repack/Proper
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: 5
+          - trash_ids:
+              - ae43b294509409a6a13919dedd4764c4  # Repack2
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: 6
+          - trash_ids:
+              - 5caaaa1c08c1742aa4342d8c4cc463f2  # Repack3
+            assign_scores_to:
+              - name: HD Bluray + WEB
+                score: 7
 
     sonarr:
       sonarr-standard:
@@ -50,6 +70,10 @@ data:
 
         quality_definition:
           type: series
+
+        # Lets custom format scores decide repacks; see the Repack CFs below.
+        media_management:
+          propers_and_repacks: do_not_prefer
 
         quality_profiles:
           - name: WEB-1080p
@@ -75,6 +99,22 @@ data:
             assign_scores_to:
               - name: WEB-1080p
                 score: -500
+          # TRaSH defaults: a repack outranks its original, but never outweighs the x265/x264 gap.
+          - trash_ids:
+              - ec8fa7296b64e8cd390a1600981f3923  # Repack/Proper
+            assign_scores_to:
+              - name: WEB-1080p
+                score: 5
+          - trash_ids:
+              - eb3d5cc0a2be0db205fb823640db6a3c  # Repack2
+            assign_scores_to:
+              - name: WEB-1080p
+                score: 6
+          - trash_ids:
+              - 44e7c4de10ae50265753082e5dc76047  # Repack3
+            assign_scores_to:
+              - name: WEB-1080p
+                score: 7
 
       sonarr-anime:
         base_url: http://sonarr-anime.downloads-standard.svc.cluster.local:8989
@@ -83,6 +123,10 @@ data:
 
         quality_definition:
           type: anime
+
+        # Lets custom format scores decide repacks; see the Repack CFs below.
+        media_management:
+          propers_and_repacks: do_not_prefer
 
         quality_profiles:
           - name: "[Anime] Remux-1080p"
@@ -108,3 +152,19 @@ data:
             assign_scores_to:
               - name: "[Anime] Remux-1080p"
                 score: -500
+          # TRaSH anime defaults: a repack outranks its original, but never outweighs the x265/x264 gap.
+          - trash_ids:
+              - ec8fa7296b64e8cd390a1600981f3923  # Repack/Proper
+            assign_scores_to:
+              - name: "[Anime] Remux-1080p"
+                score: 1
+          - trash_ids:
+              - eb3d5cc0a2be0db205fb823640db6a3c  # Repack2
+            assign_scores_to:
+              - name: "[Anime] Remux-1080p"
+                score: 2
+          - trash_ids:
+              - 44e7c4de10ae50265753082e5dc76047  # Repack3
+            assign_scores_to:
+              - name: "[Anime] Remux-1080p"
+                score: 3
