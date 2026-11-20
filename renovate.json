@@ -150,6 +150,16 @@
       "commitMessagePrefix": "[Auto-Merge]"
     },
     {
+      "description": "Automerge Headlamp's minor and patch bumps. It's a read-only dashboard that's rarely used, so staying current matters more than reviewing each release.",
+      "matchPackageNames": ["headlamp", "ghcr.io/headlamp-k8s/headlamp-plugin-flux"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash",
+      "platformAutomerge": false,
+      "commitMessagePrefix": "[Auto-Merge]"
+    },
+    {
       "description": "newt carries all public ingress through the Pangolin tunnel, so its bumps always stay manual.",
       "matchPackageNames": ["fosrl/newt"],
       "automerge": false
