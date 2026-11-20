@@ -34,6 +34,8 @@ spec:
         ports:
         - containerPort: 7474
           name: http
+        - containerPort: 9074
+          name: metrics
         env:
         - name: TZ
           value: "America/New_York"
@@ -42,6 +44,13 @@ spec:
           value: "0.0.0.0"
         - name: AUTOBRR__PORT
           value: "7474"
+        # Prometheus metrics for the Downloads dashboard; also binds 127.0.0.1 by default.
+        - name: AUTOBRR__METRICS_ENABLED
+          value: "true"
+        - name: AUTOBRR__METRICS_HOST
+          value: "0.0.0.0"
+        - name: AUTOBRR__METRICS_PORT
+          value: "9074"
         # Requires postgres-autobrr-reflection to exist in this namespace
         # (reflected from database/postgres-autobrr). Until it does, the pod
         # blocks in CreateContainerConfigError, then proceeds on its own.
