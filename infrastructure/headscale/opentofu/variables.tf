@@ -42,7 +42,7 @@ variable "headscale_hostname" {
 variable "headscale_version" {
   description = "Headscale release installed on first boot (no leading v)"
   type        = string
-  default     = "0.28.0"
+  default     = "0.29.7"
 }
 
 variable "headscale_deb_sha256" {
