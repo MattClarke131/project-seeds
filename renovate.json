@@ -83,6 +83,19 @@
       "depNameTemplate": "yannh/kubeconform",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the Headscale release the droplet installs on first boot (headscale_version). This only bumps the pin; the live box is upgraded by hand. headscale_deb_sha256 below it has no Renovate source, so update it by hand in the same PR.",
+      "managerFilePatterns": [
+        "/^infrastructure/headscale/opentofu/variables\\.tf$/"
+      ],
+      "matchStrings": [
+        "variable \"headscale_version\" \\{[^}]*?default\\s*=\\s*\"(?<currentValue>[0-9.]+)\""
+      ],
+      "depNameTemplate": "juanfont/headscale",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
   "hostRules": [
@@ -133,6 +146,12 @@
       "matchFileNames": ["infrastructure/home-assistant/opentofu/**"],
       "matchManagers": ["terraform"],
       "groupName": "home-assistant opentofu providers"
+    },
+    {
+      "description": "Group each OpenTofu root's provider bumps into their own single PR. matchManagers keeps the regex-tracked headscale_version out of the group.",
+      "matchFileNames": ["infrastructure/headscale/opentofu/**"],
+      "matchManagers": ["terraform"],
+      "groupName": "headscale opentofu providers"
     },
     {
       "description": "Major version bumps stay ungrouped (one PR each) rather than bundled with minor/patch - worth reading closely at merge time rather than rubber-stamping",
@@ -201,6 +220,17 @@
         "Check that each add-on's current version supports Kubernetes {{{newMajor}}}.{{{newMinor}}}: Cilium, Flux, CNPG, democratic-csi, cert-manager, ingress-nginx, and kube-prometheus-stack. Upgrade any add-on that doesn't before this hop. The Talos dry-run below doesn't check add-ons.",
         "Dry-run with `talosctl -n 10.0.10.50 upgrade-k8s --to {{{newVersion}}} --dry-run`. It flags removed APIs, and it also downloads the new images onto every node, which is real disk I/O. Let slow nodes finish pulling before the real run, which then reuses the cached images. For a check without downloads, add `--pre-pull-images=false`.",
         "Roll out live with `talosctl -n 10.0.10.50 upgrade-k8s --to {{{newVersion}}}`, check node and pod health, then merge. This pin feeds only new installs, so merging changes nothing live."
+      ]
+    },
+    {
+      "description": "Headscale 0.x minors can rename config keys and run DB migrations, and upstream upgrades one minor at a time, so each minor gets its own PR with upgrade steps.",
+      "matchPackageNames": ["juanfont/headscale"],
+      "separateMultipleMinor": true,
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "**Manual work required.** Merging only bumps the pinned version. elendira keeps running v{{{currentVersion}}} until you upgrade it with the steps below.",
+        "**Before merging**\n1. Read the [v{{{newVersion}}} release notes](https://github.com/juanfont/headscale/releases/tag/v{{{newVersion}}}).\n2. Diff upstream's example config between versions. Port any renamed or new keys into `infrastructure/headscale/opentofu/headscale-config.yaml`:\n   `diff <(curl -fsSL https://raw.githubusercontent.com/juanfont/headscale/v{{{currentVersion}}}/config-example.yaml) <(curl -fsSL https://raw.githubusercontent.com/juanfont/headscale/v{{{newVersion}}}/config-example.yaml)`\n3. Get the new checksum and set `headscale_deb_sha256` in `infrastructure/headscale/opentofu/variables.tf` on this branch. Without it, the next rebuild fails cloud-init:\n   `curl -fsSL https://github.com/juanfont/headscale/releases/download/v{{{newVersion}}}/checksums.txt | grep linux_amd64.deb`",
+        "**After merging, upgrade elendira**\n1. Download and verify the package. Replace `<sha256>` with the checksum from step 3:\n   `ssh elendira 'curl -fsSL -o /tmp/headscale.deb https://github.com/juanfont/headscale/releases/download/v{{{newVersion}}}/headscale_{{{newVersion}}}_linux_amd64.deb && echo \"<sha256>  /tmp/headscale.deb\" | sha256sum -c -'`\n2. Stop Headscale and back up its state. Existing tailnet connections keep working while it is down:\n   `ssh elendira 'sudo systemctl stop headscale && sudo tar -C /var/lib -czf /tmp/headscale-backup.tgz headscale && sudo chown matt /tmp/headscale-backup.tgz'`\n   `scp elendira:/tmp/headscale-backup.tgz ~/backups/headscale/pre-{{{newVersion}}}.tgz`\n3. If you changed `headscale-config.yaml`, push it now (README, \"Changing the Headscale config\"). Then install and start:\n   `ssh elendira 'sudo DEBIAN_FRONTEND=noninteractive dpkg --force-confold -i /tmp/headscale.deb && sudo systemctl start headscale'`\n4. Verify:\n   `curl -fsS https://headscale.labmatt.com/health && ssh elendira 'headscale version && headscale nodes list'`, then `tailscale status`.\n\n**Rollback:** stop Headscale, restore the backup into `/var/lib`, reinstall the v{{{currentVersion}}} `.deb`, then start it."
       ]
     },
     {
