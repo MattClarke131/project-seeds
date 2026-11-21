@@ -35,6 +35,12 @@ tofu init
 tofu plan
 ```
 
+The SSH key already exists in the DigitalOcean account, so a fresh state must import it before applying. Otherwise the apply fails with "SSH Key is already in use". Find the ID by fingerprint (`ssh-keygen -l -E md5 -f ~/.ssh/id_ed25519.pub`) in the account's key list, then:
+
+```sh
+tofu import digitalocean_ssh_key.homelab <key id>
+```
+
 ## Cutover from the hand-built droplet
 
 The current `attlerock` (Ubuntu 25.04, nginx + certbot) was built by hand and isn't in state. This runbook builds the new droplet beside it.

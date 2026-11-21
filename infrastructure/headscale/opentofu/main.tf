@@ -1,5 +1,5 @@
 resource "digitalocean_ssh_key" "homelab" {
-  name       = "homelab-key"
+  name       = "tengen-macbook-pro"
   public_key = var.ssh_public_key
 }
 
