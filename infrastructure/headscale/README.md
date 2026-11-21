@@ -1,6 +1,6 @@
 # Headscale
 
-Headscale is the self-hosted Tailscale control server for the tailnet. It runs on a DigitalOcean droplet named `attlerock`, managed by the OpenTofu module in `opentofu/`.
+Headscale is the self-hosted Tailscale control server for the tailnet. It runs on a DigitalOcean droplet named `elendira`, managed by the OpenTofu module in `opentofu/`.
 
 ## What lives where
 
@@ -43,7 +43,7 @@ tofu import digitalocean_ssh_key.homelab <key id>
 
 ## Cutover from the hand-built droplet
 
-The current `attlerock` (Ubuntu 25.04, nginx + certbot) was built by hand and isn't in state. This runbook builds the new droplet beside it.
+The old `attlerock` (Ubuntu 25.04, nginx + certbot) was built by hand and isn't in state. This runbook builds the new droplet beside it.
 
 1. Build the new droplet and reserved IP.
    ```sh
@@ -53,7 +53,7 @@ The current `attlerock` (Ubuntu 25.04, nginx + certbot) was built by hand and is
    ```
 2. Stop Headscale on the old droplet and copy its state to the Mac. The control plane is down from here until step 5.
    ```sh
-   ssh attlerock 'sudo systemctl stop headscale && sudo tar -C /var/lib -czf /tmp/headscale-state.tgz headscale && sudo cp /opt/headscale/config/acl.json /tmp/ && sudo chown matt /tmp/headscale-state.tgz /tmp/acl.json'
+   ssh -t attlerock 'sudo systemctl disable --now headscale && sudo tar -C /var/lib -czf /tmp/headscale-state.tgz headscale && sudo cp /opt/headscale/config/acl.json /tmp/ && sudo chown matt /tmp/headscale-state.tgz /tmp/acl.json'
    scp attlerock:/tmp/headscale-state.tgz attlerock:/tmp/acl.json ~/backups/headscale/
    ```
 3. Restore onto the new droplet.
@@ -69,7 +69,7 @@ The current `attlerock` (Ubuntu 25.04, nginx + certbot) was built by hand and is
    ssh matt@$NEW 'headscale nodes list'
    tailscale status
    ```
-6. Update the `attlerock` alias in `~/.ssh/config` to the reserved IP.
+6. Add an `elendira` alias to `~/.ssh/config` pointing at the reserved IP (`matt@<reserved_ipv4>`).
 7. After a week of normal use, destroy the old droplet in the DigitalOcean console.
 
 **Rollback (until step 7):** revert `headscale_ipv4`, apply Cloudflare, then `ssh <old ip> sudo systemctl start headscale`. Changes made on the new server since the cutover are lost.
@@ -81,8 +81,8 @@ Edit `opentofu/headscale-config.yaml`, render it, then push it:
 ```sh
 cd infrastructure/headscale/opentofu
 echo 'templatefile("headscale-config.yaml", { headscale_hostname = "headscale.labmatt.com" })' | tofu console | sed '1d;$d' > /tmp/headscale-config.yaml
-scp /tmp/headscale-config.yaml attlerock:/tmp/config.yaml
-ssh attlerock 'sudo install -m 0644 /tmp/config.yaml /etc/headscale/config.yaml && sudo systemctl restart headscale'
+scp /tmp/headscale-config.yaml elendira:/tmp/config.yaml
+ssh elendira 'sudo install -m 0644 /tmp/config.yaml /etc/headscale/config.yaml && sudo systemctl restart headscale'
 ```
 
 ## Upgrading Headscale

@@ -12,7 +12,7 @@ variable "ssh_public_key" {
 variable "droplet_name" {
   description = "Droplet name and hostname"
   type        = string
-  default     = "attlerock"
+  default     = "elendira"
 }
 
 variable "region" {
