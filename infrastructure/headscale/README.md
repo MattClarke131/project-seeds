@@ -15,7 +15,7 @@ Headscale is the self-hosted Tailscale control server for the tailnet. It runs o
 
 - **TLS:** Headscale terminates TLS itself with Let's Encrypt (HTTP-01 on port 80). The first HTTPS request after DNS resolves triggers issuance.
 - **Patching:** unattended-upgrades installs security updates and reboots at 09:00 UTC when needed. A reboot only pauses the control plane; existing tailnet connections keep working.
-- **First boot:** cloud-init installs Headscale but leaves it disabled until state is restored.
+- **First boot:** Headscale is enabled but only starts once `/var/lib/headscale/noise_private.key` exists (a systemd `ConditionPathExists` drop-in). A fresh box never mints its own key or empty database.
 - **Drift:** `user_data` and `image` are in `ignore_changes`, so a plain `tofu apply` never rebuilds the droplet. Rebuilds are explicit (see below).
 
 ## Setup
@@ -59,18 +59,19 @@ The old `attlerock` (Ubuntu 25.04, nginx + certbot) was built by hand and isn't 
 3. Restore onto the new droplet.
    ```sh
    scp ~/backups/headscale/headscale-state.tgz ~/backups/headscale/acl.json matt@$NEW:/tmp/
-   ssh matt@$NEW 'sudo tar -C /var/lib -xzf /tmp/headscale-state.tgz && sudo chown -R headscale:headscale /var/lib/headscale && sudo install -o root -g headscale -m 0640 /tmp/acl.json /etc/headscale/acl.json && sudo rm /tmp/headscale-state.tgz'
+   ssh matt@$NEW 'sudo rm -f /var/lib/headscale/db.sqlite-wal /var/lib/headscale/db.sqlite-shm && sudo tar -C /var/lib -xzf /tmp/headscale-state.tgz && sudo chown -R headscale:headscale /var/lib/headscale && sudo install -o root -g headscale -m 0640 /tmp/acl.json /etc/headscale/acl.json && sudo rm /tmp/headscale-state.tgz'
    ```
+   The `rm` clears WAL files left by any earlier start on the new box. The old server's clean stop already checkpointed its data into `db.sqlite`.
 4. Point DNS at the reserved IP. Set `headscale_ipv4` in `infrastructure/cloudflare/opentofu/variables.tf` to `tofu output -raw reserved_ipv4`, then apply that module.
 5. Start Headscale and check it.
    ```sh
-   ssh matt@$NEW 'sudo systemctl enable --now headscale'
+   ssh matt@$NEW 'sudo systemctl start headscale'
    curl -fsS https://headscale.labmatt.com/health
    ssh matt@$NEW 'headscale nodes list'
    tailscale status
    ```
 6. Add an `elendira` alias to `~/.ssh/config` pointing at the reserved IP (`matt@<reserved_ipv4>`).
-7. After a week of normal use, destroy the old droplet in the DigitalOcean console.
+7. After a day of normal use, stop nginx on the old droplet, snapshot it, then destroy it in the DigitalOcean console. It runs an unpatched OS and still holds the Noise key, so don't leave it up.
 
 **Rollback (until step 7):** revert `headscale_ipv4`, apply Cloudflare, then `ssh <old ip> sudo systemctl start headscale`. Changes made on the new server since the cutover are lost.
 
