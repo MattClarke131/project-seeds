@@ -43,6 +43,10 @@ spec:
           cpu: 100m
           memory: 128Mi
 
+      config:
+        # Mitigates nginx2root HTTP/2 CVEs; ingress-nginx is retired and ships no fixed image.
+        use-http2: "false"
+
       metrics:
         enabled: true
         serviceMonitor:
