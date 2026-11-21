@@ -18,6 +18,8 @@ resource "hcloud_server" "edge_proxy" {
 
   user_data = <<-EOF
   #cloud-config
+  # Key-only SSH; cloud-init writes PasswordAuthentication no into sshd_config.d
+  ssh_pwauth: false
   write_files:
     - path: /etc/netplan/60-floating-ip.yaml
       content: |
