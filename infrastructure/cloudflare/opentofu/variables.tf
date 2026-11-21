@@ -24,7 +24,7 @@ variable "edge_proxy_ipv4" {
 variable "headscale_ipv4" {
   description = "Public IPv4 of the headscale server VPS"
   type        = string
-  default     = "107.170.31.230"
+  default     = "45.55.96.98" # reserved IP from infrastructure/headscale
 }
 
 variable "tailnet_assistant_ipv4" {
