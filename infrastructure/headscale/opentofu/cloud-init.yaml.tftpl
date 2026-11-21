@@ -31,6 +31,11 @@ write_files:
   - path: /etc/ssh/sshd_config.d/10-no-root.conf
     content: |
       PermitRootLogin no
+  # Without restored state Headscale would mint a new noise key and empty database; written before the .deb installs
+  - path: /etc/systemd/system/headscale.service.d/require-state.conf
+    content: |
+      [Unit]
+      ConditionPathExists=/var/lib/headscale/noise_private.key
   # Reboot for kernel/libc patches so the box never sits on a pending reboot
   - path: /etc/apt/apt.conf.d/52unattended-reboot
     content: |
@@ -42,5 +47,5 @@ runcmd:
   - echo "${headscale_deb_sha256}  /tmp/headscale.deb" | sha256sum -c -
   - DEBIAN_FRONTEND=noninteractive dpkg --force-confold -i /tmp/headscale.deb
   - usermod -aG headscale matt
-  # Stays off until the database and noise key are restored (README runbook)
-  - systemctl disable --now headscale
+  # Enabled now; require-state.conf keeps it from starting until state is restored
+  - systemctl enable headscale
