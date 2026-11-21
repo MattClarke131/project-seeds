@@ -1,0 +1,42 @@
+#cloud-config
+hostname: ${hostname}
+
+package_update: true
+package_upgrade: true
+packages:
+  - unattended-upgrades
+  - sqlite3
+
+disable_root: true
+ssh_pwauth: false
+
+users:
+  - name: matt
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+
+# 512 MB RAM is tight for apt runs
+swap:
+  filename: /swapfile
+  size: 1G
+
+write_files:
+  - path: /etc/headscale/config.yaml
+    encoding: b64
+    content: ${base64encode(headscale_config)}
+  # Reboot for kernel/libc patches so the box never sits on a pending reboot
+  - path: /etc/apt/apt.conf.d/52unattended-reboot
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "09:00";
+
+runcmd:
+  - curl -fsSL -o /tmp/headscale.deb https://github.com/juanfont/headscale/releases/download/v${headscale_version}/headscale_${headscale_version}_linux_amd64.deb
+  - echo "${headscale_deb_sha256}  /tmp/headscale.deb" | sha256sum -c -
+  - DEBIAN_FRONTEND=noninteractive dpkg --force-confold -i /tmp/headscale.deb
+  - usermod -aG headscale matt
+  # Stays off until the database and noise key are restored (README runbook)
+  - systemctl disable --now headscale
