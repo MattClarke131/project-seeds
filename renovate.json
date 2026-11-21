@@ -83,6 +83,19 @@
       "depNameTemplate": "yannh/kubeconform",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the Headscale release the droplet installs on first boot (headscale_version). This only bumps the pin; the live box is upgraded by hand. headscale_deb_sha256 below it has no Renovate source, so update it by hand in the same PR.",
+      "managerFilePatterns": [
+        "/^infrastructure/headscale/opentofu/variables\\.tf$/"
+      ],
+      "matchStrings": [
+        "variable \"headscale_version\" \\{[^}]*?default\\s*=\\s*\"(?<currentValue>[0-9.]+)\""
+      ],
+      "depNameTemplate": "juanfont/headscale",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
   "hostRules": [
@@ -133,6 +146,12 @@
       "matchFileNames": ["infrastructure/home-assistant/opentofu/**"],
       "matchManagers": ["terraform"],
       "groupName": "home-assistant opentofu providers"
+    },
+    {
+      "description": "Group each OpenTofu root's provider bumps into their own single PR. matchManagers keeps the regex-tracked headscale_version out of the group.",
+      "matchFileNames": ["infrastructure/headscale/opentofu/**"],
+      "matchManagers": ["terraform"],
+      "groupName": "headscale opentofu providers"
     },
     {
       "description": "Major version bumps stay ungrouped (one PR each) rather than bundled with minor/patch - worth reading closely at merge time rather than rubber-stamping",
@@ -201,6 +220,18 @@
         "Check that each add-on's current version supports Kubernetes {{{newMajor}}}.{{{newMinor}}}: Cilium, Flux, CNPG, democratic-csi, cert-manager, ingress-nginx, and kube-prometheus-stack. Upgrade any add-on that doesn't before this hop. The Talos dry-run below doesn't check add-ons.",
         "Dry-run with `talosctl -n 10.0.10.50 upgrade-k8s --to {{{newVersion}}} --dry-run`. It flags removed APIs, and it also downloads the new images onto every node, which is real disk I/O. Let slow nodes finish pulling before the real run, which then reuses the cached images. For a check without downloads, add `--pre-pull-images=false`.",
         "Roll out live with `talosctl -n 10.0.10.50 upgrade-k8s --to {{{newVersion}}}`, check node and pod health, then merge. This pin feeds only new installs, so merging changes nothing live."
+      ]
+    },
+    {
+      "description": "Headscale 0.x minors can rename config keys and run DB migrations, and upstream upgrades one minor at a time, so each minor gets its own PR with upgrade steps.",
+      "matchPackageNames": ["juanfont/headscale"],
+      "separateMultipleMinor": true,
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "Read the release notes and diff the upstream `config-example.yaml` against `infrastructure/headscale/opentofu/headscale-config.yaml` before merging.",
+        "Set `headscale_deb_sha256` to the `headscale_{{{newVersion}}}_linux_amd64.deb` line in the release's `checksums.txt`, or the next rebuild fails cloud-init.",
+        "Back up first: `ssh elendira 'sudo tar -C /var/lib -czf /tmp/headscale-backup.tgz headscale'`, then copy it to the Mac.",
+        "Upgrade live: download the `.deb`, check its SHA-256, run `sudo dpkg --force-confold -i` on it, then `sudo systemctl restart headscale`. Verify with `curl -fsS https://headscale.labmatt.com/health` and `tailscale status`. Merging changes nothing live."
       ]
     },
     {
