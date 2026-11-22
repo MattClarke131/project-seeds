@@ -25,6 +25,9 @@ spec:
     remediation:
       retries: 1
   values:
+    # Chart default is 1s, which trips transiently under node I/O or CPU contention.
+    readinessProbe:
+      timeoutSeconds: 5
     config:
       lokiAddress: http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push
       snippets:
