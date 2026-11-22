@@ -41,6 +41,7 @@ locals {
     {
       name = "livio", host_ip = "10.0.10.10", cores = 4, memory_mb = 32768, host_reserved_mb = 4096, template_vm_id = 20000,
 
+      # cp gets priority CPU shares over workers under contention - see nicholas above (issue #140).
       control_plane = {
         ip_address   = "10.0.10.40"
         mac_address  = "BC:24:11:B2:B0:8C"
@@ -48,7 +49,7 @@ locals {
         memory_mb    = 4096
         datastore_id = "local-zfs"
         disk_size_gb = 50
-        cpu_units    = null
+        cpu_units    = 4096
       }
       workers = [
         {
@@ -60,7 +61,7 @@ locals {
           # needs more local scratch space for /cache than a plain worker - see issue #253.
           datastore_id = "local-zfs"
           disk_size_gb = 100
-          cpu_units    = null
+          cpu_units    = 1024
         },
         {
           ip_address   = "10.0.10.42"
@@ -69,7 +70,7 @@ locals {
           memory_mb    = 10240
           datastore_id = "local-zfs"
           disk_size_gb = 50
-          cpu_units    = null
+          cpu_units    = 1024
         },
       ]
     },
