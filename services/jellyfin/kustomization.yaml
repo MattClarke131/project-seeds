@@ -1,8 +1,8 @@
 # Flux-managed. See clusters/eye-of-michael/flux-system/jellyfin.yaml for
-# the Kustomization CR that reconciles this path. Bundles jellystat/ too -
-# it deploys into this same jellyfin namespace, same pattern as
-# services/downloads-standard and services/immich grouping their app
-# subdirs into one category.
+# the Kustomization CR that reconciles this path. Bundles jellystat/ and
+# jellyfin-mcp/ too - both deploy into this same jellyfin namespace, same
+# pattern as services/downloads-standard and services/immich grouping their
+# app subdirs into one category.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
@@ -12,6 +12,7 @@ resources:
   - helmrepository.yaml
   - helmrelease.yaml
   - ../jellystat
+  - jellyfin-mcp
 
 components:
   - ../../infrastructure/kubernetes/storage/shared-volumes/media-standard

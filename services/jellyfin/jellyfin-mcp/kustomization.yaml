@@ -1,0 +1,7 @@
+# Not its own Flux category - deploys into the jellyfin namespace, bundled into
+# that category by services/jellyfin/kustomization.yaml.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml

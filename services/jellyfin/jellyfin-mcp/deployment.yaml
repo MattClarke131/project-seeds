@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin-mcp
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyfin-mcp
+  template:
+    metadata:
+      labels:
+        app: jellyfin-mcp
+    spec:
+      automountServiceAccountToken: false
+      # The jellyfin namespace enforces `privileged` Pod Security for Jellyfin's
+      # /dev/dri GPU mount, so lock this pod down explicitly instead.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: jellyfin-mcp
+          image: ghcr.io/jaredtrent/jellyfin-mcp:2026.1015.1
+          # Read-only mode registers only the 14 readOnlyHint tools as
+          # defense-in-depth alongside agentgateway's CEL allowlists (#447).
+          args:
+            - --http
+            - --addr
+            - 0.0.0.0:8080
+            - --read-only
+          env:
+            - name: JELLYFIN_URL
+              value: http://jellyfin.jellyfin.svc.cluster.local:8096
+            - name: TZ
+              value: America/New_York
+            - name: JELLYFIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jellyfin-mcp-credentials
+                  key: JELLYFIN_API_KEY
+            - name: HTTP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: jellyfin-mcp-http-token
+                  key: HTTP_TOKEN
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
