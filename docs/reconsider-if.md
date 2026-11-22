@@ -39,3 +39,20 @@ protects against a compromised git repo/credential becoming automatic
 cluster access, which matters regardless of what `docs/adr/
 003-control-plane-metrics-exposure.md` decides - it's a different risk than
 the one that ADR addresses.
+
+---
+
+**IF** we add write or admin MCP servers (especially for apps without
+downstream RBAC like `*arr`, or high-blast-radius infrastructure like
+Postgres, Proxmox, or Kubernetes, see #447) -
+
+**THEN** stand up a separate privileged MCP control plane
+(`mcp-admin-gateway` namespace, separate JWT signing keypair/issuer,
+separate `*-admin` MCP pods and `*-admin-http-token` Reflector targets,
+`port-forward`/Tailnet-only access with short human-minted TTLs, and
+`CiliumNetworkPolicy` keeping the everyday `mcp-gateway` unable to reach
+admin MCP pods). A single `mcp-gateway` is safe while connected MCP
+backends are read-only with least-privilege credentials, because even a
+gateway or token-minter compromise cannot mutate anything; once privileged
+MCP backends exist, sharing one control plane turns the everyday gateway
+and token minter into a single point of failure for destructive actions.
