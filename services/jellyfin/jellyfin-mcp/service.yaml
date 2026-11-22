@@ -1,0 +1,16 @@
+# Internal ClusterIP-only Service (no Ingress). Intended to be reached only by
+# agentgateway once deployed (see #447), or locally via `kubectl port-forward`.
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-mcp
+  namespace: jellyfin
+spec:
+  type: ClusterIP
+  selector:
+    app: jellyfin-mcp
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
