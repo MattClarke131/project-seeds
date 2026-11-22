@@ -25,13 +25,29 @@ spec:
       containers:
         - name: jellyfin-mcp
           image: ghcr.io/jaredtrent/jellyfin-mcp:2026.1015.1
-          # Read-only mode registers only the 14 readOnlyHint tools as
-          # defense-in-depth alongside agentgateway's CEL allowlists (#447).
+          # Read-only mode registers only readOnlyHint tools, and --toolsets pins
+          # the enabled groups so future Renovate bumps cannot silently expose new
+          # toolsets (#447). Note: --toolsets is a Cobra StringVar (repeated flags
+          # overwrite), so enabled groups stay comma-separated on one line.
+          #
+          # Enabled toolsets (11 tools under --read-only):
+          #   - discovery  (7): libraries, search, browse, get_item, recommendations, item_extras, download_link
+          #   - media      (3): tv_shows, music, people
+          #   - analytics  (1): analytics
+          #
+          # Intentionally disabled toolsets:
+          #   - playback   (1 read-only: sessions; plus play, playback_control)
+          #   - admin      (1 read-only: system_info; plus system_control, users, library_manage, tasks, plugins, devices, server)
+          #   - livetv     (1 read-only: live_tv; plus recordings)
+          #   - content    (0 read-only: metadata, subtitles_lyrics, images, videos)
+          #   - user       (0 read-only: user_data, playlists, collections)
           args:
             - --http
             - --addr
             - 0.0.0.0:8080
             - --read-only
+            - --toolsets
+            - discovery,media,analytics
           env:
             - name: JELLYFIN_URL
               value: http://jellyfin.jellyfin.svc.cluster.local:8096
