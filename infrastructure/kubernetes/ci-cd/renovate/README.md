@@ -3,8 +3,8 @@
 Self-hosted [Renovate](https://docs.renovatebot.com/) instance, run as a Kubernetes
 `CronJob` rather than the hosted GitHub App, so nothing external gets installed
 on the repo. Scans this repo's `main` branch on a schedule and opens PRs for
-outdated container image tags, Helm chart versions, Terraform provider
-versions, and `hermes`'s npm dependencies.
+outdated container image tags, Helm chart versions, and Terraform provider
+versions.
 
 Repo-level behavior (grouping, scheduling, dashboard) is configured in
 [`renovate.json`](../../../../renovate.json) at the repo root - that's what
