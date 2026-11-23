@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: jellyfin-mcp
-          image: ghcr.io/jaredtrent/jellyfin-mcp:2026.1015.1
+          image: ghcr.io/jaredtrent/jellyfin-mcp:2026.1015.1@sha256:9b9c8ec91c5561d64176a88ce3933489c3903e669f4458e5f5cf3841fb822bb6
           # Read-only mode registers only readOnlyHint tools, and --toolsets pins
           # the enabled groups so future Renovate bumps cannot silently expose new
           # toolsets (#447). Note: --toolsets is a Cobra StringVar (repeated flags
@@ -32,6 +32,7 @@ spec:
           #
           # Enabled toolsets (11 tools under --read-only):
           #   - discovery  (7): libraries, search, browse, get_item, recommendations, item_extras, download_link
+          #     (libraries 403s with a non-admin token and has no per-tool flag; deny it at the gateway)
           #   - media      (3): tv_shows, music, people
           #   - analytics  (1): analytics
           #
