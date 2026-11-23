@@ -25,6 +25,22 @@ Create both Secrets in the `jellyfin` namespace **before** merging (the `jellyfi
      --overwrite
    ```
 
+## Network Policy
+
+[ciliumnetworkpolicy.yaml](ciliumnetworkpolicy.yaml) denies everything not listed:
+- **Ingress:** host only (kubelet probes). `kubectl port-forward` still works because it bypasses pod network policy.
+- **Egress:** cluster DNS and Jellyfin on `8096` only, so a compromised image cannot send its token elsewhere.
+
+To check egress from inside the pod's network identity:
+
+```bash
+POD=$(kubectl -n jellyfin get pod -l app=jellyfin-mcp -o name | cut -d/ -f2)
+kubectl -n jellyfin debug "$POD" --image=busybox:1.37 --profile=restricted -c netcheck -- \
+  sh -c 'wget -q -T5 -O- http://jellyfin.jellyfin.svc.cluster.local:8096/health; wget -q -T5 -O /dev/null http://1.1.1.1 || echo blocked'
+kubectl -n jellyfin logs "$POD" -c netcheck
+# Expected: "Healthy" then "blocked"
+```
+
 ## Verification
 
 Forward the internal Service locally and verify `/health` and `tools/list`:

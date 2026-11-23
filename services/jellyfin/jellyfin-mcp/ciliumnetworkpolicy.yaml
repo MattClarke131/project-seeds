@@ -1,0 +1,38 @@
+# Default-deny for jellyfin-mcp: it reaches only DNS and Jellyfin, so a compromised
+# image cannot send its Jellyfin token anywhere else (#447).
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: jellyfin-mcp
+  namespace: jellyfin
+spec:
+  endpointSelector:
+    matchLabels:
+      app: jellyfin-mcp
+  # Host only, for kubelet probes; kubectl port-forward enters the pod netns and bypasses policy.
+  ingress:
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: jellyfin
+            app.kubernetes.io/instance: jellyfin
+      toPorts:
+        - ports:
+            - port: "8096"
+              protocol: TCP
