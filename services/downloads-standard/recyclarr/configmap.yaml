@@ -70,6 +70,12 @@ data:
 
         quality_definition:
           type: series
+          # Guide min (15 MB/min) assumes x264 bitrates and rejects most x265 WEB encodes of short or animated episodes.
+          qualities:
+            - name: WEBDL-1080p
+              min: 8
+            - name: WEBRip-1080p
+              min: 8
 
         # Lets custom format scores decide repacks; see the Repack CFs below.
         media_management:
