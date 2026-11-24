@@ -16,6 +16,8 @@ Envoy Gateway is the cluster's ingress controller, replacing the retired ingress
 | **Plain HTTP** | Always redirected to HTTPS | Served, since it comes from Newt |
 | **Who can attach** | ListenerSets from any namespace | Routes from namespaces labelled `labmatt.com/public-gateway: "true"` |
 
+On `internal`, `traffic-policy-internal.yaml` matches ingress-nginx's behaviour: paths reach apps unchanged (no slash merging or `%2F` decoding), and responses have no total time limit. `public` keeps Envoy's stricter defaults.
+
 The network policies enforce the same split:
 - **`envoy-public`** accepts traffic only from Newt and can reach only opted-in namespaces.
 - **`envoy-internal`** refuses Newt, so internet traffic can't reach LAN-only apps.
