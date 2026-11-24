@@ -6,6 +6,9 @@ proxied), grouped by target in `variables.tf`/`locals.tf`:
 - a `*.labmatt.com` wildcard → `ingress_ip` (in-cluster ingress-nginx
   LoadBalancer on the k8sVNet). Any in-cluster service's `ingress.yaml`
   host just works against this - no DNS change needed, ever.
+- `gateway_hostnames` → `gateway_ip` (in-cluster Envoy Gateway). Apps
+  move here one at a time as they leave ingress-nginx (#444); see
+  [envoy-gateway](../../kubernetes/envoy-gateway/README.md)
 - `tunnel_hostnames` → `edge_proxy_ipv4` (Hetzner edge proxy running
   Pangolin; see [infrastructure/tunnel](../../tunnel))
 - `headscale_hostnames` → `headscale_ipv4` (standalone VPS)

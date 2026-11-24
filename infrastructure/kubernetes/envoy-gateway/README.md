@@ -34,7 +34,7 @@ The network policies enforce the same split:
 LAN DNS is a wildcard `*.labmatt.com` record pointing at the control-plane VIP `10.0.10.2`, where ingress-nginx listens on host ports. A record for one hostname overrides the wildcard, so apps move one at a time:
 1. **Run both side by side.** Add the ListenerSet and HTTPRoute and keep the Ingress. Give the ListenerSet a different Secret name from the Ingress's TLS Secret, so their two Certificates do not collide.
 2. **Test before DNS moves.** `curl --resolve <host>:443:10.0.10.62 https://<host>` should return the app with a valid certificate.
-3. **Move DNS.** In `infrastructure/cloudflare/opentofu/`, add an A record for the hostname pointing at `10.0.10.62`, then `tofu apply`.
+3. **Move DNS.** Add the hostname to `gateway_hostnames` in `infrastructure/cloudflare/opentofu/variables.tf`. After merging, run `tofu apply` there from the main checkout, which holds the state.
 4. **Remove the Ingress** once the app works through the new record.
 
 ## Checking it
