@@ -16,6 +16,20 @@ variable "ingress_ip" {
   default     = "10.0.10.2"
 }
 
+variable "gateway_ip" {
+  description = "Internal Envoy Gateway LoadBalancer IP on the k8sVNet, replacing ingress_ip (#444)"
+  type        = string
+  default     = "10.0.10.62"
+}
+
+variable "gateway_hostnames" {
+  description = "Subdomains already moved from ingress-nginx to the internal Envoy Gateway"
+  type        = set(string)
+  default = [
+    "ladder",
+  ]
+}
+
 variable "edge_proxy_ipv4" {
   description = "Public IPv4 of the Hetzner edge proxy (Pangolin tunnel), from infrastructure/tunnel/opentofu output public_ipv4"
   type        = string
