@@ -25,19 +25,9 @@ spec:
       retries: 1
   values:
     prometheus:
-      ingress:
-        enabled: true
-        ingressClassName: nginx
-        annotations:
-          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-          cert-manager.io/cluster-issuer: letsencrypt-cloudflare
-        hosts:
-          - prometheus.labmatt.com
-        tls:
-          - hosts:
-              - prometheus.labmatt.com
-            secretName: prometheus-tls
       prometheusSpec:
+        # Alert and UI links; the chart only derives this from an Ingress host.
+        externalUrl: https://prometheus.labmatt.com/
         # Mount targets from ConfigMap
         configMaps:
           - prometheus-targets
@@ -100,19 +90,10 @@ spec:
             memory: 4Gi
 
     grafana:
-      ingress:
-        enabled: true
-        ingressClassName: nginx
-        annotations:
-          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-          cert-manager.io/cluster-issuer: letsencrypt-cloudflare
-        hosts:
-          - grafana.labmatt.com
-        tls:
-          - hosts:
-              - grafana.labmatt.com
-            secretName: grafana-tls
-
+      grafana.ini:
+        server:
+          # Redirect and link URLs; the chart only derives this from an Ingress host.
+          domain: grafana.labmatt.com
       persistence:
         enabled: true
         storageClassName: nfs-provisioner
