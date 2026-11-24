@@ -7,5 +7,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - ingress.yaml
+  - listenerset.yaml
+  - httproute.yaml
   - service.yaml
   - postgres-database.yaml

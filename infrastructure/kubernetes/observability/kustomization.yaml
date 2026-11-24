@@ -29,6 +29,10 @@ resources:
   - kube-prometheus-stack/postgres-secret.yaml
   - kube-prometheus-stack/helmrepository.yaml
   - kube-prometheus-stack/helmrelease.yaml
+  - kube-prometheus-stack/listenerset-grafana.yaml
+  - kube-prometheus-stack/httproute-grafana.yaml
+  - kube-prometheus-stack/listenerset-prometheus.yaml
+  - kube-prometheus-stack/httproute-prometheus.yaml
   - metrics-server/helmrepository.yaml
   - metrics-server/helmrelease.yaml
   - promtail/helmrepository.yaml

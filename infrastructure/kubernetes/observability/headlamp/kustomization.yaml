@@ -4,3 +4,5 @@ resources:
   - helmrepository.yaml
   - helmrelease.yaml
   - flux-rbac.yaml
+  - listenerset.yaml
+  - httproute.yaml
