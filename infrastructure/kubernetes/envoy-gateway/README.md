@@ -31,11 +31,13 @@ The network policies enforce the same split:
 `services/ladder/` is the reference example for a LAN app.
 
 ## Moving a LAN app off ingress-nginx
-LAN DNS is a wildcard `*.labmatt.com` record pointing at the control-plane VIP `10.0.10.2`, where ingress-nginx listens on host ports. A record for one hostname overrides the wildcard, so apps move one at a time:
-1. **Run both side by side.** Add the ListenerSet and HTTPRoute and keep the Ingress. Give the ListenerSet a different Secret name from the Ingress's TLS Secret, so their two Certificates do not collide.
-2. **Test before DNS moves.** `curl --resolve <host>:443:10.0.10.62 https://<host>` should return the app with a valid certificate.
-3. **Move DNS.** Add the hostname to `gateway_hostnames` in `infrastructure/cloudflare/opentofu/variables.tf`. After merging, run `tofu apply` there from the main checkout, which holds the state.
-4. **Remove the Ingress** once the app works through the new record.
+LAN DNS is a wildcard `*.labmatt.com` record pointing at the control-plane VIP `10.0.10.2`, where ingress-nginx listens on host ports. A record for one hostname overrides the wildcard, so apps move one at a time. Each app takes two PRs:
+1. **First PR: routes and DNS.**
+   - Add the ListenerSet and HTTPRoute and keep the Ingress. Give the ListenerSet a different Secret name from the Ingress's TLS Secret, so their two Certificates do not collide.
+   - Add the hostname to `gateway_hostnames` in `infrastructure/cloudflare/opentofu/variables.tf`.
+2. **After merging, test before DNS moves.** `curl --resolve <host>:443:10.0.10.62 https://<host>` should return the app with a valid certificate.
+3. **Move DNS.** Run `tofu apply` in `infrastructure/cloudflare/opentofu/` from the main checkout, which holds the state. Check that `dig +short <host> @1.1.1.1` returns `10.0.10.62`.
+4. **Second PR: remove the Ingress.** Delete the leftover TLS Secret after merging, since cert-manager keeps it.
 
 ## Checking it
 ```bash

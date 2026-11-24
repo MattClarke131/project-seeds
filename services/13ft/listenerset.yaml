@@ -1,0 +1,21 @@
+# HTTPS listener on the internal Gateway. cert-manager issues the certificate; its Secret name differs from the Ingress's 13ft-tls so the two Certificates do not collide.
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: "13ft"
+  namespace: "13ft"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  parentRef:
+    name: internal
+    namespace: envoy-gateway-system
+  listeners:
+    - name: https
+      hostname: 13ft.labmatt.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: 13ft-gateway-tls
