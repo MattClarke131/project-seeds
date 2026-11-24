@@ -6,5 +6,7 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+  - listenerset.yaml
+  - httproute.yaml
   - flaresolverr-deployment.yaml
   - flaresolverr-service.yaml

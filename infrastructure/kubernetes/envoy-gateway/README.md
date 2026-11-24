@@ -28,6 +28,15 @@ The network policies enforce the same split:
 2. Add an HTTPRoute with `parentRefs: [{name: public, namespace: envoy-gateway-system}]` and the public hostname.
 3. Point the app's Pangolin blueprint at `envoy-public.envoy-gateway-system.svc.cluster.local`, port 80.
 
+`services/ladder/` is the reference example for a LAN app.
+
+## Moving a LAN app off ingress-nginx
+LAN DNS is a wildcard `*.labmatt.com` record pointing at the control-plane VIP `10.0.10.2`, where ingress-nginx listens on host ports. A record for one hostname overrides the wildcard, so apps move one at a time:
+1. **Run both side by side.** Add the ListenerSet and HTTPRoute and keep the Ingress. Give the ListenerSet a different Secret name from the Ingress's TLS Secret, so their two Certificates do not collide.
+2. **Test before DNS moves.** `curl --resolve <host>:443:10.0.10.62 https://<host>` should return the app with a valid certificate.
+3. **Move DNS.** In `infrastructure/cloudflare/opentofu/`, add an A record for the hostname pointing at `10.0.10.62`, then `tofu apply`.
+4. **Remove the Ingress** once the app works through the new record.
+
 ## Checking it
 ```bash
 kubectl get gatewayclass,gateway -A          # ACCEPTED/PROGRAMMED should be True
