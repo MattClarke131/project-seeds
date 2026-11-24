@@ -1,0 +1,30 @@
+# Match ingress-nginx for LAN apps: forward paths as sent, and no cap on total response time.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: internal
+  namespace: envoy-gateway-system
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: internal
+  path:
+    # ladder takes the target URL in the path (/https://...), which merging would break.
+    disableMergeSlashes: true
+    escapedSlashesAction: KeepUnchanged
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: internal
+  namespace: envoy-gateway-system
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: internal
+  timeout:
+    http:
+      # Envoy's default caps a whole response at 15s; *arr interactive searches and websockets run longer.
+      requestTimeout: "0s"

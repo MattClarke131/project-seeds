@@ -8,4 +8,5 @@ resources:
   - gateway-internal.yaml
   - gateway-public.yaml
   - https-redirect.yaml
+  - traffic-policy-internal.yaml
   - networkpolicy.yaml
