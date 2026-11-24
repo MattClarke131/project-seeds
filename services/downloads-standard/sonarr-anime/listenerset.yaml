@@ -1,4 +1,4 @@
-# HTTPS listener on the internal Gateway. cert-manager issues the certificate; its Secret name differs from the Ingress's sonarr-anime-tls so the two Certificates do not collide.
+# HTTPS listener on the internal Gateway; cert-manager issues the certificate from the annotation.
 apiVersion: gateway.networking.k8s.io/v1
 kind: ListenerSet
 metadata:
