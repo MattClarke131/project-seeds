@@ -7,8 +7,6 @@ resources:
   - pvc.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
-  - ingress-todo-redirect.yaml
   - listenerset.yaml
   - httproute.yaml
   - listenerset-todo-redirect.yaml
