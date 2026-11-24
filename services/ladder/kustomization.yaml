@@ -5,7 +5,6 @@ resources:
   - configmap-ruleset.yaml
   - deployment.yaml
   - service.yaml
-  - ingress.yaml
   - listenerset.yaml
   - httproute.yaml
   - flaresolverr-deployment.yaml
