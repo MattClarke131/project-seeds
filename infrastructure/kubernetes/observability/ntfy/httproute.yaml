@@ -1,0 +1,18 @@
+# No timeout settings: ntfy's 45s keepalives keep phone websockets under Envoy's 5m stream idle limit (#444).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ntfy
+  namespace: observability
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: ListenerSet
+      name: ntfy
+      sectionName: https
+  hostnames:
+    - ntfy.labmatt.com
+  rules:
+    - backendRefs:
+        - name: ntfy
+          port: 80

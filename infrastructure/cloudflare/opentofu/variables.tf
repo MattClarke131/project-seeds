@@ -36,6 +36,7 @@ variable "gateway_hostnames" {
     "headlamp",
     "jellystat",
     "ladder",
+    "ntfy",
     "prometheus",
     "prowlarr",
     "qbittorrent",
