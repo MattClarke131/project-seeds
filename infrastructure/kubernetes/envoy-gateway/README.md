@@ -11,7 +11,7 @@ Envoy Gateway is the cluster's ingress controller, replacing the retired ingress
 | | `internal` | `public` |
 |---|---|---|
 | **Who reaches it** | LAN and tailnet clients | Internet visitors, through Pangolin and Newt |
-| **Service** | `envoy-internal`, LoadBalancer `10.0.10.60` | `envoy-public`, ClusterIP only |
+| **Service** | `envoy-internal`, LoadBalancer `10.0.10.62` | `envoy-public`, ClusterIP only |
 | **TLS** | Per-hostname certificates, on ListenerSets | None; Pangolin terminates TLS at the edge |
 | **Plain HTTP** | Always redirected to HTTPS | Served, since it comes from Newt |
 | **Who can attach** | ListenerSets from any namespace | Routes from namespaces labelled `labmatt.com/public-gateway: "true"` |
@@ -32,5 +32,5 @@ The network policies enforce the same split:
 ```bash
 kubectl get gatewayclass,gateway -A          # ACCEPTED/PROGRAMMED should be True
 kubectl -n envoy-gateway-system get pods,svc
-curl -sI http://10.0.10.60                   # 301 to https://
+curl -sI http://10.0.10.62                   # 301 to https://
 ```

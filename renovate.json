@@ -217,7 +217,7 @@
       "addLabels": ["needs-live-testing"],
       "prBodyNotes": [
         "Read the [Envoy Gateway v{{{newMajor}}}.{{{newMinor}}} release notes](https://gateway.envoyproxy.io/news/releases/notes/v{{{newMajor}}}.{{{newMinor}}}.0/) for breaking changes before merging.",
-        "After rollout: `kubectl get gateway -A` shows every Gateway `PROGRAMMED=True`, and `curl -sI http://10.0.10.60` still returns a 301 to HTTPS."
+        "After rollout: `kubectl get gateway -A` shows every Gateway `PROGRAMMED=True`, and `curl -sI http://10.0.10.62` still returns a 301 to HTTPS."
       ]
     },
     {

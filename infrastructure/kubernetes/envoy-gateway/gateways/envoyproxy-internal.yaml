@@ -35,4 +35,4 @@ spec:
         externalTrafficPolicy: Local
         annotations:
           # From the Cilium pool in infrastructure/kubernetes/cilium/lb-ip-pool.yaml.
-          lbipam.cilium.io/ips: "10.0.10.60"
+          lbipam.cilium.io/ips: "10.0.10.62"
