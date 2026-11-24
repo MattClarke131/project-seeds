@@ -6,7 +6,7 @@ public-resources:
     targets:
       - site: faithful-brachyurophis-fasciolatus
         method: http
-        hostname: ingress-nginx-controller.ingress-nginx.svc.cluster.local
+        hostname: envoy-public.envoy-gateway-system.svc.cluster.local
         port: 80
     auth:
       sso-enabled: true

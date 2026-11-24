@@ -34,6 +34,7 @@ variable "gateway_hostnames" {
     "chaptarr",
     "grafana",
     "headlamp",
+    "jellyfin",
     "jellystat",
     "ladder",
     "ntfy",

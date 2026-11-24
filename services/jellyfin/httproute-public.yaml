@@ -1,0 +1,41 @@
+# mattflix.labmatt.com on the public Gateway, reached from the internet through Pangolin.
+# Jellyfin's /metrics has no authentication, so it is refused here as well as by Pangolin's path rule.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: HTTPRouteFilter
+metadata:
+  name: block-metrics
+  namespace: jellyfin
+spec:
+  directResponse:
+    statusCode: 404
+    contentType: text/plain
+    body:
+      type: Inline
+      inline: "Not Found"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: jellyfin-public
+  namespace: jellyfin
+spec:
+  parentRefs:
+    - name: public
+      namespace: envoy-gateway-system
+  hostnames:
+    - mattflix.labmatt.com
+  rules:
+    # Case-insensitive because Jellyfin's routing is; covers /metrics and anything under it.
+    - matches:
+        - path:
+            type: RegularExpression
+            value: "(?i)/metrics(/.*)?"
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: gateway.envoyproxy.io
+            kind: HTTPRouteFilter
+            name: block-metrics
+    - backendRefs:
+        - name: jellyfin
+          port: 8096
