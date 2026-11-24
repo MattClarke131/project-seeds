@@ -46,6 +46,8 @@ variable "gateway_hostnames" {
     "sonarr",
     "sonarr-anime",
     "sonarr-portuguese",
+    "todo",
+    "vikunja",
   ]
 }
 
