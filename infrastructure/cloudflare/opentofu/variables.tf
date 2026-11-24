@@ -26,6 +26,7 @@ variable "gateway_hostnames" {
   description = "Subdomains already moved from ingress-nginx to the internal Envoy Gateway"
   type        = set(string)
   default = [
+    "13ft",
     "ladder",
   ]
 }
