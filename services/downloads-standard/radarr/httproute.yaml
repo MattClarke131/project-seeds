@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: radarr-standard
+  namespace: downloads-standard
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: ListenerSet
+      name: radarr-standard
+      sectionName: https
+  hostnames:
+    - radarr.labmatt.com
+  rules:
+    - backendRefs:
+        - name: radarr-standard
+          port: 7878

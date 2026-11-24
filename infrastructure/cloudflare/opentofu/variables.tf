@@ -27,7 +27,20 @@ variable "gateway_hostnames" {
   type        = set(string)
   default = [
     "13ft",
+    "audiobooks",
+    "autobrr",
+    "bazarr",
+    "books",
+    "chaptarr",
     "ladder",
+    "prowlarr",
+    "qbittorrent",
+    "radarr",
+    "radarr-portuguese",
+    "sabnzbd",
+    "sonarr",
+    "sonarr-anime",
+    "sonarr-portuguese",
   ]
 }
 

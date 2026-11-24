@@ -1,0 +1,21 @@
+# HTTPS listener on the internal Gateway. cert-manager issues the certificate; its Secret name differs from the Ingress's sabnzbd-tls so the two Certificates do not collide.
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: sabnzbd-standard
+  namespace: downloads-standard
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  parentRef:
+    name: internal
+    namespace: envoy-gateway-system
+  listeners:
+    - name: https
+      hostname: sabnzbd.labmatt.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: sabnzbd-gateway-tls
