@@ -18,6 +18,7 @@ resources:
   - dashboards/proxmox-overview.yaml
   - dashboards/torrents.yaml
   - dashboards/truenas-overview.yaml
+  - envoy-gateway/podmonitors.yaml
   - flux-monitoring/podmonitor.yaml
   - graphite-exporter/deployment.yaml
   - graphite-exporter/servicemonitor.yaml

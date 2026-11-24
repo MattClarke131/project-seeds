@@ -1,0 +1,40 @@
+# Selecting the controller pods turns on default-deny for them; only the flows below are allowed.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: envoy-gateway-controller
+  namespace: envoy-gateway-system
+spec:
+  endpointSelector:
+    matchLabels:
+      control-plane: envoy-gateway
+  ingress:
+    # xDS: every Envoy proxy pulls its config from the controller.
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/component: proxy
+            app.kubernetes.io/managed-by: envoy-gateway
+      toPorts:
+        - ports:
+            - port: "18000"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "19001"
+              protocol: TCP
+  egress:
+    # Watches Gateway API resources and creates the proxy Deployments and Services.
+    - toEntities:
+        - kube-apiserver
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY

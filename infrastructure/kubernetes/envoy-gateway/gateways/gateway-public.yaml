@@ -1,0 +1,24 @@
+# Internet entry point. Pangolin terminates TLS at the edge and sends plain HTTP here through Newt.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: envoy-gateway
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: public
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        # A namespace must opt in with this label before its routes can face the internet.
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              labmatt.com/public-gateway: "true"

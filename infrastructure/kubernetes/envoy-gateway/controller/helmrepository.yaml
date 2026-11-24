@@ -1,0 +1,10 @@
+# Envoy Gateway ships only as an OCI chart; helmrelease.yaml's chart name (gateway-helm) is resolved under this URL.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: envoyproxy
+  namespace: envoy-gateway-system
+spec:
+  type: oci
+  interval: 1h
+  url: oci://docker.io/envoyproxy
