@@ -42,7 +42,6 @@ resources:
   - ntfy-alertmanager/configmap.yaml
   - ntfy-alertmanager/deployment.yaml
   - ntfy/deployment.yaml
-  - ntfy/ingress.yaml
   - ntfy/listenerset.yaml
   - ntfy/httproute.yaml
   - services/autobrr-servicemonitor.yaml
