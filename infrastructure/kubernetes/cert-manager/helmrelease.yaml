@@ -23,3 +23,12 @@ spec:
   values:
     crds:
       enabled: true
+    # Issues certificates for HTTPS listeners on Gateway API ListenerSets (#444).
+    config:
+      apiVersion: controller.config.cert-manager.io/v1alpha1
+      kind: ControllerConfiguration
+      gatewayAPI:
+        enabled: true
+        enableListenerSet: true
+      featureGates:
+        ListenerSets: true
