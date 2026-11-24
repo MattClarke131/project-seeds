@@ -9,6 +9,8 @@ resources:
   - seerr/helmrelease.yaml
   - prowlarr/deployment.yaml
   - prowlarr/ingress.yaml
+  - prowlarr/listenerset.yaml
+  - prowlarr/httproute.yaml
   - prowlarr/postgres-databases.yaml
   - prowlarr/postgres-secret.yaml
   - prowlarr/pvc.yaml
@@ -19,46 +21,62 @@ resources:
   - cross-seed/service.yaml
   - autobrr/deployment.yaml
   - autobrr/ingress.yaml
+  - autobrr/listenerset.yaml
+  - autobrr/httproute.yaml
   - autobrr/postgres-databases.yaml
   - autobrr/postgres-secret.yaml
   - autobrr/service.yaml
   - radarr/deployment.yaml
   - radarr/ingress.yaml
+  - radarr/listenerset.yaml
+  - radarr/httproute.yaml
   - radarr/postgres-databases.yaml
   - radarr/pvc-config.yaml
   - radarr/service.yaml
   - radarr-portuguese/deployment.yaml
   - radarr-portuguese/ingress.yaml
+  - radarr-portuguese/listenerset.yaml
+  - radarr-portuguese/httproute.yaml
   - radarr-portuguese/postgres-databases.yaml
   - radarr-portuguese/postgres-secret.yaml
   - radarr-portuguese/pvc-config.yaml
   - radarr-portuguese/service.yaml
   - sonarr/deployment.yaml
   - sonarr/ingress.yaml
+  - sonarr/listenerset.yaml
+  - sonarr/httproute.yaml
   - sonarr/postgres-databases.yaml
   - sonarr/postgres-secret.yaml
   - sonarr/pvc-config.yaml
   - sonarr/service.yaml
   - sonarr-anime/deployment.yaml
   - sonarr-anime/ingress.yaml
+  - sonarr-anime/listenerset.yaml
+  - sonarr-anime/httproute.yaml
   - sonarr-anime/postgres-databases.yaml
   - sonarr-anime/postgres-secret.yaml
   - sonarr-anime/pvc-config.yaml
   - sonarr-anime/service.yaml
   - sonarr-portuguese/deployment.yaml
   - sonarr-portuguese/ingress.yaml
+  - sonarr-portuguese/listenerset.yaml
+  - sonarr-portuguese/httproute.yaml
   - sonarr-portuguese/postgres-databases.yaml
   - sonarr-portuguese/postgres-secret.yaml
   - sonarr-portuguese/pvc-config.yaml
   - sonarr-portuguese/service.yaml
   - bazarr/deployment.yaml
   - bazarr/ingress.yaml
+  - bazarr/listenerset.yaml
+  - bazarr/httproute.yaml
   - bazarr/postgres-databases.yaml
   - bazarr/postgres-secret.yaml
   - bazarr/pvc-config.yaml
   - bazarr/service.yaml
   - sabnzbd/deployment.yaml
   - sabnzbd/ingress.yaml
+  - sabnzbd/listenerset.yaml
+  - sabnzbd/httproute.yaml
   - sabnzbd/pvc-config.yaml
   - sabnzbd/service.yaml
   - recyclarr/configmap.yaml
@@ -69,6 +87,8 @@ resources:
   - qbittorrent-vpn/deployment.yaml
   - qbittorrent-vpn/gluetun-control-auth.yaml
   - qbittorrent-vpn/ingress.yaml
+  - qbittorrent-vpn/listenerset.yaml
+  - qbittorrent-vpn/httproute.yaml
   - qbittorrent-vpn/pvc-config.yaml
   - qbittorrent-vpn/service.yaml
   - qbittorrent-exporter/deployment.yaml
@@ -78,18 +98,24 @@ resources:
   - unpackerr/deployment.yaml
   - calibre-web-automated/deployment.yaml
   - calibre-web-automated/ingress.yaml
+  - calibre-web-automated/listenerset.yaml
+  - calibre-web-automated/httproute.yaml
   - calibre-web-automated/ingress-books-sync.yaml
   - calibre-web-automated/pvc-config.yaml
   - calibre-web-automated/pvc-library.yaml
   - calibre-web-automated/service.yaml
   - chaptarr/deployment.yaml
   - chaptarr/ingress.yaml
+  - chaptarr/listenerset.yaml
+  - chaptarr/httproute.yaml
   - chaptarr/postgres-databases.yaml
   - chaptarr/postgres-secret.yaml
   - chaptarr/pvc-config.yaml
   - chaptarr/service.yaml
   - audiobookshelf/deployment.yaml
   - audiobookshelf/ingress.yaml
+  - audiobookshelf/listenerset.yaml
+  - audiobookshelf/httproute.yaml
   - audiobookshelf/pvc-config.yaml
   - audiobookshelf/pvc-metadata.yaml
   - audiobookshelf/service.yaml

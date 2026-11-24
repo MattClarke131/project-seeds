@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sonarr-standard
+  namespace: downloads-standard
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: ListenerSet
+      name: sonarr-standard
+      sectionName: https
+  hostnames:
+    - sonarr.labmatt.com
+  rules:
+    - backendRefs:
+        - name: sonarr-standard
+          port: 8989

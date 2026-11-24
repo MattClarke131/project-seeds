@@ -1,0 +1,17 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: chaptarr
+  namespace: downloads-standard
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: ListenerSet
+      name: chaptarr
+      sectionName: https
+  hostnames:
+    - chaptarr.labmatt.com
+  rules:
+    - backendRefs:
+        - name: chaptarr
+          port: 8789
