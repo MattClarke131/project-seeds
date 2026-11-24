@@ -9,6 +9,7 @@ resources:
   - cilium.yaml
   - cert-manager.yaml
   - ingress.yaml
+  - envoy-gateway.yaml
   - ci-cd.yaml
   - intel-gpu-plugin.yaml
   - tunnel.yaml

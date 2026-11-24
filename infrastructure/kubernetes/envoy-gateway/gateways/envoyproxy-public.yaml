@@ -1,0 +1,34 @@
+# Proxy settings for gateway-public.yaml, the internet entry point behind Pangolin.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: public
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        pod:
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: ScheduleAnyway
+              labelSelector:
+                matchLabels:
+                  gateway.envoyproxy.io/owning-gateway-name: public
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      envoyPDB:
+        minAvailable: 1
+      envoyService:
+        # Pangolin blueprints (infrastructure/tunnel/blueprints/) target this name.
+        name: envoy-public
+        # Newt reaches it from inside the cluster, so it gets no LAN IP.
+        type: ClusterIP

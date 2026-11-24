@@ -1,0 +1,38 @@
+# Proxy settings for gateway-internal.yaml, the LAN entry point.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: internal
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        pod:
+          topologySpreadConstraints:
+            - maxSkew: 1
+              topologyKey: kubernetes.io/hostname
+              whenUnsatisfiable: ScheduleAnyway
+              labelSelector:
+                matchLabels:
+                  gateway.envoyproxy.io/owning-gateway-name: internal
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+      envoyPDB:
+        minAvailable: 1
+      envoyService:
+        # A fixed name in place of the generated envoy-<namespace>-<gateway>-<hash>.
+        name: envoy-internal
+        type: LoadBalancer
+        # Keeps the client's real IP for logs and IP rules; Cilium then announces the IP only from nodes running a proxy.
+        externalTrafficPolicy: Local
+        annotations:
+          # From the Cilium pool in infrastructure/kubernetes/cilium/lb-ip-pool.yaml.
+          lbipam.cilium.io/ips: "10.0.10.62"

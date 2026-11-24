@@ -210,6 +210,17 @@
       ]
     },
     {
+      "description": "Envoy Gateway carries all ingress traffic and its chart replaces the Gateway API CRDs on upgrade, so each minor gets its own PR with live-testing notes.",
+      "matchDepNames": ["gateway-helm"],
+      "matchUpdateTypes": ["minor", "major"],
+      "separateMultipleMinor": true,
+      "addLabels": ["needs-live-testing"],
+      "prBodyNotes": [
+        "Read the [Envoy Gateway v{{{newMajor}}}.{{{newMinor}}} release notes](https://gateway.envoyproxy.io/news/releases/notes/v{{{newMajor}}}.{{{newMinor}}}.0/) for breaking changes before merging.",
+        "After rollout: `kubectl get gateway -A` shows every Gateway `PROGRAMMED=True`, and `curl -sI http://10.0.10.62` still returns a 301 to HTTPS."
+      ]
+    },
+    {
       "description": "Kubernetes can't skip minors, so each minor gets its own PR. Merge the lowest one first; the rest rebase onto it.",
       "matchPackageNames": ["kubernetes/kubernetes"],
       "separateMultipleMinor": true,

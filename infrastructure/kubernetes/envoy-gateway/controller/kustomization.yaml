@@ -1,0 +1,9 @@
+# Flux-managed. See clusters/eye-of-michael/flux-system/envoy-gateway.yaml.
+# The Gateways live in ../gateways, a separate Kustomization, because their CRDs come from this HelmRelease.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - helmrepository.yaml
+  - helmrelease.yaml
+  - networkpolicy.yaml
