@@ -90,6 +90,7 @@ resources:
   - calibre-web-automated/deployment.yaml
   - calibre-web-automated/listenerset.yaml
   - calibre-web-automated/httproute.yaml
+  - calibre-web-automated/httproute-books-sync.yaml
   - calibre-web-automated/ingress-books-sync.yaml
   - calibre-web-automated/pvc-config.yaml
   - calibre-web-automated/pvc-library.yaml

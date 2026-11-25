@@ -1,0 +1,42 @@
+# books-sync.labmatt.com on the public Gateway: Kobo device sync only, reached through Pangolin (issue #17).
+# Only /kobo/ is routed, so the admin UI is unreachable on this host. CWA checks the sync token in the URL.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: calibre-web-automated-books-sync
+  namespace: downloads-standard
+spec:
+  parentRefs:
+    - name: public
+      namespace: envoy-gateway-system
+  hostnames:
+    - books-sync.labmatt.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /kobo/
+      backendRefs:
+        - name: calibre-web-automated
+          port: 8083
+---
+# All traffic arrives from Newt, so this caps the whole host, per Envoy replica. Real syncs peak near 3 requests/s.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: calibre-web-automated-books-sync
+  namespace: downloads-standard
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: calibre-web-automated-books-sync
+  # Keeps the Gateway's requestTimeout: 0s, which a route policy would otherwise replace.
+  mergeType: StrategicMerge
+  rateLimit:
+    type: Local
+    local:
+      rules:
+        - limit:
+            requests: 15
+            unit: Second
