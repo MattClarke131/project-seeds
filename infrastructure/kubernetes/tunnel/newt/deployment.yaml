@@ -32,10 +32,13 @@ spec:
             secretKeyRef:
               name: newt-auth
               key: secret
+        # Soft GC target ~78% of the memory limit, so Go frees memory before the kernel OOMKills.
+        - name: GOMEMLIMIT
+          value: "800MiB"
         resources:
           requests:
             cpu: 10m
             memory: 48Mi
           limits:
-            cpu: 300m
-            memory: 256Mi
+            cpu: "1"
+            memory: 1Gi
