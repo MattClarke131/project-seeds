@@ -7,6 +7,7 @@ resources:
   - pvc-media-standard.yaml
   - seerr/helmrepository.yaml
   - seerr/helmrelease.yaml
+  - seerr/httproute-public.yaml
   - prowlarr/deployment.yaml
   - prowlarr/listenerset.yaml
   - prowlarr/httproute.yaml

@@ -1,0 +1,16 @@
+# pangolin-test.labmatt.com on the public Gateway: a canary for the Pangolin, Newt and Envoy path.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hello-world
+  namespace: test-ingress
+spec:
+  parentRefs:
+    - name: public
+      namespace: envoy-gateway-system
+  hostnames:
+    - pangolin-test.labmatt.com
+  rules:
+    - backendRefs:
+        - name: hello-world
+          port: 80

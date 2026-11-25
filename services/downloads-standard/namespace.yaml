@@ -7,3 +7,5 @@ metadata:
     pod-security.kubernetes.io/enforce: privileged
     pod-security.kubernetes.io/warn: privileged
     pod-security.kubernetes.io/audit: privileged
+    # Lets this namespace's routes attach to the public Gateway, and lets envoy-public reach its pods.
+    labmatt.com/public-gateway: "true"

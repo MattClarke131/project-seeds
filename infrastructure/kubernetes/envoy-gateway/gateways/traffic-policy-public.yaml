@@ -1,0 +1,14 @@
+# Envoy's default caps a whole response at 15s; Jellyfin streams and Seerr searches run longer. Slash hardening stays at defaults.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: public
+  namespace: envoy-gateway-system
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: public
+  timeout:
+    http:
+      requestTimeout: "0s"

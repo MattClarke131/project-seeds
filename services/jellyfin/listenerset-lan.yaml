@@ -1,0 +1,21 @@
+# HTTPS listener on the internal Gateway for LAN and tailnet clients; cert-manager issues jellyfin-lan-gateway-tls.
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: jellyfin-lan
+  namespace: jellyfin
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+spec:
+  parentRef:
+    name: internal
+    namespace: envoy-gateway-system
+  listeners:
+    - name: https
+      hostname: jellyfin.labmatt.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: jellyfin-lan-gateway-tls

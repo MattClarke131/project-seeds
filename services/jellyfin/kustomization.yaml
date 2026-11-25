@@ -9,6 +9,9 @@ resources:
   - namespace.yaml
   - pvc-media.yaml
   - ingress-block-metrics.yaml
+  - httproute-public.yaml
+  - listenerset-lan.yaml
+  - httproute-lan.yaml
   - helmrepository.yaml
   - helmrelease.yaml
   - ../jellystat

@@ -7,3 +7,5 @@ metadata:
     # passthrough for hardware transcoding, see values.yaml's affinity) -
     # hostPath volumes are blocked below the privileged PSA level.
     pod-security.kubernetes.io/enforce: privileged
+    # Lets this namespace's routes attach to the public Gateway, and lets envoy-public reach its pods.
+    labmatt.com/public-gateway: "true"

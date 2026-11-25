@@ -3,6 +3,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: test-ingress
+  labels:
+    # Lets this namespace's routes attach to the public Gateway, and lets envoy-public reach its pods.
+    labmatt.com/public-gateway: "true"
 ---
 apiVersion: apps/v1
 kind: Deployment
