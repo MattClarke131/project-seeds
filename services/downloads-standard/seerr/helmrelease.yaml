@@ -25,12 +25,3 @@ spec:
     config:
       persistence:
         size: 20Gi
-
-    ingress:
-      enabled: true
-      ingressClassName: nginx
-      hosts:
-        - host: gimme.labmatt.com
-          paths:
-            - path: /
-              pathType: Prefix

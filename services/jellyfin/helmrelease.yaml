@@ -44,15 +44,6 @@ spec:
       # jellyfin-servicemonitor.yaml selects this port by name.
       portName: http
 
-    ingress:
-      enabled: true
-      className: nginx
-      hosts:
-        - host: mattflix.labmatt.com
-          paths:
-            - path: /
-              pathType: Prefix
-
     # Recreate (not the chart default RollingUpdate): with only one iGPU on the
     # one pinned node (see affinity below) and no fallback, RollingUpdate
     # deadlocks - it tries to schedule the new pod before killing the old one,
