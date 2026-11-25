@@ -28,6 +28,12 @@ Two things temper how aggressively a newly-discovered item gets searched:
   day 1, since new encodes are far less likely to appear for old titles than
   for recent ones -- backed by what we actually observed doing this by hand.
 
+Also re-searches missing items: monitored movies that are available but have
+no file, and monitored episodes that have aired but have no file. Radarr and
+Sonarr search only once on add and never retry, so a failed first search
+(e.g. an indexer outage) otherwise leaves the request stuck forever. Missing
+items always outrank upgrades and always start at BACKOFF_DAYS[0].
+
 Each run searches at most BATCH_CAP items total across the whole stack,
 prioritizing whichever items are most overdue.
 """
@@ -46,6 +52,8 @@ AGE_THRESHOLD_DAYS = int(os.environ.get("AGE_THRESHOLD_DAYS", "365"))
 # Must be one of the values in BACKOFF_DAYS -- old content starts here
 # instead of at BACKOFF_DAYS[0].
 OLD_CONTENT_START_INTERVAL = int(os.environ.get("OLD_CONTENT_START_INTERVAL", "30"))
+# Priority offset that puts every missing item ahead of every upgrade.
+MISSING_PRIORITY = 10**7
 
 INSTANCES = [
     {
@@ -110,12 +118,21 @@ def next_interval(current_days):
         return BACKOFF_DAYS[-1]
 
 
-def starting_interval(age_days):
+def starting_interval(age_days, missing):
     """Where a never-before-searched item enters the backoff ladder: day 1
-    for recent content, further along for old content."""
-    if age_days is not None and age_days > AGE_THRESHOLD_DAYS:
+    for recent or missing content, further along for old upgrades."""
+    if not missing and age_days is not None and age_days > AGE_THRESHOLD_DAYS:
         return OLD_CONTENT_START_INTERVAL
     return BACKOFF_DAYS[0]
+
+
+def parse_datetime(value):
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 def parse_date(value):
@@ -135,28 +152,32 @@ def is_x264_family(codec):
 
 
 def get_movie_candidates(inst, today):
-    """Radarr: full movie list, filtered to monitored movies with a file
-    whose video codec is still x264-family."""
+    """Radarr: full movie list, filtered to monitored movies that are either
+    missing (available, no file) or have a file still on an x264-family codec."""
     items = []
     movies = api_get(inst["url"], inst["api_key"], "/api/v3/movie")
     for m in movies:
         if not m.get("monitored"):
             continue
+        year = m.get("year")
+        age_days = (today - date(year, 1, 1)).days if year else None
         mf = m.get("movieFile")
         if not mf:
+            if m.get("isAvailable"):
+                items.append({"id": m["id"], "title": m.get("title", "?"), "age_days": age_days, "missing": True})
             continue
         codec = mf.get("mediaInfo", {}).get("videoCodec", "")
         if not is_x264_family(codec):
             continue
-        year = m.get("year")
-        age_days = (today - date(year, 1, 1)).days if year else None
-        items.append({"id": m["id"], "title": m.get("title", "?"), "age_days": age_days})
+        items.append({"id": m["id"], "title": m.get("title", "?"), "age_days": age_days, "missing": False})
     return items
 
 
-def get_episode_candidates(inst, today):
+def get_episode_candidates(inst, now):
     """Sonarr: per-series episode + episodefile join, filtered to monitored
-    episodes with a file whose video codec is still x264-family."""
+    episodes that are either missing (aired, no file) or have a file still on
+    an x264-family codec."""
+    today = now.date()
     items = []
     series_list = api_get(inst["url"], inst["api_key"], "/api/v3/series")
     for s in series_list:
@@ -167,7 +188,15 @@ def get_episode_candidates(inst, today):
         files = api_get(inst["url"], inst["api_key"], f"/api/v3/episodefile?seriesId={sid}")
         files_by_id = {f["id"]: f for f in files}
         for ep in episodes:
-            if not ep.get("monitored") or not ep.get("hasFile"):
+            if not ep.get("monitored"):
+                continue
+            air_date = parse_date(ep.get("airDateUtc") or ep.get("airDate"))
+            age_days = (today - air_date).days if air_date else None
+            title = f"{s.get('title', '?')} S{ep.get('seasonNumber', '?')}E{ep.get('episodeNumber', '?')}"
+            if not ep.get("hasFile"):
+                aired = parse_datetime(ep.get("airDateUtc"))
+                if aired is not None and aired < now:
+                    items.append({"id": ep["id"], "title": title, "age_days": age_days, "missing": True})
                 continue
             ef = files_by_id.get(ep.get("episodeFileId"))
             if not ef:
@@ -175,17 +204,14 @@ def get_episode_candidates(inst, today):
             codec = ef.get("mediaInfo", {}).get("videoCodec", "")
             if not is_x264_family(codec):
                 continue
-            air_date = parse_date(ep.get("airDateUtc") or ep.get("airDate"))
-            age_days = (today - air_date).days if air_date else None
-            title = f"{s.get('title', '?')} S{ep.get('seasonNumber', '?')}E{ep.get('episodeNumber', '?')}"
-            items.append({"id": ep["id"], "title": title, "age_days": age_days})
+            items.append({"id": ep["id"], "title": title, "age_days": age_days, "missing": False})
     return items
 
 
-def get_candidates(inst, today):
+def get_candidates(inst, now):
     if inst["kind"] == "radarr":
-        return get_movie_candidates(inst, today)
-    return get_episode_candidates(inst, today)
+        return get_movie_candidates(inst, now.date())
+    return get_episode_candidates(inst, now)
 
 
 def trigger_search(inst, ids):
@@ -200,23 +226,27 @@ def main():
     now = datetime.now(timezone.utc)
     today = now.date()
 
-    # (key, item_id, title, age_days, priority) -- higher priority = more urgent.
-    # Never-searched-yet items that have cleared the floor rank above the
-    # regular backlog (10**6 comfortably exceeds any realistic overdue_by).
+    # (key, state_id, title, age_days, missing, priority) -- higher priority =
+    # more urgent. Never-searched-yet items that have cleared the floor rank
+    # above the regular backlog (10**6 comfortably exceeds any realistic
+    # overdue_by), and missing items rank above all upgrades.
     due = []
     for inst in INSTANCES:
         key = inst["key"]
         state.setdefault(key, {})
         try:
-            candidates = get_candidates(inst, today)
+            candidates = get_candidates(inst, now)
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
             print(f"[{key}] failed to fetch candidates: {e}", file=sys.stderr)
             continue
 
         candidate_ids = set()
         for item in candidates:
-            item_id = str(item["id"])
+            # Missing items get their own state key so a later x264 file
+            # starts a fresh upgrade backoff.
+            item_id = f"missing:{item['id']}" if item["missing"] else str(item["id"])
             candidate_ids.add(item_id)
+            boost = MISSING_PRIORITY if item["missing"] else 0
             entry = state[key].get(item_id)
 
             if entry is None:
@@ -231,21 +261,21 @@ def main():
                 first_seen = datetime.fromisoformat(entry["first_seen"])
                 age_hours = (now - first_seen).total_seconds() / 3600
                 if age_hours >= MIN_FIRST_SEARCH_DELAY_HOURS:
-                    due.append((key, item_id, item["title"], item["age_days"], 10**6 + age_hours))
+                    due.append((key, item_id, item["title"], item["age_days"], item["missing"], boost + 10**6 + age_hours))
             else:
                 last_checked = date.fromisoformat(entry["last_checked"])
                 days_since = (today - last_checked).days
                 overdue_by = days_since - entry["interval_days"]
                 if overdue_by >= 0:
-                    due.append((key, item_id, item["title"], item["age_days"], overdue_by))
+                    due.append((key, item_id, item["title"], item["age_days"], item["missing"], boost + overdue_by))
 
-        # Self-prune: anything no longer an x264 candidate (upgraded, or
+        # Self-prune: anything no longer a candidate (downloaded, upgraded, or
         # removed from the library) doesn't need tracking anymore.
         for existing_id in list(state[key].keys()):
             if existing_id not in candidate_ids:
                 del state[key][existing_id]
 
-    due.sort(key=lambda x: -x[4])
+    due.sort(key=lambda x: -x[5])
     batch = due[:BATCH_CAP]
 
     if not batch:
@@ -254,25 +284,25 @@ def main():
         return
 
     by_instance = {}
-    for key, item_id, title, age_days, _ in batch:
-        by_instance.setdefault(key, []).append((item_id, title, age_days))
+    for key, item_id, title, age_days, missing, _ in batch:
+        by_instance.setdefault(key, []).append((item_id, title, age_days, missing))
 
     for inst in INSTANCES:
         key = inst["key"]
         items = by_instance.get(key)
         if not items:
             continue
-        ids = [int(i) for i, _, _ in items]
-        titles = ", ".join(t for _, t, _ in items)
+        ids = [int(i.removeprefix("missing:")) for i, _, _, _ in items]
+        titles = ", ".join(t + (" (missing)" if m else "") for _, t, _, m in items)
         print(f"[{key}] searching {len(ids)} item(s): {titles}")
         try:
             trigger_search(inst, ids)
         except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
             print(f"[{key}] search command failed, will retry next run: {e}", file=sys.stderr)
             continue
-        for item_id, _, age_days in items:
+        for item_id, _, age_days, missing in items:
             prev_interval = state[key][item_id]["interval_days"]
-            new_interval = next_interval(prev_interval) if prev_interval is not None else starting_interval(age_days)
+            new_interval = next_interval(prev_interval) if prev_interval is not None else starting_interval(age_days, missing)
             state[key][item_id]["last_checked"] = today.isoformat()
             state[key][item_id]["interval_days"] = new_interval
 

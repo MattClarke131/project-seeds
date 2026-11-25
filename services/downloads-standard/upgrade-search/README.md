@@ -1,18 +1,24 @@
 # upgrade-search
 
-A CronJob that periodically re-searches Radarr/Sonarr items still below
-their quality profile's cutoff (i.e. still on x264, waiting for an x265
-release to show up), instead of relying on someone to trigger that search
-by hand.
+A CronJob that periodically re-searches two kinds of Radarr/Sonarr items,
+instead of relying on someone to trigger that search by hand:
+
+- **Missing:** monitored movies that are available, and monitored episodes
+  that have aired, but have no file. Radarr and Sonarr search only once
+  when an item is added and never retry, so a failed first search (an
+  indexer outage, or no acceptable release yet) leaves a Seerr request
+  stuck until someone searches by hand.
+- **Upgrades:** items still on x264, waiting for an x265 release to show up.
 
 ## How it works
 
 Every 4 hours it pulls the full movie/episode list directly from Radarr
 (`radarr-standard`), Sonarr (`sonarr-standard`), and Sonarr Anime
-(`sonarr-anime`) and filters for monitored items whose current file is
+(`sonarr-anime`) and filters for monitored items that are missing or whose current file is
 still on an x264-family codec, picks up to `BATCH_CAP` of the
 most-overdue candidates across the whole stack, and fires a search for
-them. State (last checked, current backoff interval) is kept in a small
+them. Missing items always rank ahead of upgrades, and always start at
+the first `BACKOFF_DAYS` rung regardless of age. State (last checked, current backoff interval) is kept in a small
 JSON file on the `upgrade-search-state` PVC so runs aren't re-querying the
 same items every time — see the docstring in `upgrade_search.py` for the
 full backoff design (age-based starting point, minimum delay before an
@@ -75,7 +81,7 @@ All the knobs are env vars on the container in `cronjob.yaml`:
 | `BATCH_CAP` | `2` | Max items searched per run, across the whole stack |
 | `BACKOFF_DAYS` | `1,3,9,30,90,360` | Recheck ladder; caps at the last value once reached |
 | `MIN_FIRST_SEARCH_DELAY_HOURS` | `2` | Minimum time an item must sit in the cutoff-unmet list before its first search |
-| `AGE_THRESHOLD_DAYS` | `365` | Content older than this starts at `OLD_CONTENT_START_INTERVAL` instead of day 1 |
+| `AGE_THRESHOLD_DAYS` | `365` | Upgrade candidates older than this start at `OLD_CONTENT_START_INTERVAL` instead of day 1 (missing items always start at day 1) |
 | `OLD_CONTENT_START_INTERVAL` | `30` | Must be one of the values in `BACKOFF_DAYS` |
 
 At 2 items/run × 6 runs/day = 12 searches/day max across the whole stack.
