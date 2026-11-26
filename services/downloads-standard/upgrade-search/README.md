@@ -17,8 +17,10 @@ Every 4 hours it pulls the full movie/episode list directly from Radarr
 (`sonarr-anime`) and filters for monitored items that are missing or whose current file is
 still on an x264-family codec, picks up to `BATCH_CAP` of the
 most-overdue candidates across the whole stack, and fires a search for
-them. Missing items always rank ahead of upgrades, and always start at
-the first `BACKOFF_DAYS` rung regardless of age. State (last checked, current backoff interval) is kept in a small
+them. Up to `MISSING_SLOTS` of each batch go to missing items and the
+rest to upgrades, so items that never show up can't starve upgrades.
+Either side takes slots the other doesn't need. Missing items always start
+at the first `BACKOFF_DAYS` rung regardless of age. State (last checked, current backoff interval) is kept in a small
 JSON file on the `upgrade-search-state` PVC so runs aren't re-querying the
 same items every time — see the docstring in `upgrade_search.py` for the
 full backoff design (age-based starting point, minimum delay before an
@@ -79,6 +81,7 @@ All the knobs are env vars on the container in `cronjob.yaml`:
 | Env var | Default | Meaning |
 |---|---|---|
 | `BATCH_CAP` | `2` | Max items searched per run, across the whole stack |
+| `MISSING_SLOTS` | `1` | Slots per run reserved for missing items; unused ones go to upgrades and vice versa |
 | `BACKOFF_DAYS` | `1,3,9,30,90,360` | Recheck ladder; caps at the last value once reached |
 | `MIN_FIRST_SEARCH_DELAY_HOURS` | `2` | Minimum time an item must sit in the cutoff-unmet list before its first search |
 | `AGE_THRESHOLD_DAYS` | `365` | Upgrade candidates older than this start at `OLD_CONTENT_START_INTERVAL` instead of day 1 (missing items always start at day 1) |

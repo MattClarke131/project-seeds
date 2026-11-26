@@ -40,7 +40,9 @@ data:
     no file, and monitored episodes that have aired but have no file. Radarr and
     Sonarr search only once on add and never retry, so a failed first search
     (e.g. an indexer outage) otherwise leaves the request stuck forever. Missing
-    items always outrank upgrades and always start at BACKOFF_DAYS[0].
+    items always start at BACKOFF_DAYS[0]. Each run reserves up to MISSING_SLOTS
+    of the batch for missing items and gives the rest to upgrades, so a pile of
+    never-found items can't starve upgrades; unused slots go to the other side.
 
     Each run searches at most BATCH_CAP items total across the whole stack,
     prioritizing whichever items are most overdue.
@@ -60,8 +62,8 @@ data:
     # Must be one of the values in BACKOFF_DAYS -- old content starts here
     # instead of at BACKOFF_DAYS[0].
     OLD_CONTENT_START_INTERVAL = int(os.environ.get("OLD_CONTENT_START_INTERVAL", "30"))
-    # Priority offset that puts every missing item ahead of every upgrade.
-    MISSING_PRIORITY = 10**7
+    # Max slots per run reserved for missing items; upgrades get the rest, and either side takes unused slots.
+    MISSING_SLOTS = int(os.environ.get("MISSING_SLOTS", "1"))
 
     INSTANCES = [
         {
@@ -237,7 +239,7 @@ data:
         # (key, state_id, title, age_days, missing, priority) -- higher priority =
         # more urgent. Never-searched-yet items that have cleared the floor rank
         # above the regular backlog (10**6 comfortably exceeds any realistic
-        # overdue_by), and missing items rank above all upgrades.
+        # overdue_by). Missing and upgrade items are split into separate slots below.
         due = []
         for inst in INSTANCES:
             key = inst["key"]
@@ -254,7 +256,6 @@ data:
                 # starts a fresh upgrade backoff.
                 item_id = f"missing:{item['id']}" if item["missing"] else str(item["id"])
                 candidate_ids.add(item_id)
-                boost = MISSING_PRIORITY if item["missing"] else 0
                 entry = state[key].get(item_id)
 
                 if entry is None:
@@ -269,13 +270,13 @@ data:
                     first_seen = datetime.fromisoformat(entry["first_seen"])
                     age_hours = (now - first_seen).total_seconds() / 3600
                     if age_hours >= MIN_FIRST_SEARCH_DELAY_HOURS:
-                        due.append((key, item_id, item["title"], item["age_days"], item["missing"], boost + 10**6 + age_hours))
+                        due.append((key, item_id, item["title"], item["age_days"], item["missing"], 10**6 + age_hours))
                 else:
                     last_checked = date.fromisoformat(entry["last_checked"])
                     days_since = (today - last_checked).days
                     overdue_by = days_since - entry["interval_days"]
                     if overdue_by >= 0:
-                        due.append((key, item_id, item["title"], item["age_days"], item["missing"], boost + overdue_by))
+                        due.append((key, item_id, item["title"], item["age_days"], item["missing"], overdue_by))
 
             # Self-prune: anything no longer a candidate (downloaded, upgraded, or
             # removed from the library) doesn't need tracking anymore.
@@ -284,7 +285,11 @@ data:
                     del state[key][existing_id]
 
         due.sort(key=lambda x: -x[5])
-        batch = due[:BATCH_CAP]
+        missing_due = [d for d in due if d[4]]
+        upgrade_due = [d for d in due if not d[4]]
+        batch = missing_due[:MISSING_SLOTS]
+        batch += upgrade_due[:BATCH_CAP - len(batch)]
+        batch += missing_due[MISSING_SLOTS:MISSING_SLOTS + BATCH_CAP - len(batch)]
 
         if not batch:
             print("Nothing due for search right now.")
