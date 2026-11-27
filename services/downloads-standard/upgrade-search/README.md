@@ -43,32 +43,21 @@ for them yet.
 
 ## Files
 
-- `upgrade_search.py` — the actual script. This is the source of truth;
-  edit this file, not `configmap.yaml` directly.
-- `configmap.yaml` — generated from `upgrade_search.py` (see below).
-  Regenerate it any time you change the script.
+- `upgrade_search.py` — the script. `../kustomization.yaml` builds the
+  `upgrade-search-script` ConfigMap from it with `configMapGenerator`, so
+  edits here deploy on their own.
 - `pvc.yaml` — small persistent volume for the backoff state file.
 - `cronjob.yaml` — the schedule and runtime config (batch size, backoff
   values, etc. — all overridable via env vars without touching the
   script).
 
-## Regenerating the ConfigMap after editing the script
-
-```bash
-kubectl create configmap upgrade-search-script -n downloads-standard \
-  --from-file=upgrade_search.py=upgrade_search.py \
-  --dry-run=client -o yaml > configmap.yaml
-```
-
-Then tidy the output: it currently emits `data`/`kind`/`metadata` out of
-the repo's usual field order and includes a stray `creationTimestamp:
-null` — strip that line and reorder to `apiVersion`, `kind`, `metadata`,
-`data` to match the rest of this repo before committing.
-
 ## Deploying
 
+Flux applies it as part of the `downloads-standard` kustomization. To
+preview the rendered ConfigMap locally:
+
 ```bash
-kubectl apply -f pvc.yaml -f configmap.yaml -f cronjob.yaml
+kubectl kustomize services/downloads-standard | grep -A3 'name: upgrade-search-script'
 ```
 
 Uses the same `radarr-api-key`, `sonarr-api-key`, and

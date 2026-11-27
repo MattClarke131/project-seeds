@@ -73,7 +73,6 @@ resources:
   - sabnzbd/service.yaml
   - recyclarr/configmap.yaml
   - recyclarr/cronjob.yaml
-  - upgrade-search/configmap.yaml
   - upgrade-search/cronjob.yaml
   - upgrade-search/pvc.yaml
   - qbittorrent-vpn/deployment.yaml
@@ -125,6 +124,10 @@ configMapGenerator:
     namespace: downloads-standard
     files:
       - hardlink-to-cwa-ingest.sh=chaptarr/hardlink-to-cwa-ingest.sh
+  - name: upgrade-search-script
+    namespace: downloads-standard
+    files:
+      - upgrade_search.py=upgrade-search/upgrade_search.py
 
 generatorOptions:
   disableNameSuffixHash: true
