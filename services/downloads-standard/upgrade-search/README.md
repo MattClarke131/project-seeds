@@ -1,18 +1,26 @@
 # upgrade-search
 
-A CronJob that periodically re-searches Radarr/Sonarr items still below
-their quality profile's cutoff (i.e. still on x264, waiting for an x265
-release to show up), instead of relying on someone to trigger that search
-by hand.
+A CronJob that periodically re-searches two kinds of Radarr/Sonarr items,
+instead of relying on someone to trigger that search by hand:
+
+- **Missing:** monitored movies that are available, and monitored episodes
+  that have aired, but have no file. Radarr and Sonarr search only once
+  when an item is added and never retry, so a failed first search (an
+  indexer outage, or no acceptable release yet) leaves a Seerr request
+  stuck until someone searches by hand.
+- **Upgrades:** items still on x264, waiting for an x265 release to show up.
 
 ## How it works
 
 Every 4 hours it pulls the full movie/episode list directly from Radarr
 (`radarr-standard`), Sonarr (`sonarr-standard`), and Sonarr Anime
-(`sonarr-anime`) and filters for monitored items whose current file is
+(`sonarr-anime`) and filters for monitored items that are missing or whose current file is
 still on an x264-family codec, picks up to `BATCH_CAP` of the
 most-overdue candidates across the whole stack, and fires a search for
-them. State (last checked, current backoff interval) is kept in a small
+them. Up to `MISSING_SLOTS` of each batch go to missing items and the
+rest to upgrades, so items that never show up can't starve upgrades.
+Either side takes slots the other doesn't need. Missing items always start
+at the first `BACKOFF_DAYS` rung regardless of age. State (last checked, current backoff interval) is kept in a small
 JSON file on the `upgrade-search-state` PVC so runs aren't re-querying the
 same items every time — see the docstring in `upgrade_search.py` for the
 full backoff design (age-based starting point, minimum delay before an
@@ -35,32 +43,21 @@ for them yet.
 
 ## Files
 
-- `upgrade_search.py` — the actual script. This is the source of truth;
-  edit this file, not `configmap.yaml` directly.
-- `configmap.yaml` — generated from `upgrade_search.py` (see below).
-  Regenerate it any time you change the script.
+- `upgrade_search.py` — the script. `../kustomization.yaml` builds the
+  `upgrade-search-script` ConfigMap from it with `configMapGenerator`, so
+  edits here deploy on their own.
 - `pvc.yaml` — small persistent volume for the backoff state file.
 - `cronjob.yaml` — the schedule and runtime config (batch size, backoff
   values, etc. — all overridable via env vars without touching the
   script).
 
-## Regenerating the ConfigMap after editing the script
-
-```bash
-kubectl create configmap upgrade-search-script -n downloads-standard \
-  --from-file=upgrade_search.py=upgrade_search.py \
-  --dry-run=client -o yaml > configmap.yaml
-```
-
-Then tidy the output: it currently emits `data`/`kind`/`metadata` out of
-the repo's usual field order and includes a stray `creationTimestamp:
-null` — strip that line and reorder to `apiVersion`, `kind`, `metadata`,
-`data` to match the rest of this repo before committing.
-
 ## Deploying
 
+Flux applies it as part of the `downloads-standard` kustomization. To
+preview the rendered ConfigMap locally:
+
 ```bash
-kubectl apply -f pvc.yaml -f configmap.yaml -f cronjob.yaml
+kubectl kustomize services/downloads-standard | grep -A3 'name: upgrade-search-script'
 ```
 
 Uses the same `radarr-api-key`, `sonarr-api-key`, and
@@ -73,9 +70,10 @@ All the knobs are env vars on the container in `cronjob.yaml`:
 | Env var | Default | Meaning |
 |---|---|---|
 | `BATCH_CAP` | `2` | Max items searched per run, across the whole stack |
+| `MISSING_SLOTS` | `1` | Slots per run reserved for missing items; unused ones go to upgrades and vice versa |
 | `BACKOFF_DAYS` | `1,3,9,30,90,360` | Recheck ladder; caps at the last value once reached |
 | `MIN_FIRST_SEARCH_DELAY_HOURS` | `2` | Minimum time an item must sit in the cutoff-unmet list before its first search |
-| `AGE_THRESHOLD_DAYS` | `365` | Content older than this starts at `OLD_CONTENT_START_INTERVAL` instead of day 1 |
+| `AGE_THRESHOLD_DAYS` | `365` | Upgrade candidates older than this start at `OLD_CONTENT_START_INTERVAL` instead of day 1 (missing items always start at day 1) |
 | `OLD_CONTENT_START_INTERVAL` | `30` | Must be one of the values in `BACKOFF_DAYS` |
 
 At 2 items/run × 6 runs/day = 12 searches/day max across the whole stack.
