@@ -4,7 +4,7 @@ Model Context Protocol (MCP) server for Jellyfin (`ghcr.io/jaredtrent/jellyfin-m
 
 ## Prerequisites (Manual Secrets)
 
-Create both Secrets in the `jellyfin` namespace **before** merging (the `jellyfin` Flux Kustomization has `wait: true`). Secrets are split by trust boundary so `agentgateway` never receives the Jellyfin credential:
+Create both Secrets in the `jellyfin` namespace **before** merging (the `jellyfin` Flux Kustomization has `wait: true`). Secrets are split by trust boundary so agentgateway never receives the Jellyfin credential:
 
 1. **Jellyfin user token (never leaves the `jellyfin` namespace):**
    Create a dedicated non-admin Jellyfin user (e.g., `mcp-reader` with library read access, admin/deletion/remote-control disabled), obtain its persistent `AccessToken` via `POST /Users/AuthenticateByName`, and store it:
@@ -13,22 +13,18 @@ Create both Secrets in the `jellyfin` namespace **before** merging (the `jellyfi
      --from-literal=JELLYFIN_API_KEY="<non-admin-access-token>"
    ```
 
-2. **Internal HTTP bearer token (shared with `mcp-gateway` via Reflector):**
+2. **Internal HTTP bearer token (shared with agentgateway):**
    `jellyfin-mcp` requires a bearer token whenever listening beyond `localhost`:
    ```bash
    kubectl -n jellyfin create secret generic jellyfin-mcp-http-token \
      --from-literal=HTTP_TOKEN="$(openssl rand -hex 32)"
-
-   kubectl -n jellyfin annotate secret jellyfin-mcp-http-token \
-     reflector.v1.k8s.emberstack.com/reflection-allowed=true \
-     reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces=mcp-gateway \
-     --overwrite
    ```
+   agentgateway needs a copy in `agents`; see [its README](../../../infrastructure/kubernetes/agentgateway/README.md). Update both copies when rotating.
 
 ## Network Policy
 
 [ciliumnetworkpolicy.yaml](ciliumnetworkpolicy.yaml) denies everything not listed:
-- **Ingress:** host only (kubelet probes). `kubectl port-forward` still works because it bypasses pod network policy.
+- **Ingress:** the agentgateway proxy, plus host for kubelet probes. `kubectl port-forward` still works because it bypasses pod network policy.
 - **Egress:** cluster DNS and Jellyfin on `8096` only, so a compromised image cannot send its token elsewhere.
 
 To check egress from inside the pod's network identity:

@@ -1,0 +1,44 @@
+# Default-deny for the MCP proxy: it reaches only DNS, the controller and the MCP backends.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: mcp-proxy
+  namespace: agents
+spec:
+  endpointSelector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: mcp
+  # Host only, for kubelet probes. No in-cluster agents yet; kubectl port-forward bypasses policy.
+  ingress:
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "15021"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: ANY
+    # xDS config from the controller.
+    - toEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: agentgateway
+            app.kubernetes.io/instance: agentgateway
+      toPorts:
+        - ports:
+            - port: "9978"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: jellyfin
+            app: jellyfin-mcp
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP

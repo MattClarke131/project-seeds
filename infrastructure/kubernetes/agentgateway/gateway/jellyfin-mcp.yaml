@@ -1,0 +1,64 @@
+# jellyfin-mcp (services/jellyfin/jellyfin-mcp), served at /jellyfin/mcp.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: jellyfin-mcp
+  namespace: agents
+spec:
+  mcp:
+    targets:
+      - name: jellyfin
+        static:
+          host: jellyfin-mcp.jellyfin.svc.cluster.local
+          port: 8080
+          path: /mcp
+          protocol: StreamableHTTP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: jellyfin-mcp
+  namespace: agents
+spec:
+  parentRefs:
+    - name: mcp
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /jellyfin/mcp
+      backendRefs:
+        - group: agentgateway.dev
+          kind: AgentgatewayBackend
+          name: jellyfin-mcp
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: jellyfin-mcp
+  namespace: agents
+spec:
+  targetRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: jellyfin-mcp
+  backend:
+    # jellyfin-mcp's own bearer token, from the manual copy of its Secret (see README.md).
+    auth:
+      secretRef:
+        name: jellyfin-mcp-http-token
+        key: HTTP_TOKEN
+    # Only listed tools are callable or appear in tools/list; unmatched calls fail like unknown tools.
+    # jellyfin_libraries is left out because it 403s for jellyfin-mcp's non-admin user.
+    mcp:
+      authorization:
+        action: Allow
+        policy:
+          matchExpressions:
+            - >-
+              apiKey.role == "jellyfin-reader" && mcp.tool.name in [
+                "jellyfin_analytics", "jellyfin_browse", "jellyfin_download_link",
+                "jellyfin_get_item", "jellyfin_item_extras", "jellyfin_music",
+                "jellyfin_people", "jellyfin_recommendations", "jellyfin_search",
+                "jellyfin_tv_shows"
+              ]

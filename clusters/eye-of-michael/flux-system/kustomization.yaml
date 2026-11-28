@@ -10,6 +10,7 @@ resources:
   - cert-manager.yaml
   - ingress.yaml
   - envoy-gateway.yaml
+  - agentgateway.yaml
   - ci-cd.yaml
   - intel-gpu-plugin.yaml
   - tunnel.yaml

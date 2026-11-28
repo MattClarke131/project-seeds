@@ -1,0 +1,36 @@
+# Hand-authored, unlike gotk-components.yaml/gotk-sync.yaml (see README.md).
+# Two Kustomizations: the Gateway and its policies can't be applied until the HelmReleases install their CRDs.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: agentgateway
+  namespace: flux-system
+spec:
+  # envoy-gateway's chart installs the Gateway API CRDs the controller watches.
+  dependsOn:
+    - name: envoy-gateway
+  interval: 10m0s
+  path: ./infrastructure/kubernetes/agentgateway/controller
+  prune: true
+  wait: true
+  timeout: 5m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: agentgateway-gateway
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: agentgateway
+  interval: 10m0s
+  path: ./infrastructure/kubernetes/agentgateway/gateway
+  prune: true
+  wait: true
+  timeout: 5m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

@@ -1,0 +1,10 @@
+# agentgateway ships only as OCI charts; both HelmReleases resolve their chart names under this URL.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: agentgateway
+  namespace: agents
+spec:
+  type: oci
+  interval: 1h
+  url: oci://cr.agentgateway.dev/charts
