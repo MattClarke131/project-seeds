@@ -1,0 +1,18 @@
+# Strict API key authentication across all routes on mcp-gateway (M1).
+# Requests without a valid Bearer key in `agentgateway-api-keys` receive 401.
+# M3 replaces this policy with an extAuth policy backed by the minter.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: mcp-gateway-auth
+  namespace: agents-test
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: mcp-gateway
+  traffic:
+    apiKeyAuthentication:
+      mode: Strict
+      secretRef:
+        name: agentgateway-api-keys

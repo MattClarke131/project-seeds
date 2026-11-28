@@ -12,14 +12,16 @@
   "kubernetes": {
     "managerFilePatterns": [
       "/^services/.+\\.ya?ml$/",
-      "/^infrastructure/kubernetes/.+\\.ya?ml$/"
+      "/^infrastructure/kubernetes/.+\\.ya?ml$/",
+      "/^agent-platform/.+\\.ya?ml$/"
     ]
   },
   "flux": {
     "managerFilePatterns": [
       "/^clusters/.+\\.ya?ml$/",
       "/^services/.+\\.ya?ml$/",
-      "/^infrastructure/kubernetes/.+\\.ya?ml$/"
+      "/^infrastructure/kubernetes/.+\\.ya?ml$/",
+      "/^agent-platform/.+\\.ya?ml$/"
     ]
   },
   "customManagers": [

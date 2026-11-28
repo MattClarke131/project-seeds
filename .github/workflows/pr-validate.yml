@@ -72,7 +72,7 @@ jobs:
           files=()
           while IFS= read -r -d '' f; do
             files+=("$f")
-          done < <(find services infrastructure/kubernetes \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
+          done < <(find services infrastructure/kubernetes agent-platform \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
 
           kubeconform -strict -summary -output pretty \
             -schema-location default \
@@ -186,10 +186,11 @@ jobs:
             files=()
             while IFS= read -r -d '' f; do
               files+=("$f")
-            done < <(find services infrastructure/kubernetes \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
+            done < <(find services infrastructure/kubernetes agent-platform \( -iname "*.yaml" -o -iname "*.yml" \) ! -iname "*values.yaml" ! -iname "*values.yml" -print0)
           else
             mapfile -t changed < <(git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- \
               'services/*.yaml' 'services/*.yml' 'infrastructure/kubernetes/*.yaml' 'infrastructure/kubernetes/*.yml' \
+              'agent-platform/*.yaml' 'agent-platform/*.yml' \
               ':(exclude)*values.yaml' ':(exclude)*values.yml')
 
             # Cross-object checks (e.g. dangling-service) need every manifest

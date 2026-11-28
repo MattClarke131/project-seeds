@@ -1,0 +1,51 @@
+# Default-deny network policy for the agentgateway controller pod.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: agentgateway-controller
+  namespace: agents-test
+spec:
+  endpointSelector:
+    matchLabels:
+      agentgateway: agentgateway
+      app.kubernetes.io/name: agentgateway
+      app.kubernetes.io/instance: agentgateway
+  ingress:
+    # xDS gRPC: provisioned mcp-gateway proxy pods pull their config from the controller.
+    - fromEndpoints:
+        - matchLabels:
+            gateway.networking.k8s.io/gateway-name: mcp-gateway
+      toPorts:
+        - ports:
+            - port: "9978"
+              protocol: TCP
+    # Kubelet readiness and startup probes (/readyz).
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "9093"
+              protocol: TCP
+    # Prometheus metrics scraping.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "9092"
+              protocol: TCP
+  egress:
+    # Watches Gateway API and agentgateway CRDs, and reconciles proxy Deployments/Services.
+    - toEntities:
+        - kube-apiserver
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP

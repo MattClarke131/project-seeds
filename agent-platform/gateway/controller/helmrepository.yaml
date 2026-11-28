@@ -1,0 +1,10 @@
+# agentgateway v1.7.0 charts are distributed as OCI artifacts.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: agentgateway
+  namespace: agents-test
+spec:
+  type: oci
+  interval: 1h
+  url: oci://cr.agentgateway.dev/charts

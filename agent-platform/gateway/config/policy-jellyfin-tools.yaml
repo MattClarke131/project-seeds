@@ -1,0 +1,41 @@
+# Fail-closed MCP tool allowlist for jellyfin-mcp.
+# Evaluates both tools/list (hiding disallowed tools) and tools/call (denying calls).
+#
+# Enforces two conditions together:
+#   1. Backend ceiling: only the 10 working read-only tools are ever allowlisted.
+#      `jellyfin_libraries` is explicitly excluded (403s with the non-admin Jellyfin
+#      token), and any future upstream tool stays denied by default.
+#   2. Per-key scope: the API key's `allowed_tools` metadata list must also include
+#      the tool, establishing the two-check pattern ahead of M2 (multi-backend
+#      isolation) and M3 (minter-issued tokens).
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: jellyfin-mcp-tools
+  namespace: agents-test
+spec:
+  targetRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: jellyfin-mcp
+  backend:
+    mcp:
+      authorization:
+        action: Allow
+        policy:
+          matchExpressions:
+            - >-
+              mcp.tool.name in [
+                "jellyfin_analytics",
+                "jellyfin_browse",
+                "jellyfin_download_link",
+                "jellyfin_get_item",
+                "jellyfin_item_extras",
+                "jellyfin_music",
+                "jellyfin_people",
+                "jellyfin_recommendations",
+                "jellyfin_search",
+                "jellyfin_tv_shows"
+              ]
+              && has(apiKey.allowed_tools)
+              && mcp.tool.name in apiKey.allowed_tools
