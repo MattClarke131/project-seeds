@@ -249,6 +249,11 @@
       "matchDatasources": ["docker"],
       "matchPackageNames": ["jellyfin/jellyfin"],
       "sourceUrl": "https://github.com/jellyfin/jellyfin"
+    },
+    {
+      "description": "agentgateway's CRD and controller charts share a version; bump them in one PR so the CRDs never lag the controller",
+      "matchPackageNames": ["cr.agentgateway.dev/charts/**"],
+      "groupName": "agentgateway"
     }
   ]
 }

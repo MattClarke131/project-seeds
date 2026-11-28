@@ -1,0 +1,20 @@
+# Proxy overrides, merged into the Deployment and Service the controller generates.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: mcp
+  namespace: agentgateway-system
+spec:
+  # The default is LoadBalancer; agents reach the proxy only from inside the cluster.
+  service:
+    spec:
+      type: ClusterIP
+  # The template already drops capabilities and runs non-root; seccomp is the one gap to `restricted`.
+  deployment:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault

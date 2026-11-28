@@ -1,0 +1,53 @@
+# The CRDs live in their own chart, as templates, so plain Helm upgrades them.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: agentgateway-crds
+  namespace: agentgateway-system
+spec:
+  interval: 30m
+  releaseName: agentgateway-crds
+  chart:
+    spec:
+      chart: agentgateway-crds
+      version: "v1.7.0"
+      sourceRef:
+        kind: HelmRepository
+        name: agentgateway
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+---
+# The controller creates the `agentgateway` GatewayClass and a proxy Deployment per Gateway.
+# Gateway API CRDs come from envoy-gateway (v1.6.1); see README.md for why that is compatible.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: agentgateway
+  namespace: agentgateway-system
+spec:
+  dependsOn:
+    - name: agentgateway-crds
+  interval: 30m
+  releaseName: agentgateway
+  chart:
+    spec:
+      chart: agentgateway
+      version: "v1.7.0"
+      sourceRef:
+        kind: HelmRepository
+        name: agentgateway
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+  values:
+    podSecurityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault

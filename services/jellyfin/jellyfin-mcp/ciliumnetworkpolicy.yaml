@@ -9,10 +9,18 @@ spec:
   endpointSelector:
     matchLabels:
       app: jellyfin-mcp
-  # Host only, for kubelet probes; kubectl port-forward enters the pod netns and bypasses policy.
+  # The agentgateway proxy, plus host for kubelet probes; kubectl port-forward enters the pod netns and bypasses policy.
   ingress:
     - fromEntities:
         - host
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: agentgateway-system
+            gateway.networking.k8s.io/gateway-name: mcp
       toPorts:
         - ports:
             - port: "8080"
