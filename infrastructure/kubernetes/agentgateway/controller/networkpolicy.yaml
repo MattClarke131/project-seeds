@@ -3,7 +3,7 @@ apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
   name: agentgateway-controller
-  namespace: agentgateway-system
+  namespace: agents
 spec:
   endpointSelector:
     matchLabels:

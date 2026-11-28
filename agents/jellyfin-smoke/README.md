@@ -4,14 +4,14 @@ A one-question LangGraph agent that checks agentgateway end to end: it lists the
 
 ## Run it
 ```bash
-kubectl -n agentgateway-system port-forward svc/mcp 8080:8080
+kubectl -n agents port-forward svc/mcp 8080:8080
 ```
 
 In another terminal:
 
 ```bash
 cd agents/jellyfin-smoke
-export AGENTGATEWAY_KEY=...    # the jellyfin-smoke key (see infrastructure/kubernetes/agentgateway/README.md)
+export AGENTGATEWAY_KEY=$(kubectl -n agents get secret jellyfin-smoke-gateway-key -o jsonpath='{.data.AGENTGATEWAY_KEY}' | base64 -d)
 export ANTHROPIC_API_KEY=...
 uv run main.py "What Dune movies are in the library?"
 ```

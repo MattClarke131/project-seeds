@@ -24,26 +24,31 @@ kubectl get crd gateways.gateway.networking.k8s.io -o yaml | grep bundle-version
 ```
 
 ## Prerequisites (Manual Secrets)
-Create these in `agentgateway-system` **before** merging; `agentgateway-gateway` waits for the Gateway to become ready.
+Create these in `agents` **before** merging; `agentgateway-gateway` waits for the Gateway to become ready.
 
 ```bash
-kubectl create namespace agentgateway-system
+kubectl create namespace agents
 ```
 
-1. **API keys.** Store only the key's hash; keep the raw key in your password manager.
+1. **API keys.** Two Secrets per key:
+   - `agentgateway-api-keys` holds only hashes. The gateway reads it, and it can grow to one entry per agent. Each entry's `metadata.role` picks the tools that key may use.
+   - `<agent>-gateway-key` holds the raw key, for the agent that sends it.
+
+   Keeping them apart means the gateway never holds a usable key. Nothing is printed:
    ```bash
    KEY=$(openssl rand -hex 32)
    HASH=$(printf '%s' "$KEY" | shasum -a 256 | cut -d' ' -f1)
-   kubectl -n agentgateway-system create secret generic agentgateway-api-keys \
+   kubectl -n agents create secret generic agentgateway-api-keys \
      --from-literal=jellyfin-smoke="{\"keyHash\":\"sha256:$HASH\",\"metadata\":{\"role\":\"jellyfin-reader\"}}"
-   echo "$KEY"   # save this, then clear your scrollback
+   kubectl -n agents create secret generic jellyfin-smoke-gateway-key \
+     --from-literal=AGENTGATEWAY_KEY="$KEY"
+   unset KEY HASH
    ```
-   Each entry is one key. Add an entry per agent; its `metadata.role` picks the tools it may use.
 
 2. **jellyfin-mcp's bearer token.** A copy of the Secret in the `jellyfin` namespace (Reflector is not installed):
    ```bash
    kubectl -n jellyfin get secret jellyfin-mcp-http-token -o json \
-     | jq '{apiVersion, kind, type, data, metadata: {name: .metadata.name, namespace: "agentgateway-system"}}' \
+     | jq '{apiVersion, kind, type, data, metadata: {name: .metadata.name, namespace: "agents"}}' \
      | kubectl apply -f -
    ```
    When rotating the token, update both copies.
@@ -51,14 +56,15 @@ kubectl create namespace agentgateway-system
 ## Checking it
 ```bash
 kubectl get gatewayclass agentgateway
-kubectl -n agentgateway-system get gateway,httproute,agentgatewaybackend,agentgatewaypolicy
-kubectl -n agentgateway-system get pods
-kubectl -n agentgateway-system port-forward svc/mcp 8080:8080
+kubectl -n agents get gateway,httproute,agentgatewaybackend,agentgatewaypolicy
+kubectl -n agents get pods
+kubectl -n agents port-forward svc/mcp 8080:8080
 ```
 
-In another terminal, with `KEY` set to the raw API key:
+In another terminal:
 
 ```bash
+KEY=$(kubectl -n agents get secret jellyfin-smoke-gateway-key -o jsonpath='{.data.AGENTGATEWAY_KEY}' | base64 -d)
 URL=http://127.0.0.1:8080/jellyfin/mcp
 H=(-H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream')
 INIT='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"check","version":"1"}}}'

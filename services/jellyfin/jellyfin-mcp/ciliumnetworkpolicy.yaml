@@ -19,7 +19,7 @@ spec:
               protocol: TCP
     - fromEndpoints:
         - matchLabels:
-            k8s:io.kubernetes.pod.namespace: agentgateway-system
+            k8s:io.kubernetes.pod.namespace: agents
             gateway.networking.k8s.io/gateway-name: mcp
       toPorts:
         - ports:

@@ -3,7 +3,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: agentgateway-crds
-  namespace: agentgateway-system
+  namespace: agents
 spec:
   interval: 30m
   releaseName: agentgateway-crds
@@ -27,7 +27,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: agentgateway
-  namespace: agentgateway-system
+  namespace: agents
 spec:
   dependsOn:
     - name: agentgateway-crds

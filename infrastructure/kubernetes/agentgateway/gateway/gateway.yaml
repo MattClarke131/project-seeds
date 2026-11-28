@@ -3,7 +3,7 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: mcp
-  namespace: agentgateway-system
+  namespace: agents
 spec:
   gatewayClassName: agentgateway
   infrastructure:
@@ -25,7 +25,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayPolicy
 metadata:
   name: api-keys
-  namespace: agentgateway-system
+  namespace: agents
 spec:
   targetRefs:
     - group: gateway.networking.k8s.io

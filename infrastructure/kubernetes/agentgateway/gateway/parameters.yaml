@@ -3,7 +3,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayParameters
 metadata:
   name: mcp
-  namespace: agentgateway-system
+  namespace: agents
 spec:
   # The default is LoadBalancer; agents reach the proxy only from inside the cluster.
   service:

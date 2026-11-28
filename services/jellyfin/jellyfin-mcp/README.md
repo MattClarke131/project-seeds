@@ -19,7 +19,7 @@ Create both Secrets in the `jellyfin` namespace **before** merging (the `jellyfi
    kubectl -n jellyfin create secret generic jellyfin-mcp-http-token \
      --from-literal=HTTP_TOKEN="$(openssl rand -hex 32)"
    ```
-   agentgateway needs a copy in `agentgateway-system`; see [its README](../../../infrastructure/kubernetes/agentgateway/README.md). Update both copies when rotating.
+   agentgateway needs a copy in `agents`; see [its README](../../../infrastructure/kubernetes/agentgateway/README.md). Update both copies when rotating.
 
 ## Network Policy
 

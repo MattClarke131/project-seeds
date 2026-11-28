@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: agentgateway-system
+  name: agents
   labels:
     # The controller runs non-root; the proxy gets its seccomp profile from gateway/parameters.yaml.
     pod-security.kubernetes.io/enforce: restricted
