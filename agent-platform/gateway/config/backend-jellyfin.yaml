@@ -1,0 +1,24 @@
+# Points agentgateway at the internal jellyfin-mcp Streamable HTTP service.
+# The bearer token Secret (jellyfin-mcp-http-token) is copied manually into
+# agents-test because Reflector is not installed on this cluster.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: jellyfin-mcp
+  namespace: agents-test
+spec:
+  mcp:
+    # jellyfin-mcp already prefixes its tools with `jellyfin_`; keep names exact.
+    prefixMode: Never
+    targets:
+      - name: jellyfin
+        static:
+          host: jellyfin-mcp.jellyfin.svc.cluster.local
+          port: 8080
+          path: /mcp
+          protocol: StreamableHTTP
+          policies:
+            auth:
+              secretRef:
+                name: jellyfin-mcp-http-token
+                key: HTTP_TOKEN

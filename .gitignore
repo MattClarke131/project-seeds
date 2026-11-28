@@ -18,3 +18,11 @@ kubeconfig
 
 # Generated
 infrastructure/terraform/proxmox/generated
+
+# Secrets / local env
+.env
+**/.env
+
+# Python
+**/.venv/
+**/__pycache__/

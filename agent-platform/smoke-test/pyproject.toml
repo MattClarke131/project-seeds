@@ -1,0 +1,12 @@
+[project]
+name = "agent-platform-smoke-test"
+version = "0.1.0"
+description = "End-to-end LangGraph smoke test against agentgateway and jellyfin-mcp (M1)"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain-anthropic>=0.3.0",
+    "langchain-google-genai>=2.1.0",
+    "langchain-mcp-adapters>=0.1.9",
+    "langgraph>=0.4.0",
+    "python-dotenv>=1.0.0",
+]

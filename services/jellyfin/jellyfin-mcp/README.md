@@ -13,22 +13,17 @@ Create both Secrets in the `jellyfin` namespace **before** merging (the `jellyfi
      --from-literal=JELLYFIN_API_KEY="<non-admin-access-token>"
    ```
 
-2. **Internal HTTP bearer token (shared with `mcp-gateway` via Reflector):**
-   `jellyfin-mcp` requires a bearer token whenever listening beyond `localhost`:
+2. **Internal HTTP bearer token (copied manually into `agents-test`):**
+   `jellyfin-mcp` requires a bearer token whenever listening beyond `localhost`. Reflector is not installed on this cluster, so copy the token into the gateway namespace by hand (see [`../../../agent-platform/gateway/README.md`](../../../agent-platform/gateway/README.md)):
    ```bash
    kubectl -n jellyfin create secret generic jellyfin-mcp-http-token \
      --from-literal=HTTP_TOKEN="$(openssl rand -hex 32)"
-
-   kubectl -n jellyfin annotate secret jellyfin-mcp-http-token \
-     reflector.v1.k8s.emberstack.com/reflection-allowed=true \
-     reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces=mcp-gateway \
-     --overwrite
    ```
 
 ## Network Policy
 
 [ciliumnetworkpolicy.yaml](ciliumnetworkpolicy.yaml) denies everything not listed:
-- **Ingress:** host only (kubelet probes). `kubectl port-forward` still works because it bypasses pod network policy.
+- **Ingress:** host (kubelet probes) and `agents-test`'s `mcp-gateway` proxy pods on `8080/TCP` only. `kubectl port-forward` still works because it bypasses pod network policy.
 - **Egress:** cluster DNS and Jellyfin on `8096` only, so a compromised image cannot send its token elsewhere.
 
 To check egress from inside the pod's network identity:

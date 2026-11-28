@@ -1,0 +1,39 @@
+# Hand-authored, same two-Kustomization pattern as envoy-gateway.yaml:
+# 1) agent-platform-gateway-controller installs agentgateway CRDs and the controller
+#    (after envoy-gateway ensures Gateway API CRDs exist).
+# 2) agent-platform-gateway-config applies the Gateway, AgentgatewayParameters,
+#    AgentgatewayBackend, HTTPRoute, AgentgatewayPolicies, and proxy network policy
+#    once the agentgateway CRDs and controller are ready.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: agent-platform-gateway-controller
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: envoy-gateway
+  interval: 10m0s
+  path: ./agent-platform/gateway/controller
+  prune: true
+  wait: true
+  timeout: 10m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: agent-platform-gateway-config
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: agent-platform-gateway-controller
+  interval: 10m0s
+  path: ./agent-platform/gateway/config
+  prune: true
+  wait: true
+  timeout: 5m0s
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

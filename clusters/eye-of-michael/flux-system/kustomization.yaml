@@ -20,3 +20,4 @@ resources:
   - 13ft.yaml
   - vikunja.yaml
   - etcd-backup.yaml
+  - agent-platform.yaml

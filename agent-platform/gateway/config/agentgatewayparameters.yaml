@@ -1,0 +1,28 @@
+# Configures the data-plane Deployment and Service generated for Gateway/mcp-gateway.
+# Defaults to LoadBalancer upstream; override to ClusterIP so the gateway stays
+# strictly internal to the cluster.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: mcp-gateway
+  namespace: agents-test
+spec:
+  service:
+    spec:
+      type: ClusterIP
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  # Enforce Kubernetes `restricted` Pod Security fields on the generated proxy pod.
+  deployment:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault

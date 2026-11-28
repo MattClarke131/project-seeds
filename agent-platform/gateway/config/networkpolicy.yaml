@@ -1,0 +1,67 @@
+# Default-deny network policy for the mcp-gateway proxy pods provisioned by agentgateway.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: mcp-gateway-proxy
+  namespace: agents-test
+spec:
+  endpointSelector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: mcp-gateway
+  ingress:
+    # Agents running inside the agents-test namespace call the MCP listener on 8080.
+    # (kubectl port-forward enters the pod netns directly and bypasses pod policy.)
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: agents-test
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
+    # Kubelet readiness probes (/healthz/ready on port 15021).
+    - fromEntities:
+        - host
+      toPorts:
+        - ports:
+            - port: "15021"
+              protocol: TCP
+    # Prometheus metrics scraping.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: observability
+            app.kubernetes.io/name: prometheus
+      toPorts:
+        - ports:
+            - port: "15020"
+              protocol: TCP
+  egress:
+    # xDS gRPC config stream from the agentgateway controller.
+    - toEndpoints:
+        - matchLabels:
+            agentgateway: agentgateway
+            app.kubernetes.io/name: agentgateway
+            app.kubernetes.io/instance: agentgateway
+      toPorts:
+        - ports:
+            - port: "9978"
+              protocol: TCP
+    # Cluster DNS for resolving backend Service hostnames.
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s-app: kube-dns
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+    # Upstream MCP backend: jellyfin-mcp only (M1).
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: jellyfin
+            app: jellyfin-mcp
+      toPorts:
+        - ports:
+            - port: "8080"
+              protocol: TCP
